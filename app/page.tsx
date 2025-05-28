@@ -1,6 +1,13 @@
-import NavBar from "@/components/NavBar";
-import Image from "next/image";
+"use client";
+
+import Hero from "@/components/Hero";
+import Disponibility from "@/components/Disponibility";
 
 export default function Home() {
-  return <NavBar></NavBar>;
+  return (
+    <>
+      <Hero></Hero>
+      <Disponibility></Disponibility>
+    </>
+  );
 }

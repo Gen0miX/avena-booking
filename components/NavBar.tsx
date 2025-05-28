@@ -1,19 +1,36 @@
-import { FaMoon, FaSun } from "react-icons/fa";
+import { FaAlignLeft } from "react-icons/fa";
+import Link from "next/link";
 
 export default function NavBar() {
   return (
-    <div className="navbar bg-base-200">
+    <div className="navbar bg-base-200 sticky top-0 z-50 hidden">
       <div className="navbar-start">
-        <p className="font-heading font-semibold text-3xl tracking-wide">
-          ARIZONA
-        </p>
-      </div>
-      <div className="navbar-end">
-        <label className="swap swap-rotate">
-          <input type="checkbox" className="theme-controller" value="avenal" />
-          <FaMoon className="swap-off h-6 w-6"></FaMoon>
-          <FaSun className="swap-on h-6 w-6"></FaSun>
-        </label>
+        <div className="dropdown">
+          <div
+            tabIndex={0}
+            role="button"
+            className="btn btn-primary rounded-full btn-circle"
+          >
+            <FaAlignLeft className="" />
+          </div>
+          <ul
+            tabIndex={0}
+            className="menu menu-sm dropdown-content bg-base-200 rounded-box z-1 mt-3 w-52 p-2 shadow"
+          >
+            <li>
+              <Link href={"/"}>item 1</Link>
+            </li>
+            <li>
+              <Link href={"/"}>item 2</Link>
+            </li>
+          </ul>
+        </div>
+        <Link
+          href={"/"}
+          className="btn btn-ghost text-2xl font-heading font-bold "
+        >
+          Avena
+        </Link>
       </div>
     </div>
   );

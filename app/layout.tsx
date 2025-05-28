@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Playfair_Display, Nunito } from "next/font/google";
 import "./globals.css";
+import { ThemeProvider } from "@/context/ThemeContext";
 
 const playfairDisplay = Playfair_Display({
   variable: "--font-playfair-display",
@@ -27,7 +28,7 @@ export default function RootLayout({
       <body
         className={`${playfairDisplay.variable} ${nunito.variable} antialiased font-p`}
       >
-        {children}
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );
