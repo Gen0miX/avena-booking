@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function Hero() {
   return (
     <section
-      className="hero min-h-screen"
+      className="hero min-h-svh"
       style={{
         backgroundImage:
           "url(https://media.myswitzerland.com/image/fetch/c_lfill,g_auto,w_3200,h_1800/f_auto,q_80,fl_keep_iptc/https://www.myswitzerland.com/-/media/celum%20connect/2025/03/12/07/45/22/saas-fee-aerial.jpg)",

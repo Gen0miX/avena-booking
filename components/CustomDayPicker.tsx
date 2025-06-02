@@ -56,7 +56,7 @@ export default function CustomDayPicker(props: CustomDayPickerProps) {
   if (props.mode === "readOnly") {
     return (
       <DayPicker
-        className="react-day-picker"
+        className="react-day-picker m-1"
         showOutsideDays
         modifiers={{ occupied: occupiedDates }}
         modifiersClassNames={{ occupied: "occupied" }}
