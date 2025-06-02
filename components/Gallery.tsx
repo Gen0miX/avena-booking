@@ -13,8 +13,8 @@ const images = [
     src: "/images/appartements/cuisine.webp",
     alt: "Cuisine",
   },
-  { src: "/images/appartements/Chambre1.webp", alt: "Chambre 1" },
-  { src: "/images/appartements/Chambre2.webp", alt: "Chambre 2" },
+  { src: "/images/appartements/chambre1.webp", alt: "Chambre 1" },
+  { src: "/images/appartements/chambre2.webp", alt: "Chambre 2" },
 ];
 
 export default function Gallery() {
