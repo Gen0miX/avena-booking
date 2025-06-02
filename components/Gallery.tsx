@@ -7,7 +7,6 @@ const images = [
   {
     src: "/images/appartements/salon.webp",
     alt: "Salon",
-    full: true,
   },
   {
     src: "/images/appartements/cuisine.webp",
