@@ -1,4 +1,11 @@
-import { DayPicker, DateRange } from "react-day-picker";
+import {
+  DayPicker,
+  DateRange,
+  DropdownNav,
+  Dropdown,
+  MonthsDropdown,
+} from "react-day-picker";
+import { frCH } from "react-day-picker/locale";
 import { useEffect, useState } from "react";
 import { fetchOccupiedDates } from "@/utils/bookings";
 
@@ -56,18 +63,22 @@ export default function CustomDayPicker(props: CustomDayPickerProps) {
   if (props.mode === "readOnly") {
     return (
       <DayPicker
-        className="react-day-picker m-1"
+        className="react-day-picker self-center sm:scale-125"
         showOutsideDays
+        locale={frCH}
         modifiers={{ occupied: occupiedDates }}
-        modifiersClassNames={{ occupied: "occupied" }}
+        modifiersClassNames={{
+          occupied: "occupied",
+        }}
       />
     );
   }
 
   return (
     <DayPicker
-      className="react-day-picker"
+      className="react-day-picker "
       showOutsideDays
+      locale={frCH}
       mode="range"
       selected={props.selectedRange}
       onSelect={handleSelect}
@@ -77,9 +88,9 @@ export default function CustomDayPicker(props: CustomDayPickerProps) {
       modifiersClassNames={{
         occupied: "occupied",
         range_start:
-          "bg-primary text-primary-content rounded-l-lg font-bold hover:text-primary transition-all duration-200",
+          "bg-primary text-primary-content rounded-l-full font-bold hover:text-primary transition-all duration-200",
         range_end:
-          "bg-primary text-primary-content rounded-r-lg font-bold hover:text-primary transition-all duration-200",
+          "bg-primary text-primary-content rounded-r-full font-bold hover:text-primary transition-all duration-200",
         range_middle:
           "bg-primary text-primary-content hover:text-primary transition-all duration-200",
         selected:

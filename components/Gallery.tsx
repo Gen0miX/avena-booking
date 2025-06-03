@@ -22,7 +22,7 @@ export default function Gallery() {
   return (
     <div className="grid grid-cols-3 h-[300px] md:grid-cols-[2fr_2fr_1fr_1fr] md:grid-rows-2 gap-2 md:h-[400px] pb-5">
       {/* Grande image à gauche - occupe 2 colonnes et 2 rangées */}
-      <div className="relative col-span-2 md:row-span-2 rounded-xl overflow-hidden">
+      <div className="relative col-span-2 md:row-span-2 rounded-xl shadow-md overflow-hidden">
         <Image
           src={images[0].src}
           alt={images[0].alt}
@@ -33,7 +33,7 @@ export default function Gallery() {
       </div>
 
       {/* Image top-right 1 */}
-      <div className="relative rounded-xl overflow-hidden">
+      <div className="relative rounded-xl shadow-md overflow-hidden">
         <Image
           src={images[1].src}
           alt={images[1].alt}
@@ -44,7 +44,7 @@ export default function Gallery() {
       </div>
 
       {/* Image top-right 2 */}
-      <div className="relative rounded-xl overflow-hidden">
+      <div className="relative rounded-xl shadow-md overflow-hidden">
         <Image
           src={images[2].src}
           alt={images[2].alt}
@@ -55,7 +55,7 @@ export default function Gallery() {
       </div>
 
       {/* Image bottom-right 3 */}
-      <div className="relative rounded-xl overflow-hidden">
+      <div className="relative rounded-xl shadow-md overflow-hidden">
         <Image
           src={images[3].src}
           alt={images[3].alt}
@@ -66,7 +66,7 @@ export default function Gallery() {
       </div>
 
       {/* +X photos bouton - avec overlay sur la dernière image */}
-      <div className="relative rounded-xl overflow-hidden">
+      <div className="relative rounded-xl shadow-md overflow-hidden">
         <div className="absolute inset-0 bg-primary opacity-30 flex items-center justify-center z-10"></div>
         {/* Image de fond pour le bouton */}
       </div>

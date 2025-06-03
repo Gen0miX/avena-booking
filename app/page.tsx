@@ -4,6 +4,7 @@ import Hero from "@/components/Hero";
 import Disponibility from "@/components/Disponibility";
 import Gallery from "@/components/Gallery";
 import ServiceBadges from "@/components/ServiceBadges";
+import SectionTitle from "@/components/SectionTitle";
 import { GoogleMapsEmbed } from "@next/third-parties/google";
 
 export default function Home() {
@@ -12,14 +13,15 @@ export default function Home() {
       <Hero></Hero>
       <div className="xl:mx-20 bg-base-200 rounded-box m-1 p-2 border-2 border-primary/20 sm:p-5 sm:m-5">
         <Gallery></Gallery>
-        <div className="flex flex-col lg:flex-row">
-          <div className="flex flex-col lg:max-w-1/2">
-            <h2 className="font-heading text-4xl sm:text-5xl font-semibold">
-              Appartement Avena
-            </h2>
-            <p className="mb-5 text-lg sm:text-xl">
-              Untere Dorfstrasse 41, 3906 Saas-Fee
-            </p>
+
+        <div className="flex flex-col lg:max-w-1/2 pt-3">
+          <SectionTitle>Appartement Avena</SectionTitle>
+          <p className="text-lg sm:text-xl">
+            Untere Dorfstrasse 41, 3906 Saas-Fee
+          </p>
+        </div>
+        <div className="flex flex-col lg:flex-row lg:gap-10 xl:gap-20">
+          <div className="flex flex-col lg:max-w-1/2 pt-5">
             <ServiceBadges />
             <h3 className="text-lg sm:text-xl font-bold mb-5">
               Un séjour comme à la maison, à Saas-Fee
@@ -34,7 +36,7 @@ export default function Home() {
               Cet appartement lumineux peut accueillir jusqu’à 6 personnes et
               dispose de :
             </p>
-            <ul className="list-disc list-inside text-sm sm:text-base pl-10 text-base-content/70 mb-10">
+            <ul className="list-disc list-inside text-sm sm:text-base pl-5 sm:pl-10 text-base-content/70 mb-10">
               <li>Deux chambres spacieuses avec literie de qualité</li>
               <li>Un petit studio mis à dispostion pour 5 à 6 personnes</li>
               <li>Un salon chaleureux avec coin repas</li>
@@ -54,6 +56,7 @@ export default function Home() {
               q="Untere Dorfstrasse 41, 3906 Saas-Fee, Suisse"
             />
           </div>
+
           <Disponibility />
         </div>
       </div>
