@@ -25,9 +25,9 @@ function ServiceBadge({ type }: ServiceBadgeProps) {
   };
 
   return (
-    <div className="flex flex-col items-center justify-between border-2 border-primary/20 rounded-box p-4 h-full">
+    <div className="flex flex-col items-center justify-between border-2 border-primary/20 rounded-box p-2 sm:p-4 h-full">
       <div className="h-10 flex items-center justify-center">{icons[type]}</div>
-      <p className="text-center font-medium text-sm h-12 flex items-center justify-center">
+      <p className="text-center font-medium text-xs sm:text-sm h-12 flex items-center justify-center">
         {texts[type]}
       </p>
     </div>
@@ -36,7 +36,7 @@ function ServiceBadge({ type }: ServiceBadgeProps) {
 
 export default function ServiceBadges() {
   return (
-    <div className="grid grid-cols-4 grid-rows-1 gap-6 max-w-2xl h-28 items-stretch mb-10">
+    <div className="grid grid-cols-4 grid-rows-1 gap-2 sm:gap-6 max-w-2xl h-28 items-stretch mb-10">
       <ServiceBadge type="bedroom"></ServiceBadge>
       <ServiceBadge type="people"></ServiceBadge>
       <ServiceBadge type="bathroom"></ServiceBadge>
