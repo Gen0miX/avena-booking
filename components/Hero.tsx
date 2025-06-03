@@ -21,8 +21,8 @@ export default function Hero() {
             Appartement cosy au cœur de Saas-Fee
           </p>
           <p className="text-xl">
-            Appartement proche des pistes & du centre, tout confort pour six
-            personnes à Saas-Fee.
+            Proche des pistes & du centre, tout confort pour deux à six
+            personnes.
           </p>
           <p className="italic textl-xl">
             Deux chambres, salon lumineux et cuisine équipée.

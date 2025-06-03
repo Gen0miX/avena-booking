@@ -20,14 +20,14 @@ export default function Gallery() {
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   return (
-    <div className="grid grid-cols-3 h-[300px] md:grid-cols-[2fr_2fr_1fr_1fr] md:grid-rows-2 gap-2 md:h-[400px] p-5 xl:mx-20">
+    <div className="grid grid-cols-3 h-[300px] md:grid-cols-[2fr_2fr_1fr_1fr] md:grid-rows-2 gap-2 md:h-[400px] pb-5">
       {/* Grande image à gauche - occupe 2 colonnes et 2 rangées */}
       <div className="relative col-span-2 md:row-span-2 rounded-xl overflow-hidden">
         <Image
           src={images[0].src}
           alt={images[0].alt}
           fill
-          className="object-cover cursor-pointer"
+          className="object-cover cursor-pointer hover:scale-110 transition-all duration-300"
           onClick={() => setSelectedImage(images[0].src)}
         />
       </div>
@@ -38,7 +38,7 @@ export default function Gallery() {
           src={images[1].src}
           alt={images[1].alt}
           fill
-          className="object-cover cursor-pointer"
+          className="object-cover cursor-pointer hover:scale-110 transition-all duration-300"
           onClick={() => setSelectedImage(images[1].src)}
         />
       </div>
@@ -49,7 +49,7 @@ export default function Gallery() {
           src={images[2].src}
           alt={images[2].alt}
           fill
-          className="object-cover cursor-pointer"
+          className="object-cover cursor-pointer hover:scale-110 transition-all duration-300"
           onClick={() => setSelectedImage(images[2].src)}
         />
       </div>
@@ -60,7 +60,7 @@ export default function Gallery() {
           src={images[3].src}
           alt={images[3].alt}
           fill
-          className="object-cover cursor-pointer"
+          className="object-cover cursor-pointer hover:scale-110 transition-all duration-300"
           onClick={() => setSelectedImage(images[3].src)}
         />
       </div>
