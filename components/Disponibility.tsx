@@ -9,8 +9,8 @@ export default function Disponibility() {
 
   return (
     <>
-      <section className="flex flex-col sticky top-10 mb-auto mt-5 p-5 lg:mr-10 xl:mr-20 bg-base-200 drop-shadow-xl rounded-xl border-2 border-primary/40">
-        <SectionTitle>Disponibilité</SectionTitle>
+      <section className="flex flex-col sm:sticky sm:top-10 mb-auto mt-5 p-5 lg:mr-10 xl:mr-10 bg-base-200 drop-shadow-xl rounded-xl border-2 border-primary/40">
+        <SectionTitle className="sm:text-4xl!">Disponibilité</SectionTitle>
         <p className="text-justify py-5 text-sm sm:text-base mb-5 text-base-content/70">
           Le calendrier ci-dessous vous indique les disponibilités de
           l’appartement. Choisissez vos dates et remplissez le formulaire pour

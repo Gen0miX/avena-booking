@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Playfair_Display, Nunito, Work_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeContext";
+import NavBar from "@/components/NavBar";
 
 const playfairDisplay = Playfair_Display({
   variable: "--font-playfair-display",

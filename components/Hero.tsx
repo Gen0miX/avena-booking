@@ -10,8 +10,21 @@ export default function Hero() {
           "url(https://media.myswitzerland.com/image/fetch/c_lfill,g_auto,w_3200,h_1800/f_auto,q_80,fl_keep_iptc/https://www.myswitzerland.com/-/media/celum%20connect/2025/03/12/07/45/22/saas-fee-aerial.jpg)",
       }}
     >
-      <div className="absolute top-3 right-3">
-        <ThemeToggleButton></ThemeToggleButton>
+      <div className="absolute top-0 left-0 w-full">
+        <div className="flex justify-between items-center m-3 mt-5 sm:mx-5 sm:mt-7">
+          <div className="flex text-neutral-content gap-3 sm:gap-5">
+            <Link href="/" className="link link-hover ">
+              Home
+            </Link>
+            <Link href="/" className="link link-hover">
+              Réservation
+            </Link>
+          </div>
+          <div className="flex gap-3 sm:gap-5">
+            <button className="btn btn-primary font-medium">Login</button>
+            <ThemeToggleButton className="btn btn-ghost btn-circle"></ThemeToggleButton>
+          </div>
+        </div>
       </div>
       <div className="hero-overlay"></div>
       <div className="hero-content text-neutral-content text-center">

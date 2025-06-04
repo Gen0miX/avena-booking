@@ -40,7 +40,7 @@ export default function Home() {
             </p>
             <ul className="list-disc list-inside text-sm sm:text-base pl-5 sm:pl-10 text-base-content/70 mb-10">
               <li>Deux chambres spacieuses avec literie de qualité</li>
-              <li>Un petit studio mis à dispostion pour 5 personnes</li>
+              <li>Un petit studio mis à dispostion pour la 5ème personne</li>
               <li>Un salon chaleureux avec coin repas</li>
               <li>
                 Une cuisine équipée (four, plaques, lave-vaisselle, machine à

@@ -78,10 +78,5 @@
 }
 
 .react-day-picker .occupied {
-  @apply relative text-error rounded-lg;
-}
-
-.react-day-picker .occupied::after {
-  content: "";
-  @apply absolute -top-0.5 -right-0.5 w-2 h-2 bg-error rounded-full z-10;
+  @apply relative text-error line-through rounded-lg;
 }
