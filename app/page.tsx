@@ -12,7 +12,8 @@ export default function Home() {
   return (
     <>
       <Hero></Hero>
-      <div className="xl:mx-20 bg-base-200 rounded-box m-1 p-2 border-2 border-primary/40 sm:p-5 sm:m-5 self-center z-50">
+
+      <section className="xl:max-w-6xl xl:mx-auto bg-base-200 rounded-box m-1 p-2 border-2 border-primary/40 sm:p-5 sm:m-5 self-center z-50">
         <Gallery></Gallery>
 
         <div className="relative flex flex-col lg:max-w-1/2 pt-3">
@@ -96,7 +97,7 @@ export default function Home() {
 
           <Disponibility />
         </div>
-      </div>
+      </section>
     </>
   );
 }

@@ -9,16 +9,16 @@ export default function Disponibility() {
 
   return (
     <>
-      <section className="flex flex-col mb-auto mt-5 p-5 lg:mr-10 xl:mr-20 bg-base-200 drop-shadow-xl rounded-xl border-2 border-primary/40">
+      <section className="flex flex-col sticky top-10 mb-auto mt-5 p-5 lg:mr-10 xl:mr-20 bg-base-200 drop-shadow-xl rounded-xl border-2 border-primary/40">
         <SectionTitle>Disponibilité</SectionTitle>
-        <p className="text-justify py-5 text-sm sm:text-base mb-5 sm:mb-10 text-base-content/70">
+        <p className="text-justify py-5 text-sm sm:text-base mb-5 text-base-content/70">
           Le calendrier ci-dessous vous indique les disponibilités de
           l’appartement. Choisissez vos dates et remplissez le formulaire pour
           réserver facilement votre séjour dans notre logement tout confort.
         </p>
         <div className="flex flex-col gap-4">
           <CustomDayPicker mode="readOnly" />
-          <div className="flex flex-col gap-4 pb-5 mt-5 sm:mt-10">
+          <div className="flex flex-col gap-4 pb-5 mt-5">
             <h3 className="font-heading text-3xl font-semibold">Réserver</h3>
             <div className="flex w-full gap-2">
               <input

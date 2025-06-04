@@ -63,7 +63,7 @@ export default function CustomDayPicker(props: CustomDayPickerProps) {
   if (props.mode === "readOnly") {
     return (
       <DayPicker
-        className="react-day-picker self-center sm:scale-125"
+        className="react-day-picker self-center sm:scale-110"
         showOutsideDays
         locale={frCH}
         modifiers={{ occupied: occupiedDates }}
@@ -76,7 +76,7 @@ export default function CustomDayPicker(props: CustomDayPickerProps) {
 
   return (
     <DayPicker
-      className="react-day-picker "
+      className="react-day-picker"
       showOutsideDays
       locale={frCH}
       mode="range"
