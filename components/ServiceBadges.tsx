@@ -19,13 +19,13 @@ function ServiceBadge({ type }: ServiceBadgeProps) {
 
   const texts = {
     bedroom: "3 chambres",
-    people: "6 personnes",
-    bathroom: "2 salles de bains",
+    people: "5 personnes",
+    bathroom: "1 salle de bain",
     pets: "pas d'animaux",
   };
 
   return (
-    <div className="flex flex-col items-center justify-between border-2 border-primary/20 rounded-box p-2 sm:p-4 h-full">
+    <div className="flex flex-col items-center justify-between border-2 border-primary/40 rounded-box p-2 sm:p-4 h-full">
       <div className="h-10 flex items-center justify-center">{icons[type]}</div>
       <p className="text-center font-medium text-xs sm:text-sm h-12 flex items-center justify-center">
         {texts[type]}

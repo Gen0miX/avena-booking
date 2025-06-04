@@ -4,7 +4,7 @@ import Link from "next/link";
 export default function Hero() {
   return (
     <section
-      className="hero min-h-svh"
+      className="hero min-h-svh bg-fixed bg-cover bg-center relative"
       style={{
         backgroundImage:
           "url(https://media.myswitzerland.com/image/fetch/c_lfill,g_auto,w_3200,h_1800/f_auto,q_80,fl_keep_iptc/https://www.myswitzerland.com/-/media/celum%20connect/2025/03/12/07/45/22/saas-fee-aerial.jpg)",
@@ -21,7 +21,7 @@ export default function Hero() {
             Appartement cosy au cœur de Saas-Fee
           </p>
           <p className="text-xl">
-            Proche des pistes & du centre, tout confort pour deux à six
+            Proche des pistes & du centre, tout confort pour deux à cinq
             personnes.
           </p>
           <p className="italic textl-xl">

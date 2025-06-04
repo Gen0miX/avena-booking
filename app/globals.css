@@ -2,7 +2,7 @@
 
 @theme inline {
   --font-heading: var(--font-playfair-display);
-  --font-p: var(--font-nunito);
+  --font-p: var(--font-work-sans);
 }
 
 @plugin "daisyui";

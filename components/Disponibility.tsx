@@ -9,7 +9,7 @@ export default function Disponibility() {
 
   return (
     <>
-      <section className="flex flex-col mb-auto mt-5 p-5 bg-base-200 drop-shadow-xl rounded-xl border-2 border-primary/20">
+      <section className="flex flex-col mb-auto mt-5 p-5 lg:mr-10 xl:mr-20 bg-base-200 drop-shadow-xl rounded-xl border-2 border-primary/40">
         <SectionTitle>Disponibilité</SectionTitle>
         <p className="text-justify py-5 text-sm sm:text-base mb-5 sm:mb-10 text-base-content/70">
           Le calendrier ci-dessous vous indique les disponibilités de

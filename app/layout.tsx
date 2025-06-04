@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Nunito } from "next/font/google";
+import { Playfair_Display, Nunito, Work_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeContext";
 
@@ -8,8 +8,8 @@ const playfairDisplay = Playfair_Display({
   subsets: ["latin"],
 });
 
-const nunito = Nunito({
-  variable: "--font-nunito",
+const workSans = Work_Sans({
+  variable: "--font-work-sans",
   subsets: ["latin"],
 });
 
@@ -26,7 +26,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${playfairDisplay.variable} ${nunito.variable} antialiased font-p`}
+        className={`${playfairDisplay.variable} ${workSans.variable} antialiased font-p`}
       >
         <ThemeProvider>{children}</ThemeProvider>
       </body>
