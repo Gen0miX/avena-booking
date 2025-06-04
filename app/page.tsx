@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <>
       <Hero></Hero>
-      <div className="xl:mx-20 bg-base-200 rounded-box m-1 p-2 border-2 border-primary/20 sm:p-5 sm:m-5 self-center z-50">
+      <div className="xl:mx-20 bg-base-200 rounded-box m-1 p-2 border-2 border-primary/40 sm:p-5 sm:m-5 self-center z-50">
         <Gallery></Gallery>
 
         <div className="relative flex flex-col lg:max-w-1/2 pt-3">
@@ -83,13 +83,15 @@ export default function Home() {
               parking principal. Vous pouvez ainsi profiter pleinement de tout
               ce que Saas-Fee a à offrir, sans contrainte de transport.
             </p>
-            <GoogleMapsEmbed
-              apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
-              height={300}
-              width="100%"
-              mode="place"
-              q="Untere Dorfstrasse 39, 3906 Saas-Fee, Suisse"
-            />
+            <div className="border-2 border-primary/40 rounded-box overflow-hidden">
+              <GoogleMapsEmbed
+                apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
+                height={300}
+                width="100%"
+                mode="place"
+                q="Untere Dorfstrasse 39, 3906 Saas-Fee, Suisse"
+              />
+            </div>
           </div>
 
           <Disponibility />
