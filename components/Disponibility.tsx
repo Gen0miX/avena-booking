@@ -2,34 +2,44 @@ import { DateRange } from "react-day-picker";
 import { useEffect, useState, useRef } from "react";
 import SectionTitle from "@/components/SectionTitle";
 import CustomDayPicker from "@/components/CustomDayPicker";
+import TravelersSelector from "@/components/TravelersSelector";
+import { calculatePrice } from "@/utils/priceCalculator";
 import { FaRegCalendarAlt, FaArrowRight } from "react-icons/fa";
 
 export default function Disponibility() {
   const [range, setRange] = useState<DateRange | undefined>(undefined);
+  const [travelers, setTravelers] = useState({
+    adults: 0,
+    children: 0,
+  });
+  const [price, setPrice] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (
+      range?.from &&
+      range?.to &&
+      travelers.adults + travelers.children <= 5 &&
+      travelers.adults > 0
+    ) {
+      const calculated = calculatePrice(range.from, range.to, travelers.adults);
+      setPrice(calculated);
+    } else {
+      setPrice(null);
+    }
+  }, [range, travelers]);
 
   return (
     <>
-      <section className="flex flex-col sm:sticky sm:top-10 mb-auto mt-5 p-5 lg:mr-10 xl:mr-10 bg-base-200 drop-shadow-xl rounded-xl border-2 border-primary/40">
+      <section className="flex flex-col sm:sticky sm:top-10 mb-auto mr-auto mt-5 p-5 bg-base-200 drop-shadow-xl rounded-xl border-2 border-primary/40">
         <SectionTitle className="sm:text-4xl!">Disponibilité</SectionTitle>
-        <p className="text-justify py-5 text-sm sm:text-base mb-5 text-base-content/70">
-          Le calendrier ci-dessous vous indique les disponibilités de
-          l’appartement. Choisissez vos dates et remplissez le formulaire pour
-          réserver facilement votre séjour dans notre logement tout confort.
-        </p>
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 mt-10">
           <CustomDayPicker mode="readOnly" />
           <div className="flex flex-col gap-4 pb-5 mt-5">
             <h3 className="font-heading text-3xl font-semibold">Réserver</h3>
-            <div className="flex w-full gap-2">
-              <input
-                type="text"
-                className="input flex-grow input-primary"
-                placeholder="Prénom"
-              />
-              <input
-                type="text"
-                className="input flex-grow input-primary"
-                placeholder="Nom"
+            <div className="flex flex-grow w-full">
+              <TravelersSelector
+                travelers={travelers}
+                setTravelers={setTravelers}
               />
             </div>
             <div className="flex gap-2 w-full items-center">
@@ -53,6 +63,11 @@ export default function Disponibility() {
                 <FaArrowRight />
               </button>
             </div>
+            {price !== null && (
+              <div className="text-xl font-semibold">
+                Prix estimé : <span className="text-primary">{price} CHF</span>
+              </div>
+            )}
           </div>
         </div>
       </section>

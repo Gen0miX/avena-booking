@@ -22,8 +22,8 @@ export default function Home() {
             Untere Dorfstrasse 39, 3906 Saas-Fee
           </p>
         </div>
-        <div className="flex flex-col lg:flex-row lg:gap-10 xl:gap-20">
-          <div className="flex flex-col lg:max-w-1/2 pt-5">
+        <div className="flex flex-col lg:flex-row justify-between">
+          <div className="flex flex-col lg:max-w-1/2 pt-5 mr-auto">
             <ServiceBadges />
             <h3 className="text-lg sm:text-xl font-semibold mb-5">
               Un séjour comme à la maison, à Saas-Fee

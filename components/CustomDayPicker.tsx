@@ -91,10 +91,9 @@ export default function CustomDayPicker(props: CustomDayPickerProps) {
           "bg-primary text-primary-content rounded-l-full font-bold hover:text-primary transition-all duration-200",
         range_end:
           "bg-primary text-primary-content rounded-r-full font-bold hover:text-primary transition-all duration-200",
-        range_middle:
-          "bg-primary text-primary-content hover:text-primary transition-all duration-200",
+        range_middle: "bg-primary transition-all duration-200",
         selected:
-          "bg-primary text-primary-content font-semibold hover:text-primary transition-all duration-200",
+          "bg-primary text-primary-content font-semibold hover:text-primary ",
       }}
     />
   );
