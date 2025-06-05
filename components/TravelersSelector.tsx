@@ -46,7 +46,7 @@ export default function TravelersSelector({
         <div className="absolute z-50 mt-2 w-full bg-base-100 border border-primary/40 rounded-box shadow p-4 space-y-4">
           {[
             { label: "Adultes", key: "adults", desc: "18 ans et plus" },
-            { label: "Enfants", key: "children", desc: "2 à 17 ans" },
+            { label: "Enfants", key: "children", desc: "0 à 17 ans" },
           ].map(({ label, key, desc }) => (
             <div key={key} className="flex justify-between items-center">
               <div>

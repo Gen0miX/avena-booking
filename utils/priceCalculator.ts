@@ -1,6 +1,11 @@
-function isHighSeason(end: Date): boolean {
-  const month = end.getMonth();
-  return month >= 10 || month <= 3;
+function isHighSeason(start?: Date, end?: Date): boolean {
+  const isMonthHigh = (date?: Date) => {
+    if (!date) return false;
+    const month = date.getMonth();
+    return month >= 10 || month <= 3; // novembre (10) à avril (3)
+  };
+
+  return isMonthHigh(start) || isMonthHigh(end);
 }
 
 function isFamilyRate(adults: number): boolean {
@@ -27,7 +32,7 @@ const prices = {
 };
 
 export function calculatePrice(start: Date, end: Date, adults: number): number {
-  const highSeason = isHighSeason(end);
+  const highSeason = isHighSeason(start, end);
   const family = isFamilyRate(adults);
   const nights = getNights(start, end);
 
