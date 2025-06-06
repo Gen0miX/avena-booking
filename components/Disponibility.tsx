@@ -13,17 +13,35 @@ export default function Disponibility() {
     children: 0,
   });
   const [price, setPrice] = useState<number | null>(null);
+  const [dateError, setDateError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (
-      range?.from &&
-      range?.to &&
-      travelers.adults + travelers.children <= 5 &&
-      travelers.adults > 0
-    ) {
-      const calculated = calculatePrice(range.from, range.to, travelers.adults);
-      setPrice(calculated);
+    if (range?.from && range?.to) {
+      const nights =
+        (range.to.getTime() - range.from.getTime()) / (1000 * 60 * 60 * 24);
+
+      if (nights < 2) {
+        setDateError("Le minimum de séjour est de 2 nuits.");
+      } else {
+        setDateError(null); // Réinitialise s'il n'y a plus d'erreur
+      }
+
+      if (
+        travelers.adults + travelers.children <= 5 &&
+        travelers.adults > 0 &&
+        nights >= 2
+      ) {
+        const calculated = calculatePrice(
+          range.from,
+          range.to,
+          travelers.adults
+        );
+        setPrice(calculated);
+      } else {
+        setPrice(null);
+      }
     } else {
+      setDateError(null); // Réinitialise s'il n'y a pas de sélection complète
       setPrice(null);
     }
   }, [range, travelers]);
@@ -63,6 +81,9 @@ export default function Disponibility() {
                 <FaArrowRight />
               </button>
             </div>
+            {dateError && (
+              <p className="text-error text-sm font-medium">{dateError}</p>
+            )}
             {price !== null && (
               <div className="text-xl font-semibold">
                 Prix estimé : <span className="text-primary">{price} CHF</span>

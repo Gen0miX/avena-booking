@@ -6,13 +6,18 @@ import {
   IoMailOutline,
 } from "react-icons/io5";
 import { HiOutlinePhone } from "react-icons/hi";
-import { LuLollipop, LuCoffee } from "react-icons/lu";
 import { DateRange } from "react-day-picker";
 import { useEffect, useState, useRef } from "react";
 import CustomDayPicker from "@/components/CustomDayPicker";
+import TravelersSelector from "@/components/TravelersSelector";
 
 export default function Booking() {
   const [range, setRange] = useState<DateRange | undefined>(undefined);
+  const [travelers, setTravelers] = useState({
+    adults: 0,
+    children: 0,
+  });
+  const [price, setPrice] = useState<number | null>(null);
 
   return (
     <>
@@ -51,25 +56,7 @@ export default function Booking() {
           />
         </label>
 
-        <label className="input input-primary">
-          <LuCoffee className="text-xl text-base-content/70"></LuCoffee>
-          <input
-            type="number"
-            className="validator tabular-nums"
-            placeholder="Nombre d'adultes"
-            required
-          />
-        </label>
-
-        <label className="input input-primary">
-          <LuLollipop className="text-xl text-base-content/70"></LuLollipop>
-          <input
-            type="number"
-            className="validator tabular-nums"
-            placeholder="Nombre d'enfants"
-            required
-          />
-        </label>
+        <TravelersSelector travelers={travelers} setTravelers={setTravelers} />
 
         <button
           popoverTarget="rdp-popover"
@@ -85,6 +72,10 @@ export default function Booking() {
             <span className="text-base-content/50">Choisir une période</span>
           )}
         </button>
+        <label className="label">
+          <input type="checkbox" className="checkbox checkbox-primary" />
+          Ménage
+        </label>
       </fieldset>
       <div
         popover="auto"
