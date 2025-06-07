@@ -34,7 +34,7 @@ export default function TravelersSelector({
     <div className="relative w-full" ref={ref}>
       <button
         onClick={() => setOpen(!open)}
-        className="btn btn-outline btn-primary w-full justify-between"
+        className="input input-primary justify-between w-full"
       >
         <span>
           {total > 0 ? `${total} voyageur${total > 1 ? "s" : ""}` : "Voyageurs"}

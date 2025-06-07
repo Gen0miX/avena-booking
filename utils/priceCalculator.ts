@@ -1,4 +1,4 @@
-function isHighSeason(start?: Date, end?: Date): boolean {
+export function isHighSeason(start?: Date, end?: Date): boolean {
   const isMonthHigh = (date?: Date) => {
     if (!date) return false;
     const month = date.getMonth();
@@ -8,11 +8,11 @@ function isHighSeason(start?: Date, end?: Date): boolean {
   return isMonthHigh(start) || isMonthHigh(end);
 }
 
-function isFamilyRate(adults: number): boolean {
+export function isFamilyRate(adults: number): boolean {
   return adults <= 2;
 }
 
-function getNights(start: Date, end: Date): number {
+export function getNights(start: Date, end: Date): number {
   const msPerNight = 1000 * 60 * 60 * 24;
   return Math.max(
     1,

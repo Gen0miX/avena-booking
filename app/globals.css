@@ -5,11 +5,13 @@
   --font-p: var(--font-work-sans);
 }
 
-@plugin "daisyui";
+@plugin "daisyui" {
+  themes: "avenal", "avenad";
+}
 
 @plugin "daisyui/theme" {
   name: "avenal";
-  default: true;
+  default: false;
   prefersdark: false;
   color-scheme: "light";
   --color-base-100: oklch(0.9686 0.0066 286.28);

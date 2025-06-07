@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Nunito, Work_Sans } from "next/font/google";
+import { Playfair_Display, Work_Sans } from "next/font/google";
 import "./globals.css";
-import { ThemeProvider } from "@/context/ThemeContext";
-import NavBar from "@/components/NavBar";
+import { ThemeProvider } from "next-themes";
 
 const playfairDisplay = Playfair_Display({
   variable: "--font-playfair-display",
@@ -25,11 +24,18 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="fr" suppressHydrationWarning>
       <body
         className={`${playfairDisplay.variable} ${workSans.variable} antialiased font-p`}
       >
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider
+          attribute="data-theme"
+          defaultTheme="avenal"
+          enableSystem={true}
+          themes={["avenal", "avenad"]}
+        >
+          {children}
+        </ThemeProvider>
       </body>
     </html>
   );
