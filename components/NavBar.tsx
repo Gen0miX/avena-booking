@@ -1,36 +1,43 @@
-import { FaAlignLeft } from "react-icons/fa";
+"use client";
+
+import Image from "next/image";
+import ThemeToggleButton from "@/components/ThemeToggleButton";
+import { use, useEffect, useState } from "react";
+import { useTheme } from "next-themes";
 import Link from "next/link";
 
 export default function NavBar() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted) return null;
+
+  const logoSrc =
+    resolvedTheme === "avenad"
+      ? "/logos/logo_Avena_D.svg"
+      : "/logos/logo_Avena_L.svg";
+
   return (
-    <div className="navbar bg-transparent sticky top-0 z-50">
-      <div className="navbar-start">
-        <div className="dropdown">
-          <div
-            tabIndex={0}
-            role="button"
-            className="btn btn-primary rounded-full btn-circle"
-          >
-            <FaAlignLeft className="" />
-          </div>
-          <ul
-            tabIndex={0}
-            className="menu menu-sm dropdown-content bg-base-200 rounded-box z-1 mt-3 w-52 p-2 shadow"
-          >
-            <li>
-              <Link href={"/"}>item 1</Link>
-            </li>
-            <li>
-              <Link href={"/"}>item 2</Link>
-            </li>
-          </ul>
-        </div>
-        <Link
-          href={"/"}
-          className="btn btn-ghost text-2xl font-heading font-bold "
-        >
-          Avena
+    <div className="navbar bg-base-200 absolute top-0 z-50 border-b border-primary/40">
+      <div className="navbar-start gap-1 sm:gap-4">
+        <Link href={"/"} className="sm:ml-2">
+          <Image src={logoSrc} alt="logo Avena" width={120} height={0}></Image>
         </Link>
+        <Link href="#home" className="btn btn-ghost font-normal">
+          Home
+        </Link>
+
+        <Link href="/" className="btn btn-ghost font-normal">
+          Réservation
+        </Link>
+      </div>
+      <div className="navbar-end ">
+        <ThemeToggleButton
+          className="btn btn-sm btn-neutral btn-circle sm:mr-5"
+          iconSize={20}
+        ></ThemeToggleButton>
       </div>
     </div>
   );

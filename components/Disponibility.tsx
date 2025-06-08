@@ -48,7 +48,7 @@ export default function Disponibility() {
 
   return (
     <>
-      <section className="flex flex-col sm:sticky sm:top-10 mb-auto mr-auto mt-5 p-5 bg-base-200 drop-shadow-xl rounded-xl border-2 border-primary/40">
+      <section className="flex flex-col sm:sticky sm:top-20 mb-auto mr-auto mt-5 p-5 bg-base-200 drop-shadow-xl rounded-xl border-2 border-primary/40">
         <SectionTitle className="sm:text-4xl!">Disponibilité</SectionTitle>
         <div className="flex flex-col gap-4 mt-10">
           <CustomDayPicker mode="readOnly" />

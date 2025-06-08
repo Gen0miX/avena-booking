@@ -10,6 +10,7 @@ import { DateRange } from "react-day-picker";
 import { useEffect, useState, useRef } from "react";
 import CustomDayPicker from "@/components/CustomDayPicker";
 import TravelersSelector from "@/components/TravelersSelector";
+import NavBar from "@/components/NavBar";
 import {
   calculatePrice,
   isHighSeason,
@@ -36,8 +37,11 @@ export default function Booking() {
 
   return (
     <>
-      <div className="flex flex-col items-center bg-base-200 lg:max-w-6xl mx-2 md:mx-5 lg:mx-10 xl:mx-auto mt-5 rounded-box border border-primary/40">
-        <h1 className="font-heading text-4xl font-semibold">Réservation</h1>
+      <NavBar />
+      <div className="flex flex-col items-center bg-base-200 lg:max-w-6xl mx-2 md:mx-5 lg:mx-10 xl:mx-auto mt-24 rounded-box border border-primary/40">
+        <h1 className="font-heading text-4xl font-semibold mt-5">
+          Réservation
+        </h1>
         <div className="flex flex-col sm:flex-row gap-4 pb-5 pt-5 sm:pt-5 sm:pb-5 px-2">
           <fieldset className="fieldset bg-base-300 border-primary/40 rounded-box border p-2 sm:p-4 shadow-lg">
             <legend className="fieldset-legend text-xl font-medium">

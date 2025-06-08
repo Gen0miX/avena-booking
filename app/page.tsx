@@ -1,5 +1,8 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import NavBar from "@/components/NavBar";
 import Hero from "@/components/Hero";
 import Disponibility from "@/components/Disponibility";
 import Gallery from "@/components/Gallery";
@@ -9,11 +12,51 @@ import Amenities from "@/components/Amenities";
 import { GoogleMapsEmbed } from "@next/third-parties/google";
 
 export default function Home() {
+  const heroRef = useRef<HTMLDivElement>(null);
+  const [showNavBar, setShowNavBar] = useState(false);
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setShowNavBar(!entry.isIntersecting);
+        console.log("Hero section visibility:", entry.isIntersecting);
+        console.log("show NavBar state:", !entry.isIntersecting);
+      },
+      { threshold: 0.1 }
+    );
+    if (heroRef.current) {
+      observer.observe(heroRef.current);
+    }
+    return () => {
+      if (heroRef.current) {
+        observer.unobserve(heroRef.current);
+      }
+    };
+  }, []);
+
   return (
     <>
-      <Hero></Hero>
+      <AnimatePresence mode="wait">
+        {showNavBar && (
+          <motion.div
+            initial={{ y: -100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -100, opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="sticky top-0 z-50"
+          >
+            <NavBar />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <div ref={heroRef}>
+        <Hero />
+      </div>
 
-      <section className="xl:max-w-6xl xl:mx-auto bg-base-200 rounded-box m-1 p-2 border-2 border-primary/40 sm:p-5 sm:m-5 self-center z-50">
+      <section
+        id="home"
+        className="xl:max-w-6xl xl:mx-auto bg-base-200 rounded-box m-1 p-2 border-2 border-primary/40 sm:p-5 sm:m-5 self-center z-50 scroll-mt-[72px]"
+      >
         <Gallery></Gallery>
 
         <div className="relative flex flex-col lg:max-w-1/2 pt-3">

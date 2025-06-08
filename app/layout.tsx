@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Work_Sans } from "next/font/google";
+import { Playfair, Work_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
+import NavBar from "@/components/NavBar";
 
-const playfairDisplay = Playfair_Display({
+const playfairDisplay = Playfair({
   variable: "--font-playfair-display",
   subsets: ["latin"],
 });

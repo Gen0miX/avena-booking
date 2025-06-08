@@ -5,11 +5,13 @@ import { useTheme } from "next-themes";
 interface ThemeToggleButtonProps {
   iconSize?: number;
   className?: string;
+  colorIcon?: string;
 }
 
 export default function ThemeToggleButton({
   iconSize = 24,
   className,
+  colorIcon = "text-neutral-content",
 }: ThemeToggleButtonProps) {
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [mounted, setMounted] = React.useState(false);
@@ -31,8 +33,8 @@ export default function ThemeToggleButton({
         checked={resolvedTheme === "avenal"}
         readOnly
       />
-      <IoSunny className="swap-off text-neutral-content" size={iconSize} />
-      <IoMoon className="swap-on text-neutral-content" size={iconSize} />
+      <IoSunny className={`swap-off ${colorIcon}`} size={iconSize} />
+      <IoMoon className={`swap-on ${colorIcon}`} size={iconSize} />
     </label>
   );
 }
