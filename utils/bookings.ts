@@ -17,6 +17,7 @@ export interface Booking {
   status: Status;
   arrival_date: Date;
   departure_date: Date;
+  price: number;
 }
 
 export interface BookingInput {
@@ -26,9 +27,10 @@ export interface BookingInput {
   phone: string;
   no_adults: number;
   no_childs?: number;
-  status_id: number;
+  status: number;
   arrival_date: Date;
   departure_date: Date;
+  price: number;
 }
 
 export async function getBookings(): Promise<Booking[]> {
@@ -44,6 +46,7 @@ export async function getBookings(): Promise<Booking[]> {
       no_childs,
       arrival_date,
       departure_date,
+      price,
       status:status (
         id,
         name
