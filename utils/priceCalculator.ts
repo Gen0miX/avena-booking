@@ -1,3 +1,9 @@
+type PriceParams = {
+  start?: Date;
+  end?: Date;
+  adults: number;
+};
+
 export function isHighSeason(start?: Date, end?: Date): boolean {
   const isMonthHigh = (date?: Date) => {
     if (!date) return false;
@@ -31,7 +37,7 @@ const prices = {
   },
 };
 
-export function calculatePrice(start: Date, end: Date, adults: number): number {
+function calculatePrice(start: Date, end: Date, adults: number): number {
   const highSeason = isHighSeason(start, end);
   const family = isFamilyRate(adults);
   const nights = getNights(start, end);
@@ -43,4 +49,29 @@ export function calculatePrice(start: Date, end: Date, adults: number): number {
   const extra = nights > 7 ? (nights - 7) * 100 : 0;
 
   return base + extra;
+}
+
+export function getPriceResult({ start, end, adults }: PriceParams): {
+  price: number | null;
+  error: string | null;
+} {
+  if (!start || !end) {
+    return { price: null, error: null };
+  }
+
+  if (adults < 1) {
+    return { price: null, error: "Il faut au moins un adulte." };
+  }
+
+  const nights = getNights(start, end);
+  if (nights < 2) {
+    return { price: null, error: "Le minimum de séjour est de 2 nuits." };
+  }
+
+  if (adults > 5) {
+    return { price: null, error: "Le nombre maximum d'adultes est 5." };
+  }
+
+  const price = calculatePrice(start, end, adults);
+  return { price, error: null };
 }

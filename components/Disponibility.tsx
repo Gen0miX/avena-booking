@@ -1,58 +1,50 @@
-import { DateRange } from "react-day-picker";
 import { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
 import SectionTitle from "@/components/SectionTitle";
 import CustomDayPicker from "@/components/CustomDayPicker";
 import TravelersSelector from "@/components/TravelersSelector";
-import { calculatePrice } from "@/utils/priceCalculator";
-import { FaRegCalendarAlt, FaArrowRight } from "react-icons/fa";
+import { getPriceResult } from "@/utils/priceCalculator";
+import { useBooking } from "@/context/BookingContext";
+import { FaArrowRight } from "react-icons/fa";
+import { IoCalendarOutline } from "react-icons/io5";
 
 export default function Disponibility() {
-  const [range, setRange] = useState<DateRange | undefined>(undefined);
-  const [travelers, setTravelers] = useState({
-    adults: 0,
-    children: 0,
-  });
+  const router = useRouter();
+  const { range, setRange, travelers, setTravelers } = useBooking();
   const [price, setPrice] = useState<number | null>(null);
   const [dateError, setDateError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (range?.from && range?.to) {
-      const nights =
-        (range.to.getTime() - range.from.getTime()) / (1000 * 60 * 60 * 24);
-
-      if (nights < 2) {
-        setDateError("Le minimum de séjour est de 2 nuits.");
-      } else {
-        setDateError(null); // Réinitialise s'il n'y a plus d'erreur
-      }
-
-      if (
-        travelers.adults + travelers.children <= 5 &&
-        travelers.adults > 0 &&
-        nights >= 2
-      ) {
-        const calculated = calculatePrice(
-          range.from,
-          range.to,
-          travelers.adults
-        );
-        setPrice(calculated);
-      } else {
-        setPrice(null);
-      }
+  const handleBookingClick = () => {
+    if (range?.from && range?.to && travelers.adults > 0) {
+      router.push("/booking");
     } else {
-      setDateError(null); // Réinitialise s'il n'y a pas de sélection complète
+      setDateError("Veuillez sélectionner une période et au moins un adulte.");
+    }
+  };
+
+  useEffect(() => {
+    const { price, error } = getPriceResult({
+      start: range?.from,
+      end: range?.to,
+      adults: travelers.adults,
+    });
+
+    if (error) {
+      setDateError(error);
       setPrice(null);
+    } else {
+      setDateError(null);
+      setPrice(price);
     }
   }, [range, travelers]);
 
   return (
     <>
-      <section className="flex flex-col sm:sticky sm:top-20 mb-auto mr-auto mt-5 p-5 bg-base-200 drop-shadow-xl rounded-xl border-2 border-primary/40">
+      <section className="flex flex-col w-full sm:max-w-[310px] sm:sticky sm:top-20 mb-auto mr-auto mt-5 p-5 pt-2 bg-base-200 drop-shadow-xl rounded-xl border-2 border-primary/40">
         <SectionTitle className="sm:text-4xl!">Disponibilité</SectionTitle>
-        <div className="flex flex-col gap-4 mt-10">
+        <div className="flex flex-col gap-4 mt-3">
           <CustomDayPicker mode="readOnly" />
-          <div className="flex flex-col gap-4 pb-5 mt-5">
+          <div className="flex flex-col gap-4 pb-2 mt-2">
             <h3 className="font-heading text-3xl font-semibold">Réserver</h3>
             <div className="flex flex-grow w-full">
               <TravelersSelector
@@ -66,7 +58,7 @@ export default function Disponibility() {
                 className="flex-grow input input-primary input-border"
                 style={{ anchorName: "--rdp" } as React.CSSProperties}
               >
-                <FaRegCalendarAlt className="text-base-content/50" />
+                <IoCalendarOutline className="text-xl text-base-content/70" />
                 {range && range.from && range.to ? (
                   `${range.from.toLocaleDateString()} - ${range.to.toLocaleDateString()}`
                 ) : range && range.from ? (
@@ -77,7 +69,10 @@ export default function Disponibility() {
                   </span>
                 )}
               </button>
-              <button className="btn btn-primary btn-circle w-8 h-8">
+              <button
+                onClick={handleBookingClick}
+                className="btn btn-primary btn-circle w-8 h-8"
+              >
                 <FaArrowRight />
               </button>
             </div>

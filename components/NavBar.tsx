@@ -22,14 +22,20 @@ export default function NavBar() {
   return (
     <div className="navbar bg-base-200 absolute top-0 z-50 border-b border-primary/40">
       <div className="navbar-start gap-1 sm:gap-4">
-        <Link href={"/"} className="sm:ml-2">
-          <Image src={logoSrc} alt="logo Avena" width={120} height={0}></Image>
+        <Link href={"/"} className="sm:ml-2 min-w-16">
+          <Image
+            src={logoSrc}
+            alt="logo Avena"
+            width={100}
+            height={0}
+            quality={100}
+          ></Image>
         </Link>
-        <Link href="#home" className="btn btn-ghost font-normal">
+        <Link href="/#home" className="btn btn-ghost font-normal">
           Home
         </Link>
 
-        <Link href="/" className="btn btn-ghost font-normal">
+        <Link href="/booking" className="btn btn-ghost font-normal">
           Réservation
         </Link>
       </div>

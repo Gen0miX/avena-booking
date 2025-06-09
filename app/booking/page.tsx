@@ -6,29 +6,29 @@ import {
   IoMailOutline,
 } from "react-icons/io5";
 import { HiOutlinePhone } from "react-icons/hi";
-import { DateRange } from "react-day-picker";
+import { useBooking } from "@/context/BookingContext";
 import { useEffect, useState, useRef } from "react";
 import CustomDayPicker from "@/components/CustomDayPicker";
 import TravelersSelector from "@/components/TravelersSelector";
 import NavBar from "@/components/NavBar";
 import {
-  calculatePrice,
+  getPriceResult,
   isHighSeason,
   isFamilyRate,
   getNights,
 } from "@/utils/priceCalculator";
 
 export default function Booking() {
-  const [range, setRange] = useState<DateRange | undefined>(undefined);
-  const [travelers, setTravelers] = useState({
-    adults: 0,
-    children: 0,
-  });
+  const { range, setRange, travelers, setTravelers } = useBooking();
   const [price, setPrice] = useState<number | null>(null);
 
   useEffect(() => {
     if (range?.from && range?.to && travelers.adults > 0) {
-      const price = calculatePrice(range.from, range.to, travelers.adults);
+      const { price, error } = getPriceResult({
+        start: range.from,
+        end: range.to,
+        adults: travelers.adults,
+      });
       setPrice(price);
     } else {
       setPrice(null);

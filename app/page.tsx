@@ -121,7 +121,7 @@ export default function Home() {
               <li>Activités en plein air : VTT, via ferrata, tyrolienne</li>
               <li>Découverte du patrimoine local et gastronomie valaisanne</li>
             </ul>
-            <p className="mb-5 text-sm sm:text-base text-base-content/70">
+            <p className="text-justify mb-5 text-sm sm:text-base text-base-content/70">
               Notre appartement bénéficie d’un emplacement central idéal, à
               seulement 5 minutes à pied de l’arrêt de bus et 10 minutes du
               parking principal. Vous pouvez ainsi profiter pleinement de tout

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Playfair, Work_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
-import NavBar from "@/components/NavBar";
+import { BookingProvider } from "@/context/BookingContext";
 
 const playfairDisplay = Playfair({
   variable: "--font-playfair-display",
@@ -35,7 +35,7 @@ export default function RootLayout({
           enableSystem={true}
           themes={["avenal", "avenad"]}
         >
-          {children}
+          <BookingProvider> {children}</BookingProvider>
         </ThemeProvider>
       </body>
     </html>
