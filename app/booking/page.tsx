@@ -41,6 +41,7 @@ export default function Booking() {
   const [menage, setMenage] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
 
   // Form data et validation
@@ -131,6 +132,7 @@ export default function Booking() {
 
   // Calcul du prix avec gestion des erreurs
   useEffect(() => {
+    setIsClient(true);
     if (range?.from && range?.to && travelers.adults > 0) {
       const { price: calculatedPrice, error } = getPriceResult({
         start: range.from,
@@ -437,11 +439,13 @@ export default function Booking() {
             {isSubmitting ? "Envoi en cours..." : "Réserver"}
           </button>
         </div>
-        <ReCAPTCHA
-          sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
-          size="invisible"
-          ref={recaptchaRef}
-        />
+        {isClient && process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
+          <ReCAPTCHA
+            sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
+            size="invisible"
+            ref={recaptchaRef}
+          />
+        )}
       </form>
 
       <div
