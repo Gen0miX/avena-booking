@@ -3,11 +3,10 @@ import { createClient } from "@/utils/supabase/client";
 
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
-  const id = parseInt(context.params.id);
+  const id = parseInt(params.id);
   const updates = await request.json();
-
   const supabase = createClient();
 
   const { error } = await supabase
@@ -35,9 +34,9 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: { id: string } }
 ) {
-  const id = parseInt(context.params.id);
+  const id = parseInt(params.id);
   const supabase = createClient();
 
   const { error } = await supabase.from("bookings").delete().eq("id", id);
