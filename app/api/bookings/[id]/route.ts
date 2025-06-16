@@ -3,9 +3,10 @@ import { createClient } from "@/utils/supabase/client";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = parseInt(params.id);
+  const { id } = await params;
+  const parsedId = parseInt(id);
   const updates = await request.json();
   const supabase = createClient();
 
@@ -20,7 +21,7 @@ export async function PUT(
         departure_date: new Date(updates.departure_date).toISOString(),
       }),
     })
-    .eq("id", id);
+    .eq("id", parsedId);
 
   if (error) {
     return NextResponse.json(
@@ -34,12 +35,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const id = parseInt(params.id);
+  const { id } = await params;
+  const parsedId = parseInt(id);
   const supabase = createClient();
 
-  const { error } = await supabase.from("bookings").delete().eq("id", id);
+  const { error } = await supabase.from("bookings").delete().eq("id", parsedId);
 
   if (error) {
     return NextResponse.json(
