@@ -12,13 +12,15 @@ import { useEffect, useState, useRef } from "react";
 import CustomDayPicker from "@/components/CustomDayPicker";
 import TravelersSelector from "@/components/TravelersSelector";
 import NavBar from "@/components/NavBar";
+import PopoverDatePicker from "@/components/PopoverDatePicker";
 import {
   getPriceResult,
   isHighSeason,
   isFamilyRate,
   getNights,
 } from "@/utils/priceCalculator";
-import { addBooking, type BookingInput } from "@/utils/bookings";
+import { mutate } from "swr";
+import { type BookingInput } from "@/lib/bookings";
 
 interface FormData {
   nom: string;
@@ -189,19 +191,20 @@ export default function Booking() {
         phone: formData.telephone,
         no_adults: travelers.adults,
         no_childs: travelers.children || 0,
-        status: 1, // Statut par défaut (à adapter selon votre logique)
+        status: 1,
         arrival_date: range!.from!,
         departure_date: range!.to!,
         price: price!,
       };
 
-      const response = await fetch("/api/booking", {
+      const response = await fetch("/api/bookings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...bookingData, token }),
       });
 
       if (response.ok) {
+        mutate("/api/bookings/occupied-dates");
         setSubmitMessage("Réservation créée avec succès !");
         // Réinitialiser le formulaire
         setFormData({ nom: "", prenom: "", email: "", telephone: "" });
@@ -254,22 +257,6 @@ export default function Booking() {
               <div className="flex flex-col lg:flex-row gap-2">
                 <label
                   className={`input validator input-primary lg:flex-1 ${
-                    showValidation && formErrors.nom ? "input-error" : ""
-                  }`}
-                >
-                  <IoPersonCircleOutline className="text-xl validator text-base-content/70" />
-                  <input
-                    type="text"
-                    placeholder="Nom"
-                    value={formData.nom}
-                    onChange={(e) => handleInputChange("nom", e.target.value)}
-                    className=""
-                    required
-                  />
-                </label>
-
-                <label
-                  className={`input validator input-primary lg:flex-1 ${
                     showValidation && formErrors.prenom ? "input-error" : ""
                   }`}
                 >
@@ -281,6 +268,21 @@ export default function Booking() {
                     onChange={(e) =>
                       handleInputChange("prenom", e.target.value)
                     }
+                    className=""
+                    required
+                  />
+                </label>
+                <label
+                  className={`input validator input-primary lg:flex-1 ${
+                    showValidation && formErrors.nom ? "input-error" : ""
+                  }`}
+                >
+                  <IoPersonCircleOutline className="text-xl validator text-base-content/70" />
+                  <input
+                    type="text"
+                    placeholder="Nom"
+                    value={formData.nom}
+                    onChange={(e) => handleInputChange("nom", e.target.value)}
                     className=""
                     required
                   />
@@ -355,23 +357,11 @@ export default function Booking() {
                 setTravelers={setTravelers}
               />
 
-              <button
-                type="button"
-                popoverTarget="rdp-popover"
-                className="flex-grow input input-primary input-border w-full"
-                style={{ anchorName: "--rdp" } as React.CSSProperties}
-              >
-                <IoCalendarOutline className="text-xl text-base-content/70" />
-                {range && range.from && range.to ? (
-                  `${range.from.toLocaleDateString()} - ${range.to.toLocaleDateString()}`
-                ) : range && range.from ? (
-                  range.from.toLocaleDateString()
-                ) : (
-                  <span className="text-base-content/50">
-                    Choisir une période
-                  </span>
-                )}
-              </button>
+              <PopoverDatePicker
+                selectedRange={range}
+                onSelect={setRange}
+                className="w-full"
+              />
 
               <label className="label cursor-pointer">
                 <span className="label-text">Ménage (+100 CHF)</span>

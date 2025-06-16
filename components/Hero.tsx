@@ -1,15 +1,23 @@
 import ThemeToggleButton from "@/components/ThemeToggleButton";
 import Link from "next/link";
+import Image from "next/image";
+import heroImage from "@/public/images/hero.webp";
 
 export default function Hero() {
   return (
-    <section
-      className="hero min-h-svh bg-fixed bg-cover bg-center relative"
-      style={{
-        backgroundImage:
-          "url(https://media.myswitzerland.com/image/fetch/c_lfill,g_auto,w_3200,h_1800/f_auto,q_80,fl_keep_iptc/https://www.myswitzerland.com/-/media/celum%20connect/2025/03/12/07/45/22/saas-fee-aerial.jpg)",
-      }}
-    >
+    <section className="hero min-h-svh relative overflow-hidden">
+      <div className="fixed inset-0 w-full h-full -z-10" aria-hidden="true">
+        <Image
+          src={heroImage}
+          alt="Saas-fee landscape with moutains"
+          placeholder="blur"
+          fill
+          priority
+          quality={100}
+          sizes="100vw"
+          style={{ objectFit: "cover" }}
+        />
+      </div>
       <div className="absolute top-0 left-0 w-full">
         <div className="flex justify-between items-center m-3 mt-5 sm:mx-5 sm:mt-7">
           <div className="flex text-neutral-content gap-3 sm:gap-5">

@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
 import { DateRange } from "react-day-picker";
-import { Travelers } from "@/utils/bookings";
+import { Travelers } from "@/lib/bookings";
 
 type BookingContextType = {
   range: DateRange | undefined;

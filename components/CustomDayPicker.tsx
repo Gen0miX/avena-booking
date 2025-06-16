@@ -1,13 +1,7 @@
-import {
-  DayPicker,
-  DateRange,
-  DropdownNav,
-  Dropdown,
-  MonthsDropdown,
-} from "react-day-picker";
+import { DayPicker, DateRange } from "react-day-picker";
 import { frCH } from "react-day-picker/locale";
-import { useEffect, useState } from "react";
-import { fetchOccupiedDates } from "@/utils/bookings";
+import useOccupiedDates from "@/hooks/useOccupiedDates";
+import { div } from "framer-motion/client";
 
 function normalizeDate(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -29,11 +23,7 @@ type CustomDayPickerProps =
     };
 
 export default function CustomDayPicker(props: CustomDayPickerProps) {
-  const [occupiedDates, setOccupiedDates] = useState<Date[]>([]);
-
-  useEffect(() => {
-    fetchOccupiedDates().then(setOccupiedDates);
-  }, []);
+  const { dates: occupiedDates, loading } = useOccupiedDates();
 
   const today = normalizeDate(new Date());
 
@@ -59,6 +49,13 @@ export default function CustomDayPicker(props: CustomDayPickerProps) {
     console.log(range);
     props.onSelect(range);
   };
+
+  if (loading)
+    return (
+      <div className="flex justify-center items-center h-full">
+        <span className="loading loading-spinner loading-xl text-primary"></span>
+      </div>
+    );
 
   if (props.mode === "readOnly") {
     return (

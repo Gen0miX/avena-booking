@@ -6,7 +6,7 @@ import TravelersSelector from "@/components/TravelersSelector";
 import { getPriceResult } from "@/utils/priceCalculator";
 import { useBooking } from "@/context/BookingContext";
 import { FaArrowRight } from "react-icons/fa";
-import { IoCalendarOutline } from "react-icons/io5";
+import PopoverDatePicker from "@/components/PopoverDatePicker";
 
 export default function Disponibility() {
   const router = useRouter();
@@ -40,7 +40,7 @@ export default function Disponibility() {
 
   return (
     <>
-      <section className="flex flex-col w-full sm:max-w-[310px] sm:sticky sm:top-20 mb-auto mr-auto mt-5 p-5 pt-2 bg-base-200 drop-shadow-xl rounded-xl border-2 border-primary/40">
+      <section className="flex flex-col w-full lg:max-w-[310px] sm:sticky sm:top-20 mb-auto mr-auto mt-5 p-5 pt-2 bg-base-200 drop-shadow-xl rounded-xl border-2 border-primary/40">
         <SectionTitle className="sm:text-4xl!">Disponibilité</SectionTitle>
         <div className="flex flex-col gap-4 mt-3">
           <CustomDayPicker mode="readOnly" />
@@ -53,22 +53,11 @@ export default function Disponibility() {
               />
             </div>
             <div className="flex gap-2 w-full items-center">
-              <button
-                popoverTarget="rdp-popover"
-                className="flex-grow input input-primary input-border"
-                style={{ anchorName: "--rdp" } as React.CSSProperties}
-              >
-                <IoCalendarOutline className="text-xl text-base-content/70" />
-                {range && range.from && range.to ? (
-                  `${range.from.toLocaleDateString()} - ${range.to.toLocaleDateString()}`
-                ) : range && range.from ? (
-                  range.from.toLocaleDateString()
-                ) : (
-                  <span className="text-base-content/50">
-                    Choisir une période
-                  </span>
-                )}
-              </button>
+              <PopoverDatePicker
+                selectedRange={range}
+                onSelect={setRange}
+                className="flex-grow"
+              />
               <button
                 onClick={handleBookingClick}
                 className="btn btn-primary btn-circle w-8 h-8"
@@ -87,18 +76,6 @@ export default function Disponibility() {
           </div>
         </div>
       </section>
-      <div
-        popover="auto"
-        id="rdp-popover"
-        className="dropdown"
-        style={{ positionAnchor: "--rdp" } as React.CSSProperties}
-      >
-        <CustomDayPicker
-          mode="selectable"
-          selectedRange={range}
-          onSelect={setRange}
-        ></CustomDayPicker>
-      </div>
     </>
   );
 }

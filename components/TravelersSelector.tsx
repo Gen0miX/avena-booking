@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { FaChevronDown } from "react-icons/fa";
-import { Travelers } from "@/utils/bookings";
+import { Travelers } from "@/lib/bookings";
 import { IoPersonAddOutline } from "react-icons/io5";
 
 export default function TravelersSelector({
@@ -30,6 +30,7 @@ export default function TravelersSelector({
   return (
     <div className="relative w-full" ref={ref}>
       <button
+        type="button"
         onClick={() => setOpen(!open)}
         className="input input-primary justify-between w-full"
       >
@@ -53,6 +54,7 @@ export default function TravelersSelector({
               </div>
               <div className="flex items-center gap-2">
                 <button
+                  type="button"
                   className="btn btn-xs btn-outline btn-primary btn-circle"
                   disabled={
                     key === "adults"
@@ -70,6 +72,7 @@ export default function TravelersSelector({
                 </button>
                 <span className="w-2">{travelers[key as keyof Travelers]}</span>
                 <button
+                  type="button"
                   className="btn btn-xs btn-outline btn-primary btn-circle"
                   disabled={maxReached}
                   onClick={() =>
