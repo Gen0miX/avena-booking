@@ -18,6 +18,7 @@ export interface Booking {
   arrival_date: Date;
   departure_date: Date;
   price: number;
+  is_cleaning: boolean;
 }
 
 export interface BookingInput {
@@ -31,6 +32,7 @@ export interface BookingInput {
   arrival_date: Date;
   departure_date: Date;
   price: number;
+  is_cleaning: boolean;
 }
 
 export async function getBookings(): Promise<Booking[]> {

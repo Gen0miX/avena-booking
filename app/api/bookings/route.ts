@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/client";
 import { BookingInput } from "@/lib/bookings";
+import { sendBookingConfirmationEmail } from "@/lib/email";
 
 export async function GET() {
   const supabase = createClient();
@@ -74,6 +75,19 @@ export async function POST(request: NextRequest) {
       { error: "Insert error", details: error },
       { status: 500 }
     );
+  }
+
+  try {
+    await sendBookingConfirmationEmail({
+      to: bookingData.mail,
+      fname: bookingData.fname,
+      lname: bookingData.lname,
+      arrival_date: arrivalDate.toISOString(),
+      departure_date: departureDate.toISOString(),
+      price: bookingData.price,
+    });
+  } catch (emailError) {
+    console.error("Erreur d'envoi de l'email de confirmation", emailError);
   }
 
   return NextResponse.json({ message: "Booking created" }, { status: 200 });

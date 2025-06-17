@@ -195,6 +195,7 @@ export default function Booking() {
         arrival_date: range!.from!,
         departure_date: range!.to!,
         price: price!,
+        is_cleaning: menage,
       };
 
       const response = await fetch("/api/bookings", {
