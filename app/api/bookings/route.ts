@@ -1,12 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/client";
-import { BookingInput } from "@/lib/bookings";
+import { createClient } from "@/utils/supabase/server";
+import { BookingInput, Booking } from "@/lib/bookings";
 import { sendBookingConfirmationEmail } from "@/lib/email";
 
 export async function GET() {
-  const supabase = createClient();
+  const supabase = await createClient();
 
-  const { data, error } = await supabase.from("bookings").select(`
+  const {
+    data: { user },
+    error: authError,
+  } = await supabase.auth.getUser();
+
+  if (authError || !user) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const { data, error } = await supabase
+    .from("bookings")
+    .select(
+      `
       id,
       fname,
       lname,
@@ -17,20 +29,30 @@ export async function GET() {
       arrival_date,
       departure_date,
       price,
-      status:status (
+      is_cleaning,
+      status (
         id,
         name
       )
-    `);
+    `
+    )
+    .order("arrival_date", { ascending: true });
 
-  if (error) {
+  if (error || !data) {
     return NextResponse.json(
       { error: "Failed to fetch bookings", details: error },
       { status: 500 }
     );
   }
 
-  return NextResponse.json(data);
+  const typedData: Booking[] = data.map((item) => ({
+    ...item,
+    arrival_date: new Date(item.arrival_date),
+    departure_date: new Date(item.departure_date),
+    status: Array.isArray(item.status) ? item.status[0] : item.status,
+  }));
+
+  return NextResponse.json(typedData);
 }
 
 export async function POST(request: NextRequest) {
@@ -60,7 +82,7 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { error } = await supabase.from("bookings").insert([
     {

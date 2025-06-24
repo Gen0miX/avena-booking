@@ -232,7 +232,7 @@ export default function Booking() {
     <>
       <NavBar />
       <form onSubmit={handleSubmit}>
-        <div className="flex flex-col items-center bg-base-200 lg:max-w-6xl mx-2 md:mx-5 lg:mx-10 xl:mx-auto mt-24 rounded-box border border-primary/40">
+        <section className="flex flex-col items-center bg-base-200 lg:max-w-6xl mx-2 md:mx-5 lg:mx-10 xl:mx-auto mt-24 rounded-box border border-primary/40">
           <h1 className="font-heading text-4xl font-semibold mt-5">
             Réservation
           </h1>
@@ -429,7 +429,7 @@ export default function Booking() {
           >
             {isSubmitting ? "Envoi en cours..." : "Réserver"}
           </button>
-        </div>
+        </section>
         {isClient && process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
           <ReCAPTCHA
             sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}

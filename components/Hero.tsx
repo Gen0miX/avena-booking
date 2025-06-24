@@ -24,7 +24,7 @@ export default function Hero() {
             <Link href="#home" className="link link-hover ">
               Home
             </Link>
-            <Link href="/" className="link link-hover">
+            <Link href="/booking" className="link link-hover">
               Réservation
             </Link>
           </div>
@@ -48,7 +48,10 @@ export default function Hero() {
             Deux chambres, salon lumineux et cuisine équipée.
           </p>
           <div>
-            <Link href={"/"} className="btn btn-secondary font-p text-lg mt-5">
+            <Link
+              href="/booking"
+              className="btn btn-secondary font-p text-lg mt-5"
+            >
               Réserver
             </Link>
           </div>
