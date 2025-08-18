@@ -30,6 +30,7 @@ export async function GET() {
       departure_date,
       price,
       is_cleaning,
+      is_paid,
       status (
         id,
         name
