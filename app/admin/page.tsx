@@ -15,7 +15,22 @@ export default function admin() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  useEffect(() => setMounted(true), []);
+  const supabase = createClient();
+
+  useEffect(() => {
+    const checkSession = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (session) {
+        router.replace("/admin/dashboard");
+      } else {
+        setMounted(true);
+      }
+    };
+    checkSession();
+  }, [supabase, router]);
+
   if (!mounted) return null;
 
   const logoSrc =
@@ -25,7 +40,6 @@ export default function admin() {
 
   const handleLogin = async () => {
     setError("");
-    const supabase = createClient();
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
