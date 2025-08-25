@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/utils/supabase/client";
+import { createClient } from "@/utils/supabase/server";
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
+  const { id } = params;
   const parsedId = parseInt(id);
   const updates = await request.json();
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { error } = await supabase
     .from("bookings")
@@ -35,11 +35,11 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: { id: string } }
 ) {
-  const { id } = await params;
+  const { id } = params;
   const parsedId = parseInt(id);
-  const supabase = createClient();
+  const supabase = await createClient();
 
   const { error } = await supabase.from("bookings").delete().eq("id", parsedId);
 

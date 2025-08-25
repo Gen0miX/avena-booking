@@ -40,7 +40,7 @@ export default function Booking() {
   const { range, setRange, travelers, setTravelers } = useBooking();
   const [price, setPrice] = useState<number | null>(null);
   const [priceError, setPriceError] = useState<string | null>(null);
-  const [menage, setMenage] = useState(false);
+  const [menage, setMenage] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -211,7 +211,7 @@ export default function Booking() {
         setFormData({ nom: "", prenom: "", email: "", telephone: "" });
         setRange(undefined);
         setTravelers({ adults: 1, children: 0 });
-        setMenage(false);
+        setMenage(true);
         setShowValidation(false);
         setFormErrors({});
       } else {
@@ -313,7 +313,7 @@ export default function Booking() {
                   <IoMailOutline className="text-xl text-base-content/70" />
                   <input
                     type="email"
-                    placeholder="email"
+                    placeholder="Email"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
                     required
@@ -328,7 +328,7 @@ export default function Booking() {
                   <HiOutlinePhone className="text-xl text-base-content/70" />
                   <input
                     type="tel"
-                    placeholder="téléphone"
+                    placeholder="Téléphone"
                     value={formData.telephone}
                     onChange={(e) =>
                       handleInputChange("telephone", e.target.value)

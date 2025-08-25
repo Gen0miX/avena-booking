@@ -60,7 +60,7 @@ export default function TravelersSelector({
         type="button"
         className="input input-primary justify-between w-full"
       >
-        <span className="flex items-center gap-2">
+        <span className="flex items-center gap-2 ">
           <IoPersonAddOutline className="text-xl text-base-content/70" />
           {total > 0 ? `${total} voyageur${total > 1 ? "s" : ""}` : "Voyageurs"}
         </span>

@@ -1,7 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { BookingInput, Booking } from "@/lib/bookings";
 import { sendBookingConfirmationEmail } from "@/lib/email";
+
+export const maxDuration = 30;
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const supabase = await createClient();
@@ -57,61 +60,70 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  try {
+    const body = await request.json();
+    const { token, ...bookingData }: { token: string } & BookingInput = body;
 
-  const { token, ...bookingData }: { token: string } & BookingInput = body;
+    const arrivalDate = new Date(bookingData.arrival_date);
+    const departureDate = new Date(bookingData.departure_date);
 
-  const arrivalDate = new Date(bookingData.arrival_date);
-  const departureDate = new Date(bookingData.departure_date);
-
-  const recaptchaResponse = await fetch(
-    `https://www.google.com/recaptcha/api/siteverify`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: `secret=${
-        process.env.RECAPTCHA_SECRET_KEY
-      }&response=${encodeURIComponent(token)}`,
-    }
-  );
-
-  const captchaData = await recaptchaResponse.json();
-  if (!captchaData.success || captchaData.score < 0.5) {
-    return NextResponse.json(
-      { message: "Captcha verification failed" },
-      { status: 403 }
+    // reCAPTCHA
+    const recaptchaResponse = await fetch(
+      `https://www.google.com/recaptcha/api/siteverify`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: `secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${encodeURIComponent(token)}`,
+        signal: AbortSignal.timeout(5000),
+      }
     );
-  }
 
-  const supabase = await createClient();
+    const captchaData = await recaptchaResponse.json();
+    if (!captchaData.success || captchaData.score < 0.5) {
+      return NextResponse.json(
+        { message: "Captcha verification failed" },
+        { status: 403 }
+      );
+    }
 
-  const { error } = await supabase.from("bookings").insert([
-    {
-      ...bookingData,
-      arrival_date: arrivalDate.toISOString(),
-      departure_date: departureDate.toISOString(),
-    },
-  ]);
+    const supabase = await createClient();
 
-  if (error) {
+    // Insertion dans la base
+    const { error } = await supabase.from("bookings").insert([
+      {
+        ...bookingData,
+        arrival_date: arrivalDate.toISOString(),
+        departure_date: departureDate.toISOString(),
+      },
+    ]);
+
+    if (error) {
+      return NextResponse.json(
+        { error: "Insert error", details: error },
+        { status: 500 }
+      );
+    }
+
+    after(() => {
+      sendBookingConfirmationEmail({
+        to: bookingData.mail,
+        fname: bookingData.fname,
+        lname: bookingData.lname,
+        arrival_date: arrivalDate.toISOString(),
+        departure_date: departureDate.toISOString(),
+        price: bookingData.price,
+      }).catch((emailError) => {
+        console.error("Erreur d'envoi de l'email:", emailError);
+      });
+    });
+
+    // Répondre immédiatement après l'insertion
+    return NextResponse.json({ message: "Booking created" }, { status: 200 });
+  } catch (error) {
+    console.error("Erreur dans POST:", error);
     return NextResponse.json(
-      { error: "Insert error", details: error },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
-
-  try {
-    await sendBookingConfirmationEmail({
-      to: bookingData.mail,
-      fname: bookingData.fname,
-      lname: bookingData.lname,
-      arrival_date: arrivalDate.toISOString(),
-      departure_date: departureDate.toISOString(),
-      price: bookingData.price,
-    });
-  } catch (emailError) {
-    console.error("Erreur d'envoi de l'email de confirmation", emailError);
-  }
-
-  return NextResponse.json({ message: "Booking created" }, { status: 200 });
 }
