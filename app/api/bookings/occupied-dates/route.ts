@@ -6,7 +6,8 @@ export async function GET() {
 
   const { data, error } = await supabase
     .from("bookings")
-    .select("arrival_date, departure_date");
+    .select("arrival_date, departure_date")
+    .neq("status", 4);
 
   if (error) {
     return NextResponse.json(

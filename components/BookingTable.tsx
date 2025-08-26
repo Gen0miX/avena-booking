@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { useBookings } from "@/hooks/usebookings";
 import { Booking } from "@/lib/bookings";
 import StatusBadge from "@/components/StatusBadge";
 import { format } from "date-fns";
 import { fr, th } from "date-fns/locale";
-import { FaCheck, FaTimes } from "react-icons/fa";
+import { FaCheck, FaTimes, FaDollarSign } from "react-icons/fa";
 
 type ModalAction = {
   type: "confirm" | "terminate" | "cancel";
@@ -14,6 +15,7 @@ type ModalAction = {
 };
 
 export default function BookingTable() {
+  const router = useRouter();
   const { bookings, isLoading, isError, refresh, updateBookingStatus } =
     useBookings();
   const [processingIds, setProcessingIds] = useState<Set<number>>(new Set());
@@ -58,14 +60,15 @@ export default function BookingTable() {
   }
 
   return (
-    <div className="overflow-x-auto">
-      <table className="table table-zebra w-full">
+    <div className="overflow-x-auto shadow-lg rounded-box border border-primary/40">
+      <table className="table table-zebra table-pin-rows w-full">
         <thead>
           <tr>
             <th>Nom</th>
             <th>Dates</th>
             <th>Personnes</th>
             <th>Statut</th>
+            <th>Actions</th>
             <th></th>
           </tr>
         </thead>
@@ -76,13 +79,17 @@ export default function BookingTable() {
             const showCancelBtn = status === 1;
 
             return (
-              <tr key={booking.id}>
+              <tr
+                key={booking.id}
+                className="h-18 hover:bg-accent/60 hover:text-accent-content cursor-pointer"
+                onClick={() => router.push(`/admin/dashboard/${booking.id}`)}
+              >
                 <td>
                   {booking.fname} {booking.lname}
                 </td>
                 <td>
-                  {format(booking.arrival_date, "dd MMM yyyy", { locale: fr })}{" "}
-                  ➡️{" "}
+                  {format(booking.arrival_date, "dd MMM yyyy", { locale: fr })}
+                  ➡️
                   {format(booking.departure_date, "dd MMM yyyy", {
                     locale: fr,
                   })}
@@ -97,7 +104,7 @@ export default function BookingTable() {
                     <StatusBadge status={booking.status.name} />
                   )}
                 </td>
-                <td className="flex gap-2">
+                <td className="flex gap-2 h-18 items-center">
                   {showConfirmBtn && (
                     <button
                       className="btn btn-sm btn-circle btn-outline btn-success"
@@ -124,7 +131,14 @@ export default function BookingTable() {
                       <FaTimes />
                     </button>
                   )}
+                  <button
+                    className={`btn btn-sm btn-circle ${booking.is_paid ? "btn-success" : "btn-warning btn-outline"}`}
+                    disabled={booking.is_paid}
+                  >
+                    <FaDollarSign />
+                  </button>
                 </td>
+                <td className="gap-2 items-center"></td>
               </tr>
             );
           })}

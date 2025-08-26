@@ -1,9 +1,60 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { Booking } from "@/lib/bookings";
+
+export async function GET(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const parsedId = parseInt(id);
+  const supabase = await createClient();
+
+  const { data, error } = await supabase
+    .from("bookings")
+    .select(
+      `
+      id,
+      fname,
+      lname,
+      mail,
+      phone,
+      no_adults,
+      no_childs,
+      arrival_date,
+      departure_date,
+      price,
+      is_cleaning,
+      is_paid,
+      status (
+        id,
+        name
+      )
+    `
+    )
+    .eq("id", parsedId)
+    .single(); // récupère un seul élément
+
+  if (error) {
+    return NextResponse.json(
+      { error: "Booking not found", details: error },
+      { status: 404 }
+    );
+  }
+
+  const typedBooking: Booking | null = {
+    ...data,
+    arrival_date: new Date(data.arrival_date),
+    departure_date: new Date(data.departure_date),
+    status: Array.isArray(data.status) ? data.status[0] : data.status,
+  };
+
+  return NextResponse.json(typedBooking);
+}
 
 export async function PUT(
   request: NextRequest,
-   { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params;
   const parsedId = parseInt(id);
