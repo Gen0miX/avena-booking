@@ -38,7 +38,8 @@ export default function admin() {
       ? "/logos/logo_Avena_D.svg"
       : "/logos/logo_Avena_L.svg";
 
-  const handleLogin = async () => {
+  const handleLogin = async (e?: React.FormEvent) => {
+    if(e) e.preventDefault();
     setError("");
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -53,10 +54,12 @@ export default function admin() {
 
   return (
     <section className="flex flex-col items-center justify-center xl:mx-auto h-svh">
-      <fieldset className="fieldset bg-base-200 p-5 rounded-box border border-primary/40 shadow-lg mb-20 lg:w-96">
-        <legend className="fieldset-legend text-3xl font-bold font-heading text-accent">
+      <form
+      onSubmit={handleLogin} 
+      className="fieldset bg-base-200 p-5 rounded-box border border-primary/40 shadow-lg mb-20 lg:w-96">
+        <h1 className="text-4xl font-light font-heading text-accent mb-5 text-center">
           Connexion
-        </legend>
+        </h1>
         <div className="flex justify-center mb-10">
           <Image
             src={logoSrc}
@@ -87,10 +90,10 @@ export default function admin() {
           />
         </label>
         {error && <p className="text-error text-sm ml-1">{error}</p>}
-        <button className="btn btn-accent w-full mt-10" onClick={handleLogin}>
+        <button type="submit" className="btn btn-accent w-full mt-10">
           Se connecter
         </button>
-      </fieldset>
+      </form>
     </section>
   );
 }

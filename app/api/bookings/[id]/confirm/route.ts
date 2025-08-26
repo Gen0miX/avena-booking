@@ -10,7 +10,7 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { id } = await params;
+    const { id } = await params; // ici il faut bien await
     const parsedId = parseInt(id);
 
     if (isNaN(parsedId)) {
