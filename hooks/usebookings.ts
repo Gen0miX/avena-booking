@@ -14,34 +14,34 @@ const fetcher = async (url: string) => {
 export function useBookings() {
   const { data, error, isLoading, mutate } = useSWR("/api/bookings", fetcher);
 
-  const confirmBooking = async (bookingId: number): Promise<boolean> => {
+  const updateBookingStatus = async (
+    bookingId: number,
+    action: "confirm" | "terminate" | "cancel"
+  ): Promise<boolean> => {
     try {
-      const response = await fetch(`/api/bookings/${bookingId}/confirm`, {
+      const response = await fetch(`/api/bookings/${bookingId}/${action}`, {
         method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
       });
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to confirm booking");
+        throw new Error(errorData.error || "Failed to update booking");
       }
 
-      // Rafraîchir la liste des réservations avec SWR après confirmation
-      await mutate();
+      await mutate(); // refresh SWR
       return true;
     } catch (error) {
-      console.error("Error confirming booking:", error);
+      console.error("Error updating booking:", error);
       return false;
     }
   };
 
   return {
-    bookings: data ?? [], // Directement data au lieu de data.bookings
+    bookings: data ?? [],
     isLoading,
     isError: error,
     refresh: mutate,
-    confirmBooking,
+    updateBookingStatus,
   };
 }
