@@ -12,6 +12,7 @@ export default function BookingTable() {
   const { bookings, isLoading, isError, refresh, confirmBooking } =
     useBookings();
   const [confirmingIds, setConfirmingIds] = useState<Set<number>>(new Set());
+  const [modalBookingId, setModalBookingId] = useState<number | null>(null);
 
   const handleConfirmBooking = async (bookingId: number) => {
     // Ajouter l'ID à la liste des réservations en cours de confirmation
@@ -36,6 +37,7 @@ export default function BookingTable() {
         newSet.delete(bookingId);
         return newSet;
       });
+      setModalBookingId(null);
     }
   };
 
@@ -73,12 +75,16 @@ export default function BookingTable() {
                 {booking.no_adults}A /{booking.no_childs ?? 0}E
               </td>
               <td>
-                <StatusBadge status={booking.status.name} />
+                {confirmingIds.has(booking.id) ? (
+                  <StatusBadge status={booking.status.name} loading={true} />
+                ) : (
+                  <StatusBadge status={booking.status.name} />
+                )}
               </td>
               <td className="flex gap-2">
                 <button
                   className="btn btn-sm btn-circle btn-outline btn-success"
-                  onClick={() => confirmBooking(booking.id)}
+                  onClick={() => setModalBookingId(booking.id)}
                 >
                   <FaCheck></FaCheck>
                 </button>
@@ -90,6 +96,32 @@ export default function BookingTable() {
           ))}
         </tbody>
       </table>
+
+      {/* Modal de confirmation */}
+      {modalBookingId && (
+        <dialog open className="modal">
+          <div className="modal-box">
+            <h3 className="font-bold text-lg">Confirmer la réservation</h3>
+            <p className="py-4">
+              Êtes-vous sûr de vouloir confirmer cette réservation ?
+            </p>
+            <div className="modal-action">
+              <button
+                className="btn btn-success"
+                onClick={() => handleConfirmBooking(modalBookingId!)}
+              >
+                Confirmer
+              </button>
+              <button
+                className="btn btn-outline"
+                onClick={() => setModalBookingId(null)}
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        </dialog>
+      )}
     </div>
   );
 }

@@ -3,9 +3,10 @@ import React from "react";
 
 type StatusBadgeProps = {
   status: string;
+  loading?: boolean;
 };
 
-export default function StatusBadge({ status }: StatusBadgeProps) {
+export default function StatusBadge({ status, loading }: StatusBadgeProps) {
   let badgeClass = "badge"; // classe de base
   let label = status;
 
@@ -28,5 +29,13 @@ export default function StatusBadge({ status }: StatusBadgeProps) {
       break;
   }
 
-  return <span className={badgeClass}>{label}</span>;
+  return (
+    <span className={`${badgeClass} min-w-24 flex justify-center items-center`}>
+      {loading ? (
+        <span className="loading loading-ring loading-sm"></span>
+      ) : (
+        label
+      )}
+    </span>
+  );
 }
