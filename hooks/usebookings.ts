@@ -16,7 +16,7 @@ export function useBookings() {
 
   const updateBookingStatus = async (
     bookingId: number,
-    action: "confirm" | "terminate" | "cancel"
+    action: "confirm" | "terminate" | "cancel" | "payment"
   ): Promise<boolean> => {
     try {
       const response = await fetch(`/api/bookings/${bookingId}/${action}`, {

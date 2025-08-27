@@ -8,9 +8,10 @@ import StatusBadge from "@/components/StatusBadge";
 import { format } from "date-fns";
 import { fr, th } from "date-fns/locale";
 import { FaCheck, FaTimes, FaDollarSign } from "react-icons/fa";
+import { span } from "framer-motion/client";
 
 type ModalAction = {
-  type: "confirm" | "terminate" | "cancel";
+  type: "confirm" | "terminate" | "cancel" | "payment";
   bookingId: number;
 };
 
@@ -60,7 +61,7 @@ export default function BookingTable() {
   }
 
   return (
-    <div className="overflow-x-auto shadow-lg rounded-box border border-primary/40">
+    <div className="overflow-x-auto max-h-full shadow-lg rounded-box border border-primary/40">
       <table className="table table-zebra table-pin-rows w-full">
         <thead>
           <tr>
@@ -69,7 +70,8 @@ export default function BookingTable() {
             <th>Personnes</th>
             <th>Statut</th>
             <th>Actions</th>
-            <th></th>
+            <th>Payée</th>
+            <th>Ménage</th>
           </tr>
         </thead>
         <tbody>
@@ -77,6 +79,8 @@ export default function BookingTable() {
             const status = booking.status.id;
             const showConfirmBtn = status === 1 || status === 2;
             const showCancelBtn = status === 1;
+            const paid = booking.is_paid;
+            const showPaymentBtn = !paid && status === 2;
 
             return (
               <tr
@@ -88,14 +92,26 @@ export default function BookingTable() {
                   {booking.fname} {booking.lname}
                 </td>
                 <td>
-                  {format(booking.arrival_date, "dd MMM yyyy", { locale: fr })}
-                  ➡️
-                  {format(booking.departure_date, "dd MMM yyyy", {
-                    locale: fr,
-                  })}
+                  <div className="flex flex-col">
+                    <span>
+                      {format(booking.arrival_date, "dd MMM yyyy", {
+                        locale: fr,
+                      })}
+                    </span>
+                    <span>
+                      {format(booking.departure_date, "dd MMM yyyy", {
+                        locale: fr,
+                      })}
+                    </span>
+                  </div>
                 </td>
                 <td>
-                  {booking.no_adults}A /{booking.no_childs ?? 0}E
+                  <div className="flex flex-col">
+                    <span>{booking.no_adults} Adulte(s)</span>
+                    {booking.no_childs != 0 && (
+                      <span>{booking.no_childs ?? 0} Enfant(s)</span>
+                    )}
+                  </div>
                 </td>
                 <td>
                   {processingIds.has(booking.id) ? (
@@ -105,40 +121,62 @@ export default function BookingTable() {
                   )}
                 </td>
                 <td className="flex gap-2 h-18 items-center">
-                  {showConfirmBtn && (
-                    <button
-                      className="btn btn-sm btn-circle btn-outline btn-success"
-                      onClick={() =>
-                        setModalAction({
-                          type: status === 1 ? "confirm" : "terminate",
-                          bookingId: booking.id,
-                        })
-                      }
-                    >
-                      <FaCheck />
-                    </button>
-                  )}
-                  {showCancelBtn && (
-                    <button
-                      className="btn btn-sm btn-circle btn-outline btn-error"
-                      onClick={() =>
-                        setModalAction({
-                          type: "cancel",
-                          bookingId: booking.id,
-                        })
-                      }
-                    >
-                      <FaTimes />
-                    </button>
-                  )}
+                  <button
+                    className="btn btn-sm btn-circle btn-outline btn-success"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setModalAction({
+                        type: status === 1 ? "confirm" : "terminate",
+                        bookingId: booking.id,
+                      });
+                    }}
+                    disabled={!showConfirmBtn}
+                  >
+                    <FaCheck />
+                  </button>
+
+                  <button
+                    className="btn btn-sm btn-circle btn-outline btn-error"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setModalAction({
+                        type: "cancel",
+                        bookingId: booking.id,
+                      });
+                    }}
+                    disabled={!showCancelBtn}
+                  >
+                    <FaTimes />
+                  </button>
+
                   <button
                     className={`btn btn-sm btn-circle ${booking.is_paid ? "btn-success" : "btn-warning btn-outline"}`}
-                    disabled={booking.is_paid}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setModalAction({
+                        type: "payment",
+                        bookingId: booking.id,
+                      });
+                    }}
+                    disabled={!showPaymentBtn}
                   >
                     <FaDollarSign />
                   </button>
                 </td>
-                <td className="gap-2 items-center"></td>
+                <td>
+                  {booking.is_paid ? (
+                    <span className="badge badge-secondary">Oui</span>
+                  ) : (
+                    <span className="badge badge-neutral">Non</span>
+                  )}
+                </td>
+                <td className="items-center">
+                  {booking.is_cleaning ? (
+                    <span className="badge badge-secondary">Oui</span>
+                  ) : (
+                    <span className="badge badge-neutral">Non</span>
+                  )}
+                </td>
               </tr>
             );
           })}
@@ -153,12 +191,15 @@ export default function BookingTable() {
               {modalAction.type === "confirm" && "Confirmer la réservation"}
               {modalAction.type === "terminate" && "Terminer la réservation"}
               {modalAction.type === "cancel" && "Annuler la réservation"}
+              {modalAction.type === "payment" && "Marquer comme payée"}
             </h3>
             <p className="py-4">
               Êtes-vous sûr de vouloir{" "}
               {modalAction.type === "confirm" && "confirmer"}
               {modalAction.type === "terminate" && "terminer"}
-              {modalAction.type === "cancel" && "annuler"} cette réservation ?
+              {modalAction.type === "cancel" && "annuler"}
+              {modalAction.type === "payment" && "marquer comme payée"} cette
+              réservation ?
             </p>
             <div className="modal-action">
               <button
