@@ -88,7 +88,7 @@ export default function Home() {
                   Une cuisine équipée (four, plaques, lave-vaisselle, machine à
                   café)
                 </li>
-                <li>Une salle de bain (deux avec celle du studio)</li>
+                <li>Une salle de bain</li>
                 <li>Wi-Fi gratuit, TV, linge de lit et serviettes inclus</li>
               </ul>
               <h3 className="text-lg sm:text-xl font-semibold mb-5">
