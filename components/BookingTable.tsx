@@ -6,9 +6,8 @@ import { useBookings } from "@/hooks/usebookings";
 import { Booking } from "@/lib/bookings";
 import StatusBadge from "@/components/StatusBadge";
 import { format } from "date-fns";
-import { fr, th } from "date-fns/locale";
+import { fr } from "date-fns/locale";
 import { FaCheck, FaTimes, FaDollarSign } from "react-icons/fa";
-import { span } from "framer-motion/client";
 
 type ModalAction = {
   type: "confirm" | "terminate" | "cancel" | "payment";
