@@ -4,6 +4,46 @@ type PriceParams = {
   adults: number;
 };
 
+type Rate = {
+  base: number;
+  perNight: number;
+};
+
+const rates = {
+  high: {
+    family: { base: 500, perNight: 250 }, // famille (<=2 adultes) ou 2 adultes
+    threeFour: { base: 560, perNight: 280 }, // 3-4 adultes
+    five: { base: 600, perNight: 300 }, // 5 adultes
+  },
+  low: {
+    family: { base: 400, perNight: 200 }, // famille ou 4 adultes
+    five: { base: 500, perNight: 250 }, // 5 adultes
+  },
+};
+
+export type Category =
+  | "Famille"
+  | "Plein (3-4 adultes)"
+  | "Plein (5 adultes)"
+  | "Plein"; // pour la basse saison
+
+export function getCategory(
+  adults: number,
+  start?: Date,
+  end?: Date
+): Category {
+  const season: "high" | "low" = isHighSeason(start, end) ? "high" : "low";
+
+  if (season === "high") {
+    if (adults <= 2) return "Famille";
+    if (adults <= 4) return "Plein (3-4 adultes)";
+    return "Plein (5 adultes)";
+  } else {
+    if (adults <= 4) return "Famille";
+    return "Plein"; // 5 adultes
+  }
+}
+
 export function isHighSeason(start?: Date, end?: Date): boolean {
   const isMonthHigh = (date?: Date) => {
     if (!date) return false;
@@ -14,10 +54,6 @@ export function isHighSeason(start?: Date, end?: Date): boolean {
   return isMonthHigh(start) || isMonthHigh(end);
 }
 
-export function isFamilyRate(adults: number): boolean {
-  return adults <= 2;
-}
-
 export function getNights(start: Date, end: Date): number {
   const msPerNight = 1000 * 60 * 60 * 24;
   return Math.max(
@@ -26,29 +62,27 @@ export function getNights(start: Date, end: Date): number {
   );
 }
 
-const prices = {
-  high: {
-    family: [0, 0, 400, 600, 800, 900, 1000, 1100],
-    full: [0, 0, 500, 800, 1100, 1400, 1500, 1600],
-  },
-  low: {
-    family: [0, 0, 300, 500, 600, 700, 800, 900],
-    full: [0, 0, 400, 600, 800, 1000, 1100, 1200],
-  },
-};
+function getRate(season: "high" | "low", adults: number): Rate | null {
+  if (season === "high") {
+    if (adults <= 2) return rates.high.family;
+    if (adults <= 4) return rates.high.threeFour;
+    if (adults === 5) return rates.high.five;
+  } else {
+    if (adults <= 4) return rates.low.family;
+    if (adults === 5) return rates.low.five;
+  }
+  return null;
+}
 
 function calculatePrice(start: Date, end: Date, adults: number): number {
-  const highSeason = isHighSeason(start, end);
-  const family = isFamilyRate(adults);
+  const season: "high" | "low" = isHighSeason(start, end) ? "high" : "low";
   const nights = getNights(start, end);
 
-  const season = highSeason ? "high" : "low";
-  const category = family ? "family" : "full";
+  const rate = getRate(season, adults);
+  if (!rate) return 0;
 
-  const base = prices[season][category][Math.min(nights, 7)];
-  const extra = nights > 7 ? (nights - 7) * 100 : 0;
-
-  return base + extra;
+  // 1ère nuit incluse dans le prix de base
+  return rate.base + (nights - 1) * rate.perNight;
 }
 
 export function getPriceResult({ start, end, adults }: PriceParams): {

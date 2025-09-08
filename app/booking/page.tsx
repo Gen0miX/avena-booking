@@ -16,7 +16,7 @@ import PopoverDatePicker from "@/components/PopoverDatePicker";
 import {
   getPriceResult,
   isHighSeason,
-  isFamilyRate,
+  getCategory,
   getNights,
 } from "@/utils/priceCalculator";
 import { mutate } from "swr";
@@ -392,7 +392,7 @@ export default function Booking() {
                   </p>
                   <p>
                     <span className="font-semibold">Tarif :</span>{" "}
-                    {isFamilyRate(travelers.adults) ? "Famille" : "Plein"}
+                    {getCategory(travelers.adults, range.from, range.to)}
                   </p>
                   <p>
                     <span className="font-semibold">Nuits :</span>{" "}

@@ -20,7 +20,7 @@ export async function sendBookingConfirmationEmail({
   try {
     // ✅ Timeout sur l'envoi d'email, correctement nettoyé
     const emailPromise = resend.emails.send({
-      from: "noreply@jonas-pilloud.ch",
+      from: "noreply@avena39.ch",
       to,
       subject: "Confirmation de votre réservation",
       html: `
