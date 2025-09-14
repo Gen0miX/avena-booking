@@ -67,21 +67,18 @@ export async function PATCH(
       );
     }
 
-    try {
-      await sendBookingCancellationEmail({
+    after(() => {
+      sendBookingCancellationEmail({
         to: bookingData.email,
         fname: bookingData.fname,
         lname: bookingData.lname,
         arrival_date: bookingData.arrival_date,
         departure_date: bookingData.departure_date,
         bookingId: bookingData.id,
+      }).catch((emailError) => {
+        console.error("Erreur d'envoi de l'email d'annulation :", emailError);
       });
-    } catch (emailError) {
-      console.error(
-        "Erreur lors de l'envoi de l'email d'annulation:",
-        emailError
-      );
-    }
+    });
 
     return NextResponse.json(
       { message: "Booking canceled successfully" },
