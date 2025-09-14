@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { BookingInput, Booking } from "@/lib/bookings";
-import { sendBookingConfirmationEmail } from "@/lib/email";
+import { sendBookingEmail } from "@/lib/email";
 
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
     }
 
     after(() => {
-      sendBookingConfirmationEmail({
+      sendBookingEmail({
         to: bookingData.mail,
         fname: bookingData.fname,
         lname: bookingData.lname,

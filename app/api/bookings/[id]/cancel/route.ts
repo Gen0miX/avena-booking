@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { sendBookingCancellationEmail } from "@/lib/email";
 
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
@@ -63,6 +64,22 @@ export async function PATCH(
       return NextResponse.json(
         { error: "Failed to cancel booking", details: updateError },
         { status: 500 }
+      );
+    }
+
+    try {
+      await sendBookingCancellationEmail({
+        to: bookingData.email,
+        fname: bookingData.fname,
+        lname: bookingData.lname,
+        arrival_date: bookingData.arrival_date,
+        departure_date: bookingData.departure_date,
+        price: bookingData.price,
+      });
+    } catch (emailError) {
+      console.error(
+        "Erreur lors de l'envoi de l'email d'annulation:",
+        emailError
       );
     }
 
