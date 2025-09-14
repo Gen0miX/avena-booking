@@ -47,7 +47,7 @@ export async function PATCH(
     }
 
     // Vérifier que la réservation est bien en attente (status 1)
-    if (bookingData.status !== 1) {
+    if (bookingData.status === 1 || bookingData.status === 2) {
       return NextResponse.json(
         { error: "Booking is not pending cancelation" },
         { status: 400 }
