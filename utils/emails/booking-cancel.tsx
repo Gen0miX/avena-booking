@@ -19,7 +19,7 @@ type BookingCancellationEmailProps = {
   departure_date: string;
 };
 
-export default function BookingCancellationEmail({
+export default function BookingCancel({
   fname,
   lname,
   bookingId,
