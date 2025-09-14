@@ -17,6 +17,7 @@ type BookingEmailProps = {
   arrival_date: string;
   departure_date: string;
   price: number;
+  bookingId: number;
 };
 
 export default function BookingEmail({
@@ -25,6 +26,7 @@ export default function BookingEmail({
   arrival_date,
   departure_date,
   price,
+  bookingId,
 }: BookingEmailProps) {
   return (
     <Html>
@@ -64,13 +66,46 @@ export default function BookingEmail({
               {new Date(departure_date).toLocaleDateString("fr-FR")}.
             </Text>
             <Text style={text}>
-              Montant total : <b>{price} CHF</b>
+              Montant total à régler : <b>{price} CHF</b>
             </Text>
+
             <Text style={text}>
-              Nous reviendrons vers vous prochainement pour confirmer la
-              disponibilité.
+              Votre réservation est <b>en attente</b> et sera confirmée après
+              réception de votre paiement.
             </Text>
-            <Text style={text}>À bientôt !</Text>
+
+            <Text style={subheading}>💳 Coordonnées bancaires</Text>
+            <Text style={text}>
+              IBAN : <b>CH64 0076 8125 0290 8410 3</b>
+              <br />
+              Titulaire : <b>Réganély Noémie</b>
+              <br />
+              Adresse : <b>Ch. de Beaulieu 1, 1752 Villars-sur-Glâne</b>
+            </Text>
+
+            <Text style={text}>
+              Merci d’indiquer comme communication de paiement :
+              <br />
+              <b>
+                Réservation #{bookingId} - {fname} {lname}
+              </b>
+            </Text>
+
+            <Text style={text}>
+              Dès réception et validation de votre paiement, vous recevrez un
+              mail de confirmation. (Cette étape est manuelle et peut prendre un
+              peu de temps.)
+            </Text>
+
+            <Text style={text}>
+              Pour toute question, vous pouvez nous contacter :
+              <br />
+              📧 <a href="mailto:info@avena39.ch">info@avena39.ch</a>
+              <br />
+              📞 +41 76 370 86 77
+            </Text>
+
+            <Text style={{ ...text, marginTop: "16px" }}>À bientôt !</Text>
           </Section>
         </Container>
       </Body>
@@ -95,8 +130,16 @@ const container = {
 const h1 = {
   fontSize: "24px",
   fontWeight: "bold",
-  textAlign: "center" as const, // sécurité pour TS
+  textAlign: "center" as const,
   fontFamily: "'Playfair Display', serif",
+};
+
+const subheading = {
+  fontSize: "16px",
+  fontWeight: "600",
+  marginTop: "16px",
+  marginBottom: "8px",
+  color: "#111",
 };
 
 const text = {

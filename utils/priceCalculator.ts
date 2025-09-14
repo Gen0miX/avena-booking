@@ -11,13 +11,13 @@ type Rate = {
 
 const rates = {
   high: {
-    family: { base: 500, perNight: 250 }, // famille (<=2 adultes) ou 2 adultes
-    threeFour: { base: 560, perNight: 280 }, // 3-4 adultes
-    five: { base: 600, perNight: 300 }, // 5 adultes
+    family: { base: 250, perNight: 250 }, // famille (<=2 adultes) ou 2 adultes
+    threeFour: { base: 280, perNight: 280 }, // 3-4 adultes
+    five: { base: 300, perNight: 300 }, // 5 adultes
   },
   low: {
-    family: { base: 400, perNight: 200 }, // famille ou 4 adultes
-    five: { base: 500, perNight: 250 }, // 5 adultes
+    family: { base: 200, perNight: 200 }, // famille ou 4 adultes
+    five: { base: 250, perNight: 250 }, // 5 adultes
   },
 };
 
@@ -54,12 +54,16 @@ export function isHighSeason(start?: Date, end?: Date): boolean {
   return isMonthHigh(start) || isMonthHigh(end);
 }
 
+function stripTime(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
 export function getNights(start: Date, end: Date): number {
   const msPerNight = 1000 * 60 * 60 * 24;
-  return Math.max(
-    1,
-    Math.round((end.getTime() - start.getTime()) / msPerNight)
-  );
+  const startDay = stripTime(start);
+  const endDay = stripTime(end);
+
+  return Math.max(1, (endDay.getTime() - startDay.getTime()) / msPerNight);
 }
 
 function getRate(season: "high" | "low", adults: number): Rate | null {

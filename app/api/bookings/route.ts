@@ -117,6 +117,7 @@ export async function POST(request: NextRequest) {
         arrival_date: booking.arrival_date,
         departure_date: booking.departure_date,
         price: booking.price,
+        bookingId: booking.id,
       }).catch((emailError) => {
         console.error("Erreur d'envoi de l'email:", emailError);
       });

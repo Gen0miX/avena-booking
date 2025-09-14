@@ -13,6 +13,7 @@ export async function sendBookingEmail({
   arrival_date,
   departure_date,
   price,
+  bookingId,
 }: {
   to: string;
   fname: string;
@@ -20,6 +21,7 @@ export async function sendBookingEmail({
   arrival_date: string;
   departure_date: string;
   price: number;
+  bookingId: number;
 }) {
   try {
     const emailHtml = await render(
@@ -29,6 +31,7 @@ export async function sendBookingEmail({
         arrival_date,
         departure_date,
         price,
+        bookingId,
       })
     );
 
@@ -56,6 +59,7 @@ export async function sendBookingConfirmationEmail({
   arrival_date,
   departure_date,
   price,
+  bookingId,
 }: {
   to: string;
   fname: string;
@@ -63,6 +67,7 @@ export async function sendBookingConfirmationEmail({
   arrival_date: string;
   departure_date: string;
   price: number;
+  bookingId: number;
 }) {
   try {
     const emailHtml = await render(
@@ -72,6 +77,7 @@ export async function sendBookingConfirmationEmail({
         arrival_date,
         departure_date,
         price,
+        bookingId,
       })
     );
     const result = await resend.emails.send({
@@ -97,23 +103,23 @@ export async function sendBookingCancellationEmail({
   lname,
   arrival_date,
   departure_date,
-  price,
+  bookingId,
 }: {
   to: string;
   fname: string;
   lname: string;
   arrival_date: string;
   departure_date: string;
-  price: number;
+  bookingId: number;
 }) {
   try {
     const emailHtml = await render(
       BookingCancel({
         fname,
         lname,
+        bookingId,
         arrival_date,
         departure_date,
-        price,
       })
     );
     const result = await resend.emails.send({

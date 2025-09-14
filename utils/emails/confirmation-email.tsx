@@ -1,4 +1,4 @@
-// emails/BookingEmail.tsx
+// emails/BookingConfirmationEmail.tsx
 import * as React from "react";
 import {
   Html,
@@ -11,25 +11,30 @@ import {
   Heading,
 } from "@react-email/components";
 
-type BookingEmailProps = {
+type BookingConfirmationEmailProps = {
   fname: string;
   lname: string;
   arrival_date: string;
   departure_date: string;
   price: number;
+  bookingId: number;
+  checkin_time?: string;
+  checkout_time?: string;
 };
 
-export default function BookingEmail({
+export default function BookingConfirmationEmail({
   fname,
   lname,
   arrival_date,
   departure_date,
   price,
-}: BookingEmailProps) {
+  bookingId,
+  checkin_time = "16:00",
+  checkout_time = "11:00",
+}: BookingConfirmationEmailProps) {
   return (
     <Html>
       <Head>
-        {/* Import Google Fonts */}
         <link
           href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Work+Sans:wght@400;500&display=swap"
           rel="stylesheet"
@@ -49,28 +54,62 @@ export default function BookingEmail({
             </a>
           </Section>
 
-          {/* Heading centré */}
+          {/* Heading */}
           <Section style={{ textAlign: "center", marginBottom: "20px" }}>
-            <Heading style={h1}>
-              Bonjour {fname} {lname},
-            </Heading>
+            <Heading style={h1}>Réservation confirmée 🎉</Heading>
           </Section>
 
           {/* Contenu texte */}
           <Section>
             <Text style={text}>
-              Merci pour votre réservation du{" "}
+              Bonjour {fname} {lname},
+            </Text>
+            <Text style={text}>
+              Nous avons le plaisir de confirmer votre réservation{" "}
+              <b>#{bookingId}</b> du{" "}
               {new Date(arrival_date).toLocaleDateString("fr-FR")} au{" "}
               {new Date(departure_date).toLocaleDateString("fr-FR")}.
             </Text>
             <Text style={text}>
-              Montant total : <b>{price} CHF</b>
+              Montant total réglé : <b>{price} CHF</b>
             </Text>
+
+            <Text style={subheading}>📌 Informations pratiques</Text>
             <Text style={text}>
-              Nous reviendrons vers vous prochainement pour confirmer la
-              disponibilité.
+              ✅ Arrivée autonome via boîte à clés <br />⏰ Check-in :{" "}
+              <b>{checkin_time}</b> si arrivée après <b>21:00</b> prière de nous
+              avertir <br />⏰ Check-out : <b>{checkout_time}</b>
             </Text>
-            <Text style={text}>À bientôt !</Text>
+
+            <Text style={subheading}>📋 Avant votre départ</Text>
+            <Text style={text}>
+              • Jeter les ordures (poubelle + déchetterie) <br />
+              • Retirer les draps des lits utilisés <br />
+              • Remettre les clés dans la boîte à clés <br />• Vérifier que
+              toutes les portes soient bien verrouillées
+            </Text>
+
+            <Text style={text}>
+              Vous pouvez consulter nos{" "}
+              <a
+                href="https://www.avena39.ch/conditions-annulation"
+                target="_blank"
+                rel="noreferrer"
+              >
+                conditions d’annulation
+              </a>
+              .
+            </Text>
+
+            <Text style={text}>Nous vous souhaitons un agréable séjour 🌿</Text>
+
+            <Text style={text}>
+              Pour toute question, contactez-nous :
+              <br />
+              📧 <a href="mailto:info@avena39.ch">info@avena39.ch</a>
+              <br />
+              📞 +41 76 370 86 77
+            </Text>
           </Section>
         </Container>
       </Body>
@@ -95,8 +134,16 @@ const container = {
 const h1 = {
   fontSize: "24px",
   fontWeight: "bold",
-  textAlign: "center" as const, // sécurité pour TS
+  textAlign: "center" as const,
   fontFamily: "'Playfair Display', serif",
+};
+
+const subheading = {
+  fontSize: "16px",
+  fontWeight: "600",
+  marginTop: "16px",
+  marginBottom: "8px",
+  color: "#111",
 };
 
 const text = {

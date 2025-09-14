@@ -1,4 +1,4 @@
-// emails/BookingEmail.tsx
+// emails/BookingCancellationEmail.tsx
 import * as React from "react";
 import {
   Html,
@@ -11,25 +11,24 @@ import {
   Heading,
 } from "@react-email/components";
 
-type BookingEmailProps = {
+type BookingCancellationEmailProps = {
   fname: string;
   lname: string;
+  bookingId: number;
   arrival_date: string;
   departure_date: string;
-  price: number;
 };
 
-export default function BookingCancel({
+export default function BookingCancellationEmail({
   fname,
   lname,
+  bookingId,
   arrival_date,
   departure_date,
-  price,
-}: BookingEmailProps) {
+}: BookingCancellationEmailProps) {
   return (
     <Html>
       <Head>
-        {/* Import Google Fonts */}
         <link
           href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Work+Sans:wght@400;500&display=swap"
           rel="stylesheet"
@@ -49,28 +48,54 @@ export default function BookingCancel({
             </a>
           </Section>
 
-          {/* Heading centré */}
+          {/* Heading */}
           <Section style={{ textAlign: "center", marginBottom: "20px" }}>
-            <Heading style={h1}>
-              Bonjour {fname} {lname},
-            </Heading>
+            <Heading style={h1}>Annulation de votre réservation</Heading>
           </Section>
 
           {/* Contenu texte */}
           <Section>
             <Text style={text}>
-              Merci pour votre réservation du{" "}
+              Bonjour {fname} {lname},
+            </Text>
+
+            <Text style={text}>
+              Nous vous confirmons que votre réservation <b>#{bookingId}</b> du{" "}
               {new Date(arrival_date).toLocaleDateString("fr-FR")} au{" "}
-              {new Date(departure_date).toLocaleDateString("fr-FR")}.
+              {new Date(departure_date).toLocaleDateString("fr-FR")} a bien été{" "}
+              <b>annulée</b>.
             </Text>
+
             <Text style={text}>
-              Montant total : <b>{price} CHF</b>
+              Si un paiement a déjà été effectué, le remboursement sera effectué
+              dans les prochains jours, conformément à nos conditions
+              d’annulation.
             </Text>
+
             <Text style={text}>
-              Nous reviendrons vers vous prochainement pour confirmer la
-              disponibilité.
+              Vous pouvez consulter le détail de nos{" "}
+              <a
+                href="https://www.avena39.ch/conditions-annulation"
+                target="_blank"
+                rel="noreferrer"
+              >
+                conditions d’annulation
+              </a>
+              .
             </Text>
-            <Text style={text}>À bientôt !</Text>
+
+            <Text style={text}>
+              Pour toute question, contactez-nous :
+              <br />
+              📧 <a href="mailto:info@avena39.ch">info@avena39.ch</a>
+              <br />
+              📞 +41 76 370 86 77
+            </Text>
+
+            <Text style={{ ...text, marginTop: "16px" }}>
+              Nous espérons avoir le plaisir de vous accueillir une prochaine
+              fois 🌿
+            </Text>
           </Section>
         </Container>
       </Body>
@@ -93,9 +118,9 @@ const container = {
 };
 
 const h1 = {
-  fontSize: "24px",
+  fontSize: "22px",
   fontWeight: "bold",
-  textAlign: "center" as const, // sécurité pour TS
+  textAlign: "center" as const,
   fontFamily: "'Playfair Display', serif",
 };
 

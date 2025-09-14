@@ -25,7 +25,7 @@ export async function GET() {
     start.setHours(0, 0, 0, 0);
     end.setHours(0, 0, 0, 0);
 
-    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+    for (let d = new Date(start); d < end; d.setDate(d.getDate() + 1)) {
       const day = new Date(d);
       day.setHours(0, 0, 0, 0);
       occupiedDates.push(day.toISOString());

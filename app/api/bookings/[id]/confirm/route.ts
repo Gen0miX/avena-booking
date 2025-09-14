@@ -76,6 +76,7 @@ export async function PATCH(
         arrival_date: bookingData.arrival_date,
         departure_date: bookingData.departure_date,
         price: bookingData.price,
+        bookingId: bookingData.id,
       }).catch((emailError) => {
         console.error("Erreur d'envoi de l'email de confirmation:", emailError);
       });
