@@ -179,7 +179,7 @@ export default function Booking() {
 
     try {
       const token = await recaptchaRef.current?.executeAsync();
-      recaptchaRef.current?.reset();
+
       if (!token) {
         setSubmitMessage("Erreur de validation du CAPTCHA");
         setIsSubmitting(false);
@@ -228,6 +228,7 @@ export default function Booking() {
       console.error("Erreur:", error);
       setSubmitMessage("Erreur lors de la soumission du formulaire");
     } finally {
+      recaptchaRef.current?.reset();
       setIsSubmitting(false);
     }
   };
