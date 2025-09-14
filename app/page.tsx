@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import NavBar from "@/components/NavBar";
+import Footer from "@/components/Footer";
 import Hero from "@/components/Hero";
 import Disponibility from "@/components/Disponibility";
 import Gallery from "@/components/Gallery";
@@ -144,6 +145,7 @@ export default function Home() {
           </div>
         </section>
       </div>
+      <Footer />
     </>
   );
 }
