@@ -5,6 +5,7 @@ import {
   IoCalendarOutline,
   IoMailOutline,
 } from "react-icons/io5";
+import { useRouter } from "next/navigation";
 import { HiOutlinePhone } from "react-icons/hi";
 import { useBooking } from "@/context/BookingContext";
 import ReCAPTCHA from "react-google-recaptcha";
@@ -45,6 +46,7 @@ export default function Booking() {
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
+  const router = useRouter();
 
   // Form data et validation
   const [formData, setFormData] = useState<FormData>({
@@ -205,6 +207,8 @@ export default function Booking() {
       });
 
       if (response.ok) {
+        const booking = await response.json();
+        router.push(`/confirmation/${booking.id}`);
         mutate("/api/bookings/occupied-dates");
         setSubmitMessage("Réservation créée avec succès !");
         // Réinitialiser le formulaire

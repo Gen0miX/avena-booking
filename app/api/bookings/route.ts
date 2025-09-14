@@ -88,14 +88,18 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient();
 
-    // Insertion dans la base
-    const { error } = await supabase.from("bookings").insert([
-      {
-        ...bookingData,
-        arrival_date: arrivalDate.toISOString(),
-        departure_date: departureDate.toISOString(),
-      },
-    ]);
+    // Insertion et récupération de la ligne créée
+    const { data: booking, error } = await supabase
+      .from("bookings")
+      .insert([
+        {
+          ...bookingData,
+          arrival_date: arrivalDate.toISOString(),
+          departure_date: departureDate.toISOString(),
+        },
+      ])
+      .select()
+      .single();
 
     if (error) {
       return NextResponse.json(
@@ -104,21 +108,22 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Envoi de l'email en arrière-plan
     after(() => {
       sendBookingEmail({
-        to: bookingData.mail,
-        fname: bookingData.fname,
-        lname: bookingData.lname,
-        arrival_date: arrivalDate.toISOString(),
-        departure_date: departureDate.toISOString(),
-        price: bookingData.price,
+        to: booking.mail,
+        fname: booking.fname,
+        lname: booking.lname,
+        arrival_date: booking.arrival_date,
+        departure_date: booking.departure_date,
+        price: booking.price,
       }).catch((emailError) => {
         console.error("Erreur d'envoi de l'email:", emailError);
       });
     });
 
-    // Répondre immédiatement après l'insertion
-    return NextResponse.json({ message: "Booking created" }, { status: 200 });
+    // Retourner directement l'objet booking
+    return NextResponse.json(booking, { status: 201 });
   } catch (error) {
     console.error("Erreur dans POST:", error);
     return NextResponse.json(
