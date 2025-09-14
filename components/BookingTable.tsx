@@ -77,7 +77,7 @@ export default function BookingTable() {
           {bookings.map((booking: Booking) => {
             const status = booking.status.id;
             const showConfirmBtn = status === 1 || status === 2;
-            const showCancelBtn = status === 1;
+            const showCancelBtn = status === 1 || status === 2;
             const paid = booking.is_paid;
             const showPaymentBtn = !paid && status === 2;
 
