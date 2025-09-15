@@ -13,6 +13,7 @@ import { useEffect, useState, useRef } from "react";
 import CustomDayPicker from "@/components/CustomDayPicker";
 import TravelersSelector from "@/components/TravelersSelector";
 import NavBar from "@/components/NavBar";
+import Footer from "@/components/Footer";
 import PopoverDatePicker from "@/components/PopoverDatePicker";
 import {
   getPriceResult,
@@ -41,12 +42,14 @@ export default function Booking() {
   const { range, setRange, travelers, setTravelers } = useBooking();
   const [price, setPrice] = useState<number | null>(null);
   const [priceError, setPriceError] = useState<string | null>(null);
-  const [menage, setMenage] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
   const recaptchaRef = useRef<ReCAPTCHA>(null);
   const router = useRouter();
+
+  // Ajout: conditions acceptées
+  const [conditionsAccepted, setConditionsAccepted] = useState(false);
 
   // Form data et validation
   const [formData, setFormData] = useState<FormData>({
@@ -93,7 +96,6 @@ export default function Booking() {
   const handleInputChange = (name: keyof FormData, value: string) => {
     setFormData((prev) => ({ ...prev, [name]: value }));
 
-    // Si on a déjà tenté de soumettre, on valide en temps réel
     if (showValidation) {
       const error = validateField(name, value);
       setFormErrors((prev) => ({
@@ -103,7 +105,7 @@ export default function Booking() {
     }
   };
 
-  // Validation complète du formulaire
+  // Validation complète
   const validateForm = (): boolean => {
     const errors: FormErrors = {};
     let hasErrors = false;
@@ -120,7 +122,7 @@ export default function Booking() {
     return !hasErrors;
   };
 
-  // Vérifier si le formulaire est valide (sans afficher les erreurs)
+  // Vérifier si le formulaire est valide
   const isFormValid = (): boolean | undefined => {
     return (
       (Object.keys(formData) as Array<keyof FormData>).every(
@@ -130,11 +132,12 @@ export default function Booking() {
       range?.to &&
       travelers.adults > 0 &&
       price !== null &&
-      !priceError
+      !priceError &&
+      conditionsAccepted
     );
   };
 
-  // Calcul du prix avec gestion des erreurs
+  // Calcul du prix
   useEffect(() => {
     setIsClient(true);
     if (range?.from && range?.to && travelers.adults > 0) {
@@ -149,23 +152,19 @@ export default function Booking() {
         setPrice(null);
       } else {
         setPriceError(null);
-        // Ajouter 100 CHF si ménage est coché
-        const finalPrice = calculatedPrice
-          ? calculatedPrice + (menage ? 100 : 0)
-          : null;
-        setPrice(finalPrice);
+        // ménage toujours inclus → pas de toggle
+        setPrice(calculatedPrice || null);
       }
     } else {
       setPrice(null);
       setPriceError(null);
     }
-  }, [range, travelers, menage]);
+  }, [range, travelers]);
 
-  // Soumission du formulaire
+  // Soumission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Activer l'affichage des erreurs et valider
     setShowValidation(true);
     const formValid = validateForm();
 
@@ -179,7 +178,6 @@ export default function Booking() {
 
     try {
       const token = await recaptchaRef.current?.executeAsync();
-
       if (!token) {
         setSubmitMessage("Erreur de validation du CAPTCHA");
         setIsSubmitting(false);
@@ -197,7 +195,7 @@ export default function Booking() {
         arrival_date: range!.from!,
         departure_date: range!.to!,
         price: price!,
-        is_cleaning: menage,
+        is_cleaning: true, // toujours inclus
       };
 
       const response = await fetch("/api/bookings", {
@@ -211,11 +209,10 @@ export default function Booking() {
         router.push(`/confirmation/${booking.id}`);
         mutate("/api/bookings/occupied-dates");
         setSubmitMessage("Réservation créée avec succès !");
-        // Réinitialiser le formulaire
         setFormData({ nom: "", prenom: "", email: "", telephone: "" });
         setRange(undefined);
         setTravelers({ adults: 1, children: 0 });
-        setMenage(true);
+        setConditionsAccepted(false);
         setShowValidation(false);
         setFormErrors({});
       } else {
@@ -234,10 +231,10 @@ export default function Booking() {
   };
 
   return (
-    <>
+    <div className="flex flex-col min-h-screen">
       <NavBar />
-      <form onSubmit={handleSubmit}>
-        <section className="flex flex-col items-center bg-base-200 lg:max-w-6xl mx-2 md:mx-5 lg:mx-10 xl:mx-auto mt-24 rounded-box border border-primary/40">
+      <form onSubmit={handleSubmit} className="flex-1">
+        <section className="flex flex-col items-center bg-base-200 lg:max-w-6xl mx-2 md:mx-5 lg:mx-10 xl:mx-auto mt-24 mb-12 rounded-box border border-primary/40">
           <h1 className="font-heading text-4xl font-semibold mt-5">
             Réservation
           </h1>
@@ -260,6 +257,7 @@ export default function Booking() {
                 Données personnelles
               </legend>
 
+              {/* Champs prénom / nom */}
               <div className="flex flex-col lg:flex-row gap-2">
                 <label
                   className={`input validator input-primary lg:flex-1 ${
@@ -274,7 +272,6 @@ export default function Booking() {
                     onChange={(e) =>
                       handleInputChange("prenom", e.target.value)
                     }
-                    className=""
                     required
                   />
                 </label>
@@ -289,13 +286,12 @@ export default function Booking() {
                     placeholder="Nom"
                     value={formData.nom}
                     onChange={(e) => handleInputChange("nom", e.target.value)}
-                    className=""
                     required
                   />
                 </label>
               </div>
 
-              {/* Messages d'erreur pour nom/prénom */}
+              {/* Erreurs nom / prénom */}
               <div className="flex flex-col lg:flex-row gap-2">
                 {showValidation && formErrors.nom && (
                   <div className="text-error text-sm lg:flex-1">
@@ -309,6 +305,7 @@ export default function Booking() {
                 )}
               </div>
 
+              {/* Champs email / téléphone */}
               <div className="flex flex-col lg:flex-row gap-2">
                 <label
                   className={`input input-primary validator lg:flex-1 ${
@@ -338,13 +335,14 @@ export default function Booking() {
                     onChange={(e) =>
                       handleInputChange("telephone", e.target.value)
                     }
+                    pattern="[0-9+\-\s\(\)]+" // accepte seulement chiffres et symboles
                     className="validator tabular-nums"
                     required
                   />
                 </label>
               </div>
 
-              {/* Messages d'erreur pour email/téléphone */}
+              {/* Erreurs email / téléphone */}
               <div className="flex flex-col lg:flex-row gap-2">
                 {showValidation && formErrors.email && (
                   <div className="text-error text-sm lg:flex-1">
@@ -369,17 +367,25 @@ export default function Booking() {
                 className="w-full"
               />
 
-              <label className="label cursor-pointer">
-                <span className="label-text">Ménage (+100 CHF)</span>
+              {/* Case conditions */}
+              <label className="label cursor-pointer mt-4">
                 <input
                   type="checkbox"
                   className="checkbox checkbox-primary"
-                  checked={menage}
-                  onChange={(e) => setMenage(e.target.checked)}
+                  checked={conditionsAccepted}
+                  onChange={(e) => setConditionsAccepted(e.target.checked)}
+                  required
                 />
+                <span className="label-text">
+                  J’ai lu et j’accepte les{" "}
+                  <a href="/conditions" className="link link-primary">
+                    conditions d’utilisation
+                  </a>
+                </span>
               </label>
             </fieldset>
 
+            {/* Bloc prix */}
             <fieldset className="fieldset bg-base-300 border-primary/40 rounded-box border p-2 sm:p-4 shadow-lg w-full sm:w-52">
               <legend className="fieldset-legend text-xl font-medium">
                 Prix
@@ -403,11 +409,6 @@ export default function Booking() {
                     <span className="font-semibold">Nuits :</span>{" "}
                     {getNights(range.from, range.to)}
                   </p>
-                  {menage && (
-                    <p>
-                      <span className="font-semibold">Ménage :</span> +100 CHF
-                    </p>
-                  )}
                   <div className="divider my-0"></div>
                   <p className="text-center text-lg font-medium">
                     <span className="font-semibold">
@@ -417,6 +418,9 @@ export default function Booking() {
                       style: "currency",
                       currency: "CHF",
                     })}
+                  </p>
+                  <p className="text-xs text-center mt-2 text-base-content/70">
+                    Ménage et taxes inclus
                   </p>
                 </>
               ) : (
@@ -456,6 +460,7 @@ export default function Booking() {
           onSelect={setRange}
         />
       </div>
-    </>
+      <Footer />
+    </div>
   );
 }

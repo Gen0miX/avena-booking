@@ -3,7 +3,11 @@ import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 
-export default function Footer() {
+type FooterProps = {
+  className?: string;
+};
+
+export default function Footer({ className = "" }: FooterProps) {
   const { resolvedTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
@@ -17,7 +21,9 @@ export default function Footer() {
       : "/logos/logo_Avena_L.svg";
 
   return (
-    <footer className="footer sm:footer-horizontal bg-base-200 text-base-content p-10 border-t border-primary/40">
+    <footer
+      className={`footer sm:footer-horizontal bg-base-200 text-base-content p-10 border-t border-primary/40 ${className}`}
+    >
       <aside className="items-center grid-flow-col">
         <Link href={"/"} className="min-w-16">
           <Image

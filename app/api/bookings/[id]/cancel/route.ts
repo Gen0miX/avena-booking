@@ -69,7 +69,7 @@ export async function PATCH(
 
     after(() => {
       sendBookingCancellationEmail({
-        to: bookingData.email,
+        to: bookingData.mail,
         fname: bookingData.fname,
         lname: bookingData.lname,
         arrival_date: bookingData.arrival_date,
