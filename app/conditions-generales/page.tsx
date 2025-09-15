@@ -35,9 +35,8 @@ export default function ConditionsGenerales() {
             <h2 className="text-xl font-semibold mb-2">3. Prix et paiement</h2>
             <p>
               Le prix indiqué comprend : le logement, le linge de lit, la taxe
-              de séjour ainsi que le ménage de fin de séjour (si sélectionné).
-              Le paiement du montant total est exigé au moment de la
-              réservation.
+              de séjour ainsi que le ménage de fin de séjour. Le paiement du
+              montant total est exigé au moment de la réservation.
             </p>
             <p>Modes de paiement acceptés : virement bancaire et Twint.</p>
           </section>

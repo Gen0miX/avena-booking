@@ -52,7 +52,7 @@ export default function ConfirmationPage() {
                 📅 Arrivée :{" "}
                 {new Date(booking.arrival_date).toLocaleDateString("fr-CH")}
               </li>
-              <li>⏰ Heure de check-in : {booking.checkin_time || "15:00"}</li>
+              <li>⏰ Heure de check-in : {booking.checkin_time || "16:00"}</li>
               <li>
                 📅 Départ :{" "}
                 {new Date(booking.departure_date).toLocaleDateString("fr-CH")}
