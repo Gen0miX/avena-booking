@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { sendBookingCancellationEmail } from "@/lib/email";
+import { sendTelegramNotification } from "@/utils/telegram";
 
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
@@ -77,6 +78,14 @@ export async function PATCH(
         bookingId: bookingData.id,
       }).catch((emailError) => {
         console.error("Erreur d'envoi de l'email d'annulation :", emailError);
+      });
+
+      sendTelegramNotification("cancel", {
+        name: `${bookingData.fname} ${bookingData.lname}`,
+        arrival: bookingData.arrival_date,
+        departure: bookingData.departure_date,
+      }).catch((tgError) => {
+        console.error("Erreur d'envoi Telegram annulation :", tgError);
       });
     });
 

@@ -22,9 +22,10 @@ export default function Footer({ className = "" }: FooterProps) {
 
   return (
     <footer
-      className={`footer sm:footer-horizontal bg-base-200 text-base-content p-10 border-t border-primary/40 ${className}`}
+      className={`footer md:footer-horizontal bg-base-200 text-base-content p-10 border-t border-primary/40 justify-between items-center ${className}`}
     >
-      <aside className="items-center grid-flow-col">
+      {/* Partie gauche : Logo + Copyright */}
+      <aside className="flex items-center gap-3">
         <Link href={"/"} className="min-w-16">
           <Image
             src={logoSrc}
@@ -32,23 +33,31 @@ export default function Footer({ className = "" }: FooterProps) {
             width={75}
             height={0}
             quality={100}
-          ></Image>
+          />
         </Link>
-        <p className="ml-1">
-          Copyright © 2025 -{" "}
+        <p className="text-sm">
+          © 2025{" "}
           <Link
-            href={"https://www.jonas-pilloud.ch/"}
+            href="https://www.jonas-pilloud.ch/"
             className="link link-hover"
           >
             Jonas Pilloud
           </Link>
+          . Tous droits réservés.
         </p>
       </aside>
-      <nav>
-        <h6 className="footer-title">Legal</h6>
-        <a className="link link-hover">Terms of use</a>
-        <a className="link link-hover">Privacy policy</a>
-        <a className="link link-hover">Cookie policy</a>
+
+      {/* Partie droite : Liens légaux */}
+      <nav className="flex flex-col sm:flex-row gap-3 sm:gap-6 text-sm lg:mx-12">
+        <Link href="/conditions-generales" className="link link-hover">
+          Conditions générales
+        </Link>
+        <Link href="/politique-confidentialite" className="link link-hover">
+          Politique de confidentialité
+        </Link>
+        <Link href="/cookies" className="link link-hover">
+          Mentions légales
+        </Link>
       </nav>
     </footer>
   );

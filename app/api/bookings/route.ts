@@ -2,6 +2,7 @@ import { NextRequest, NextResponse, after } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { BookingInput, Booking } from "@/lib/bookings";
 import { sendBookingEmail } from "@/lib/email";
+import { sendTelegramNotification } from "@/utils/telegram";
 
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
@@ -120,6 +121,14 @@ export async function POST(request: NextRequest) {
         bookingId: booking.id,
       }).catch((emailError) => {
         console.error("Erreur d'envoi de l'email:", emailError);
+      });
+
+      sendTelegramNotification("booking", {
+        name: `${booking.fname} ${booking.lname}`,
+        arrival: booking.arrival_date,
+        departure: booking.departure_date,
+      }).catch((tgError) => {
+        console.error("Erreur d'envoi Telegram booking :", tgError);
       });
     });
 
