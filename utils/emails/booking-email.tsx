@@ -92,6 +92,13 @@ export default function BookingEmail({
             </Text>
 
             <Text style={text}>
+              📄 Vous trouverez également en pièce jointe une <b>QR-Facture</b>
+              que vous pouvez scanner directement avec votre application
+              bancaire mobile pour effectuer le paiement rapidement et
+              facilement.
+            </Text>
+
+            <Text style={text}>
               Dès réception et validation de votre paiement, vous recevrez un
               mail de confirmation. (Cette étape est manuelle et peut prendre un
               peu de temps.)
