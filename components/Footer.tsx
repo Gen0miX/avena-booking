@@ -55,7 +55,7 @@ export default function Footer({ className = "" }: FooterProps) {
         <Link href="/politique-confidentialite" className="link link-hover">
           Politique de confidentialité
         </Link>
-        <Link href="/cookies" className="link link-hover">
+        <Link href="/mentions-legales" className="link link-hover">
           Mentions légales
         </Link>
       </nav>

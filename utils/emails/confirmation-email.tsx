@@ -92,7 +92,7 @@ export default function BookingConfirmationEmail({
             <Text style={text}>
               Vous pouvez consulter nos{" "}
               <a
-                href="https://www.avena39.ch/conditions-annulation"
+                href="https://www.avena39.ch/conditions-generales"
                 target="_blank"
                 rel="noreferrer"
               >

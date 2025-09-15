@@ -386,7 +386,7 @@ export default function Booking() {
             </fieldset>
 
             {/* Bloc prix */}
-            <fieldset className="fieldset bg-base-300 border-primary/40 rounded-box border p-2 sm:p-4 shadow-lg w-full sm:w-52">
+            <fieldset className="fieldset bg-primary/40 border-primary/40 rounded-box border p-2 sm:p-4 shadow-lg w-full sm:w-52">
               <legend className="fieldset-legend text-xl font-medium">
                 Prix
               </legend>

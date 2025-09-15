@@ -129,7 +129,7 @@ export default function ConfirmationPage() {
               <p className="mt-2">
                 Consultez nos{" "}
                 <Link
-                  href="https://www.avena39.ch/conditions-annulation"
+                  href="/conditions-generales"
                   target="_blank"
                   className="underline"
                 >
