@@ -92,7 +92,7 @@ export default function BookingEmail({
             </Text>
 
             <Text style={text}>
-              📄 Vous trouverez également en pièce jointe une <b>QR-Facture</b>
+              📄 Vous trouverez également en pièce jointe une <b>QR-Facture</b>{" "}
               que vous pouvez scanner directement avec votre application
               bancaire mobile pour effectuer le paiement rapidement et
               facilement.

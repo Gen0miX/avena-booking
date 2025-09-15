@@ -3,21 +3,14 @@ import Image from "next/image";
 import { useState } from "react";
 
 const images = [
-  {
-    src: "/images/appartements/salon.webp",
-    alt: "Salon",
-  },
-  {
-    src: "/images/appartements/cuisine.webp",
-    alt: "Cuisine",
-  },
+  { src: "/images/appartements/salon.webp", alt: "Salon" },
+  { src: "/images/appartements/cuisine.webp", alt: "Cuisine" },
   { src: "/images/appartements/chambre1.webp", alt: "Chambre 1" },
   { src: "/images/appartements/chambre2.webp", alt: "Chambre 2" },
 ];
 
 export default function Gallery() {
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  // Initialisation directe dans useState au lieu d'useEffect
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [imageLoading, setImageLoading] = useState<string[]>(
     images.map((img) => img.src)
   );
@@ -27,18 +20,37 @@ export default function Gallery() {
     setImageLoading((prev) => prev.filter((s) => s !== src));
   };
 
-  const handleClickImage = (src: string) => {
-    setSelectedImage(src);
+  const handleClickImage = (index: number) => {
+    setSelectedIndex(index);
     setModalLoading(true);
 
-    // Forcer le rechargement si l'image est en cache
     const img = new window.Image();
     img.onload = () => setModalLoading(false);
     img.onerror = () => setModalLoading(false);
-    img.src = src;
+    img.src = images[index].src;
   };
 
-  // useEffect supprimé - plus besoin !
+  const handlePrev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (selectedIndex === null) return;
+    setModalLoading(true);
+    const prevIndex = (selectedIndex - 1 + images.length) % images.length;
+    setSelectedIndex(prevIndex);
+    const img = new window.Image();
+    img.onload = () => setModalLoading(false);
+    img.src = images[prevIndex].src;
+  };
+
+  const handleNext = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (selectedIndex === null) return;
+    setModalLoading(true);
+    const nextIndex = (selectedIndex + 1) % images.length;
+    setSelectedIndex(nextIndex);
+    const img = new window.Image();
+    img.onload = () => setModalLoading(false);
+    img.src = images[nextIndex].src;
+  };
 
   return (
     <>
@@ -58,7 +70,7 @@ export default function Gallery() {
               alt={img.alt}
               fill
               className="object-cover cursor-pointer hover:scale-110 transition-all duration-300"
-              onClick={() => handleClickImage(img.src)}
+              onClick={() => handleClickImage(idx)}
               onLoad={() => handleImageLoad(img.src)}
             />
           </div>
@@ -66,30 +78,44 @@ export default function Gallery() {
       </div>
 
       {/* Modal */}
-      {selectedImage && (
+      {selectedIndex !== null && (
         <dialog
           className="modal modal-open"
           onClick={() => {
-            setSelectedImage(null);
+            setSelectedIndex(null);
             setModalLoading(false);
           }}
         >
-          <div className="modal-box max-w-5xl p-0 bg-transparent shadow-none">
+          <div className="modal-box max-w-5xl p-0 bg-transparent shadow-none relative">
             {modalLoading && (
               <div className="flex justify-center items-center w-full h-[400px]">
                 <span className="loading loading-spinner loading-lg text-primary" />
               </div>
             )}
             <Image
-              src={selectedImage}
-              alt="Agrandie"
+              src={images[selectedIndex].src}
+              alt={images[selectedIndex].alt}
               width={1200}
               height={800}
               className={`w-full h-auto rounded-lg ${
                 modalLoading ? "hidden" : "block"
               }`}
-              priority // Priorité de chargement pour le modal
+              priority
             />
+
+            {/* Flèches */}
+            <button
+              onClick={handlePrev}
+              className="absolute left-2 top-1/2 -translate-y-1/2 text-white text-3xl font-bold bg-black/30 rounded-full w-12 h-12 flex items-center justify-center"
+            >
+              ‹
+            </button>
+            <button
+              onClick={handleNext}
+              className="absolute right-2 top-1/2 -translate-y-1/2 text-white text-3xl font-bold bg-black/30 rounded-full w-12 h-12 flex items-center justify-center"
+            >
+              ›
+            </button>
           </div>
         </dialog>
       )}
