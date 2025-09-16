@@ -61,13 +61,6 @@ export async function GET() {
     }
   });
 
-  // Debug logs
-  console.log("Données de réservation:", data);
-  console.log("Dates de séjour:", Array.from(stayDates));
-  console.log("Dates d'arrivée:", Array.from(arrivalDates));
-  console.log("Dates de départ:", Array.from(departureDates));
-  console.log("Dates occupées finales:", Array.from(occupiedDates));
-
   return NextResponse.json({
     occupiedDates: Array.from(occupiedDates).sort(),
     debug: {

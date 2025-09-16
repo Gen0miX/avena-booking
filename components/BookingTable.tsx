@@ -70,7 +70,7 @@ export default function BookingTable() {
             <th>Statut</th>
             <th>Actions</th>
             <th>Payée</th>
-            <th>Ménage</th>
+            <th>Prix</th>
           </tr>
         </thead>
         <tbody>
@@ -169,13 +169,7 @@ export default function BookingTable() {
                     <span className="badge badge-neutral">Non</span>
                   )}
                 </td>
-                <td className="items-center">
-                  {booking.is_cleaning ? (
-                    <span className="badge badge-secondary">Oui</span>
-                  ) : (
-                    <span className="badge badge-neutral">Non</span>
-                  )}
-                </td>
+                <td className="items-center">{booking.price} CHF</td>
               </tr>
             );
           })}
