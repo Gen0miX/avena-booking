@@ -184,6 +184,9 @@ export default function Booking() {
         return;
       }
 
+      const arrivalDateString = range!.from!.toLocaleDateString("en-CA");
+      const departureDateString = range!.to!.toLocaleDateString("en-CA");
+
       const bookingData: BookingInput = {
         fname: formData.prenom,
         lname: formData.nom,
@@ -192,11 +195,16 @@ export default function Booking() {
         no_adults: travelers.adults,
         no_childs: travelers.children || 0,
         status: 1,
-        arrival_date: range!.from!,
-        departure_date: range!.to!,
+        arrival_date: arrivalDateString,
+        departure_date: departureDateString,
         price: price!,
         is_cleaning: true, // toujours inclus
       };
+
+      console.log(
+        "Booking data date :",
+        bookingData.arrival_date + " to " + bookingData.departure_date
+      );
 
       const response = await fetch("/api/bookings", {
         method: "POST",

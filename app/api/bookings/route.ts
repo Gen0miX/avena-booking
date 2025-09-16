@@ -65,8 +65,27 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { token, ...bookingData }: { token: string } & BookingInput = body;
 
-    const arrivalDate = new Date(bookingData.arrival_date);
-    const departureDate = new Date(bookingData.departure_date);
+    // Fonction helper pour s'assurer d'avoir le bon format date
+    const ensureDateString = (dateInput: string | Date): string => {
+      if (typeof dateInput === "string") {
+        // Si c'est déjà une string, vérifier le format
+        if (dateInput.match(/^\d{4}-\d{2}-\d{2}$/)) {
+          return dateInput; // Déjà au bon format YYYY-MM-DD
+        }
+      }
+
+      // Si c'est un objet Date ou une string mal formatée
+      const date = new Date(dateInput);
+      // Utiliser getFullYear, getMonth, getDate pour éviter les problèmes de timezone
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    };
+
+    // Convertir les dates proprement
+    const arrivalDate = ensureDateString(bookingData.arrival_date);
+    const departureDate = ensureDateString(bookingData.departure_date);
 
     // reCAPTCHA
     const recaptchaResponse = await fetch(
@@ -89,14 +108,14 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient();
 
-    // Insertion et récupération de la ligne créée
+    // Insertion directe avec les strings formatés
     const { data: booking, error } = await supabase
       .from("bookings")
       .insert([
         {
           ...bookingData,
-          arrival_date: arrivalDate.toISOString(),
-          departure_date: departureDate.toISOString(),
+          arrival_date: arrivalDate,
+          departure_date: departureDate,
         },
       ])
       .select()
