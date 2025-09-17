@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import { useState } from "react";
 import {
   FaCalendarAlt,
@@ -23,9 +24,13 @@ interface MenuItem {
 
 interface DashboardLayoutProps {
   onMenuClick?: (key: string) => void;
+  logoSrc: string;
 }
 
-export default function DashboardLayout({ onMenuClick }: DashboardLayoutProps) {
+export default function DashboardLayout({
+  onMenuClick,
+  logoSrc,
+}: DashboardLayoutProps) {
   const [active, setActive] = useState("bookings");
 
   const renderContent = () => {
@@ -90,7 +95,17 @@ export default function DashboardLayout({ onMenuClick }: DashboardLayoutProps) {
           aria-label="close sidebar"
           className="drawer-overlay"
         ></label>
-        <aside className="h-full w-64 bg-base-200 p-4 md:pt-24 lg:pt-4 flex-shrink-0 overflow-y-auto">
+        <aside className="h-full w-64 bg-base-200 p-4 pt-26 lg:pt-6 flex-shrink-0 overflow-y-auto">
+          <div>
+            <Image
+              src={logoSrc}
+              alt="logo Avena"
+              width={120}
+              height={0}
+              quality={100}
+              className="hidden md:block mb-6 mx-auto"
+            />
+          </div>
           <ul className="menu gap-2">
             {menuItems.map((item) => (
               <li key={item.key}>
