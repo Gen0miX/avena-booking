@@ -389,6 +389,7 @@ export default function Booking() {
                   <Link
                     href="/conditions-generales"
                     className="link link-primary"
+                    target="_blank"
                   >
                     conditions d’utilisation
                   </Link>
