@@ -86,7 +86,7 @@ export default function ConfirmationPage() {
                 info@avena39.ch
               </a>
               <br />
-              📞 +41 79 123 45 67
+              📞 +41 76 370 86 77
             </p>
           </div>
 

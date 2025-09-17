@@ -23,6 +23,7 @@ import {
 } from "@/utils/priceCalculator";
 import { mutate } from "swr";
 import { type BookingInput } from "@/lib/bookings";
+import Link from "next/link";
 
 interface FormData {
   nom: string;
@@ -214,9 +215,8 @@ export default function Booking() {
 
       if (response.ok) {
         const booking = await response.json();
-        router.push(`/confirmation/${booking.id}`);
         mutate("/api/bookings/occupied-dates");
-        setSubmitMessage("Réservation créée avec succès !");
+        router.push(`/confirmation/${booking.id}`);
         setFormData({ nom: "", prenom: "", email: "", telephone: "" });
         setRange(undefined);
         setTravelers({ adults: 1, children: 0 });
@@ -386,9 +386,12 @@ export default function Booking() {
                 />
                 <span className="label-text">
                   J’ai lu et j’accepte les{" "}
-                  <a href="/conditions" className="link link-primary">
+                  <Link
+                    href="/conditions-generales"
+                    className="link link-primary"
+                  >
                     conditions d’utilisation
-                  </a>
+                  </Link>
                 </span>
               </label>
             </fieldset>
