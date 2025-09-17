@@ -128,9 +128,11 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Envoi de l'email en arrière-plan
-    after(() => {
-      sendBookingEmail({
+    // ⚠️ CHANGEMENT PRINCIPAL : Envoi synchrone au lieu d'after()
+    // L'after() de Vercel peut avoir des problèmes avec les variables d'env
+    try {
+      console.log("📧 Envoi email...");
+      await sendBookingEmail({
         to: booking.mail,
         fname: booking.fname,
         lname: booking.lname,
@@ -138,18 +140,25 @@ export async function POST(request: NextRequest) {
         departure_date: booking.departure_date,
         price: booking.price,
         bookingId: booking.id,
-      }).catch((emailError) => {
-        console.error("Erreur d'envoi de l'email:", emailError);
       });
+      console.log("✅ Email envoyé");
+    } catch (emailError) {
+      console.error("❌ Erreur d'envoi de l'email:", emailError);
+      // Ne pas faire échouer la réponse pour un problème d'email
+    }
 
-      sendTelegramNotification("booking", {
+    try {
+      console.log("📱 Envoi notification Telegram...");
+      await sendTelegramNotification("booking", {
         name: `${booking.fname} ${booking.lname}`,
         arrival: booking.arrival_date,
         departure: booking.departure_date,
-      }).catch((tgError) => {
-        console.error("Erreur d'envoi Telegram booking :", tgError);
       });
-    });
+      console.log("✅ Notification Telegram envoyée");
+    } catch (tgError) {
+      console.error("❌ Erreur d'envoi Telegram:", tgError);
+      // Ne pas faire échouer la réponse pour un problème Telegram
+    }
 
     // Retourner directement l'objet booking
     return NextResponse.json(booking, { status: 201 });
