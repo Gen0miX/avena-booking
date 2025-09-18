@@ -8,6 +8,7 @@ export type Travelers = {
 
 export interface Booking {
   id: number;
+  created_at: Date;
   fname: string;
   lname: string;
   mail: string;

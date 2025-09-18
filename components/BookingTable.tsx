@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useBookings } from "@/hooks/usebookings";
 import { Booking } from "@/lib/bookings";
 import StatusBadge from "@/components/StatusBadge";
@@ -20,8 +19,11 @@ type ModalAction = {
   bookingId: number;
 };
 
-export default function BookingTable() {
-  const router = useRouter();
+interface BookingTableProps {
+  onBookingSelect: (bookingId: number) => void;
+}
+
+export default function BookingTable({ onBookingSelect }: BookingTableProps) {
   const { bookings, isLoading, isError, refresh, updateBookingStatus } =
     useBookings();
   const [processingIds, setProcessingIds] = useState<Set<number>>(new Set());
@@ -118,7 +120,7 @@ export default function BookingTable() {
           <div className="card-actions justify-between mt-4">
             <button
               className="btn btn-sm btn-primary btn-outline"
-              onClick={() => router.push(`/admin/dashboard/${booking.id}`)}
+              onClick={() => onBookingSelect(booking.id)}
             >
               <FaEye className="w-3 h-3" />
               Voir
@@ -210,9 +212,7 @@ export default function BookingTable() {
                   <tr
                     key={booking.id}
                     className="h-18 hover:bg-accent/60 hover:text-accent-content cursor-pointer"
-                    onClick={() =>
-                      router.push(`/admin/dashboard/${booking.id}`)
-                    }
+                    onClick={() => onBookingSelect(booking.id)}
                   >
                     <td className="font-medium">
                       {booking.fname} {booking.lname}

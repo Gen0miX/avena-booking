@@ -6,8 +6,10 @@ import {
   FaCalendarCheck,
   FaRegChartBar,
   FaCog,
+  FaArrowLeft,
 } from "react-icons/fa";
-import BookingTable from "./BookingTable";
+import BookingTable from "@/components/BookingTable";
+import BookingDetails from "@/components/BookingDetails";
 
 const menuItems = [
   { key: "bookings", label: "Réservations", icon: <FaCalendarAlt /> },
@@ -32,11 +34,44 @@ export default function DashboardLayout({
   logoSrc,
 }: DashboardLayoutProps) {
   const [active, setActive] = useState("bookings");
+  const [selectedBookingId, setSelectedBookingId] = useState<number | null>(
+    null
+  );
+
+  const handleBookingSelect = (bookingId: number) => {
+    setSelectedBookingId(bookingId);
+  };
+
+  const handleBackToList = () => {
+    setSelectedBookingId(null);
+  };
 
   const renderContent = () => {
+    // Si une réservation est sélectionnée, afficher les détails
+    if (selectedBookingId) {
+      return (
+        <div className="h-full">
+          <div className="flex items-center gap-4 mb-4">
+            <button
+              className="btn btn-sm btn-ghost btn-circle"
+              onClick={handleBackToList}
+            >
+              <FaArrowLeft />
+            </button>
+            <h2 className="text-xl font-semibold">Détails de la réservation</h2>
+          </div>
+          <BookingDetails
+            bookingId={selectedBookingId}
+            onBack={handleBackToList}
+          />
+        </div>
+      );
+    }
+
+    // Sinon, afficher le contenu normal selon l'onglet actif
     switch (active) {
       case "bookings":
-        return <BookingTable />;
+        return <BookingTable onBookingSelect={handleBookingSelect} />;
       case "terminated":
         return <p>Historique des réservations à venir...</p>;
       case "statistics":
@@ -50,6 +85,7 @@ export default function DashboardLayout({
 
   const handleMenuItemClick = (key: string): void => {
     setActive(key);
+    setSelectedBookingId(null); // Reset la sélection de réservation
     // Fermer le drawer après sélection sur mobile/tablet
     const drawerToggle = document.getElementById(
       "dashboard-drawer"
@@ -62,7 +98,6 @@ export default function DashboardLayout({
   return (
     <div className="drawer lg:drawer-open h-full">
       <input id="dashboard-drawer" type="checkbox" className="drawer-toggle" />
-
       {/* Main content - Important: pas de flex-col ici */}
       <div className="drawer-content h-full">
         {/* Mobile */}
@@ -73,7 +108,7 @@ export default function DashboardLayout({
               <button
                 key={item.key}
                 className={active === item.key ? "active text-primary" : ""}
-                onClick={() => setActive(item.key)}
+                onClick={() => handleMenuItemClick(item.key)}
               >
                 {item.icon}
                 <span className="dock-label">{item.label}</span>
@@ -81,15 +116,13 @@ export default function DashboardLayout({
             ))}
           </div>
         </div>
-
         {/* Desktop - Container avec hauteur fixe et scroll interne */}
         <div className="hidden md:block h-full">
           <main className="h-full p-4 overflow-y-auto">{renderContent()}</main>
         </div>
       </div>
-
       {/* Sidebar - hauteur fixe */}
-      <div className="drawer-side h-full">
+      <div className="drawer-side h-full bg-base-200 border-r border-primary/40">
         <label
           htmlFor="dashboard-drawer"
           aria-label="close sidebar"

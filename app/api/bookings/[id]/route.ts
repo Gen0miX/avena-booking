@@ -15,6 +15,7 @@ export async function GET(
     .select(
       `
       id,
+      created_at,
       fname,
       lname,
       mail,
