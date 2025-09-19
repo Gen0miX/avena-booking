@@ -7,6 +7,8 @@ import {
   FaRegChartBar,
   FaCog,
   FaArrowLeft,
+  FaBars,
+  FaPowerOff,
 } from "react-icons/fa";
 import BookingTable from "@/components/BookingTable";
 import BookingDetails from "@/components/BookingDetails";
@@ -27,11 +29,13 @@ interface MenuItem {
 interface DashboardLayoutProps {
   onMenuClick?: (key: string) => void;
   logoSrc: string;
+  onLogout?: () => void;
 }
 
 export default function DashboardLayout({
   onMenuClick,
   logoSrc,
+  onLogout,
 }: DashboardLayoutProps) {
   const [active, setActive] = useState("bookings");
   const [selectedBookingId, setSelectedBookingId] = useState<number | null>(
@@ -46,8 +50,20 @@ export default function DashboardLayout({
     setSelectedBookingId(null);
   };
 
+  const getPageTitle = () => {
+    if (selectedBookingId) return "Détails de la réservation";
+    const currentItem = menuItems.find((item) => item.key === active);
+    return currentItem ? currentItem.label : "Dashboard";
+  };
+
+  const handleMenuToggle = () => {
+    const drawerToggle = document.getElementById(
+      "dashboard-drawer"
+    ) as HTMLInputElement | null;
+    if (drawerToggle) drawerToggle.checked = !drawerToggle.checked;
+  };
+
   const renderContent = () => {
-    // Si une réservation est sélectionnée, afficher les détails
     if (selectedBookingId) {
       return (
         <div className="h-full">
@@ -58,7 +74,6 @@ export default function DashboardLayout({
             >
               <FaArrowLeft />
             </button>
-            <h2 className="text-xl font-semibold">Détails de la réservation</h2>
           </div>
           <BookingDetails
             bookingId={selectedBookingId}
@@ -68,7 +83,6 @@ export default function DashboardLayout({
       );
     }
 
-    // Sinon, afficher le contenu normal selon l'onglet actif
     switch (active) {
       case "bookings":
         return <BookingTable onBookingSelect={handleBookingSelect} />;
@@ -85,61 +99,91 @@ export default function DashboardLayout({
 
   const handleMenuItemClick = (key: string): void => {
     setActive(key);
-    setSelectedBookingId(null); // Reset la sélection de réservation
-    // Fermer le drawer après sélection sur mobile/tablet
+    setSelectedBookingId(null);
     const drawerToggle = document.getElementById(
       "dashboard-drawer"
     ) as HTMLInputElement | null;
-    if (drawerToggle) {
-      drawerToggle.checked = false;
-    }
+    if (drawerToggle) drawerToggle.checked = false; // ferme drawer sur mobile
   };
 
   return (
-    <div className="drawer lg:drawer-open h-full">
+    <div className="drawer h-screen">
       <input id="dashboard-drawer" type="checkbox" className="drawer-toggle" />
-      {/* Main content - Important: pas de flex-col ici */}
-      <div className="drawer-content h-full">
-        {/* Mobile */}
-        <div className="md:hidden h-full flex flex-col mb-16">
-          <div className="flex-1 overflow-y-auto p-4">{renderContent()}</div>
-          <div className="dock dock-sm sm:dock-md">
-            {menuItems.map((item) => (
-              <button
-                key={item.key}
-                className={active === item.key ? "active text-primary" : ""}
-                onClick={() => handleMenuItemClick(item.key)}
-              >
-                {item.icon}
-                <span className="dock-label">{item.label}</span>
-              </button>
-            ))}
+
+      {/* Main content — on décale sur desktop avec lg:ml-64 */}
+      <div className="drawer-content flex flex-col h-screen lg:ml-64">
+        {/* Header sticky */}
+        <header className="flex justify-between items-center p-4 border-b border-base-300 bg-base-100 z-10 flex-shrink-0 sticky top-0">
+          <div className="flex items-center gap-4">
+            <Image
+              src={logoSrc}
+              alt="logo Avena"
+              width={80}
+              height={0}
+              quality={100}
+              className="md:hidden"
+            />
+            {/* Bouton menu pour tablet seulement */}
+            <button
+              className="btn btn-square btn-ghost hidden md:inline-flex lg:hidden"
+              onClick={handleMenuToggle}
+            >
+              <FaBars size={20} />
+            </button>
+            <h1 className="text-2xl font-bold">{getPageTitle()}</h1>
+          </div>
+          {onLogout && (
+            <button className="btn btn-circle btn-secondary" onClick={onLogout}>
+              <FaPowerOff />
+            </button>
+          )}
+        </header>
+
+        {/* Contenu principal avec scroll */}
+        <div className="flex-1 overflow-hidden">
+          {/* Mobile dock */}
+          <div className="md:hidden h-full flex flex-col">
+            <div className="flex-1 overflow-y-auto p-4">{renderContent()}</div>
+            <div className="dock dock-sm sm:dock-md flex-shrink-0">
+              {menuItems.map((item) => (
+                <button
+                  key={item.key}
+                  className={active === item.key ? "active text-primary" : ""}
+                  onClick={() => handleMenuItemClick(item.key)}
+                >
+                  {item.icon}
+                  <span className="dock-label">{item.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Desktop - container avec scroll interne */}
+          <div className="hidden md:block h-full overflow-y-auto">
+            <main className="p-4">{renderContent()}</main>
           </div>
         </div>
-        {/* Desktop - Container avec hauteur fixe et scroll interne */}
-        <div className="hidden md:block h-full">
-          <main className="h-full p-4 overflow-y-auto">{renderContent()}</main>
-        </div>
       </div>
-      {/* Sidebar - hauteur fixe */}
-      <div className="drawer-side h-full bg-base-200 border-r border-primary/40">
+
+      {/* Drawer-side pour mobile/tablette (contrôlé par la checkbox). Caché sur lg */}
+      <div className="drawer-side lg:hidden">
         <label
           htmlFor="dashboard-drawer"
           aria-label="close sidebar"
           className="drawer-overlay"
         ></label>
-        <aside className="h-full w-64 bg-base-200 p-4 pt-26 lg:pt-6 flex-shrink-0 overflow-y-auto">
-          <div>
+        <aside className="w-64 h-full pt-28 bg-base-200 border-r border-primary/40 p-4 flex flex-col">
+          <div className="flex-shrink-0 mb-6">
             <Image
               src={logoSrc}
               alt="logo Avena"
               width={120}
               height={0}
               quality={100}
-              className="hidden md:block mb-6 mx-auto"
+              className="mx-auto mb-5"
             />
           </div>
-          <ul className="menu gap-2">
+          <ul className="menu gap-2 flex-1 overflow-y-auto">
             {menuItems.map((item) => (
               <li key={item.key}>
                 <button
@@ -156,6 +200,35 @@ export default function DashboardLayout({
           </ul>
         </aside>
       </div>
+
+      {/* Sidebar fixe pour desktop (visible uniquement >= lg) */}
+      <aside className="hidden lg:flex fixed top-0 left-0 h-screen w-64 pt-12 bg-base-200 border-r border-primary/40 p-4 flex-col">
+        <div className="flex-shrink-0 mb-6">
+          <Image
+            src={logoSrc}
+            alt="logo Avena"
+            width={120}
+            height={0}
+            quality={100}
+            className="mx-auto mb-5"
+          />
+        </div>
+        <ul className="menu gap-2 flex-1 overflow-y-auto">
+          {menuItems.map((item) => (
+            <li key={item.key}>
+              <button
+                className={`btn w-full justify-start ${
+                  active === item.key ? "btn-primary" : "btn-ghost"
+                }`}
+                onClick={() => handleMenuItemClick(item.key)}
+              >
+                {item.icon}
+                {item.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </aside>
     </div>
   );
 }

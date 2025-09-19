@@ -1,11 +1,10 @@
 "use client";
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { createClient } from "@/utils/supabase/client";
 import DashboardLayout from "@/components/DashboardLayout";
-import { FaBars, FaPowerOff } from "react-icons/fa";
+import { FaPowerOff } from "react-icons/fa";
 
 export default function DashboardPage() {
   const { resolvedTheme } = useTheme();
@@ -44,15 +43,6 @@ export default function DashboardPage() {
     }
   };
 
-  const handleMenuClick = () => {
-    const drawerToggle = document.getElementById(
-      "dashboard-drawer"
-    ) as HTMLInputElement | null;
-    if (drawerToggle) {
-      drawerToggle.checked = !drawerToggle.checked;
-    }
-  };
-
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -62,34 +52,8 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="h-screen flex flex-col">
-      <header className="flex justify-between items-center p-4 border-b border-base-300 bg-base-100 z-10 flex-shrink-0">
-        <div className="flex items-center gap-4">
-          <Image
-            src={logoSrc}
-            alt="logo Avena"
-            width={80}
-            height={0}
-            quality={100}
-            className="md:hidden"
-          />
-          {/* Bouton menu pour tablet seulement */}
-          <button
-            className="btn btn-square btn-ghost hidden md:inline-flex lg:hidden"
-            onClick={handleMenuClick}
-          >
-            <FaBars size={20} />
-          </button>
-          <h1 className="text-2xl font-bold">Dashboard</h1>
-        </div>
-        <button className="btn btn-circle btn-secondary" onClick={handleLogout}>
-          <FaPowerOff className="" />
-        </button>
-      </header>
-
-      <div className="flex-1 overflow-auto">
-        <DashboardLayout onMenuClick={handleMenuClick} logoSrc={logoSrc} />
-      </div>
+    <div className="h-screen">
+      <DashboardLayout logoSrc={logoSrc} onLogout={handleLogout} />
 
       {error && (
         <div className="toast toast-top toast-end">
