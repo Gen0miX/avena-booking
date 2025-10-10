@@ -320,7 +320,7 @@ export default function BookingTable({ onBookingSelect }: BookingTableProps) {
 
       {/* Vue cartes pour tablet et mobile */}
       <div className="lg:hidden h-full overflow-y-auto">
-        <div className="grid gap-4 md:grid-cols-2 grid-cols-1 p-1">
+        <div className="grid gap-4 md:grid-cols-2 grid-cols-1 p-1 my-4">
           {bookings.map((booking: Booking) => (
             <BookingCard key={booking.id} booking={booking} />
           ))}
