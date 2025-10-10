@@ -93,7 +93,7 @@ export default function CustomDayPicker(props: CustomDayPickerProps) {
   // Calcule une liste occupée effective en ignorant excludeRange si fournie
   const effectiveOccupied =
     props.mode === "selectable" && props.excludeRange
-      ? occupiedDates.filter((d) => {
+      ? occupiedDates.filter((d: Date) => {
           const nd = normalizeDate(d);
           const from = props.excludeRange?.from
             ? normalizeDate(new Date(props.excludeRange.from))
