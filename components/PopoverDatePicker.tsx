@@ -19,12 +19,16 @@ interface PopoverDatePickerProps {
   selectedRange?: DateRange;
   onSelect: (range: DateRange | undefined) => void;
   className?: string;
+  excludeRange?: DateRange; // à ignorer dans l'occupation
+  initialMonth?: Date;
 }
 
 export default function PopoverDatePicker({
   selectedRange,
   onSelect,
   className = "",
+  excludeRange,
+  initialMonth,
 }: PopoverDatePickerProps) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -98,7 +102,7 @@ export default function PopoverDatePicker({
     onSelect(range);
     // Ferme seulement si on a une plage complète (from et to)
     if (range?.from && range?.to) {
-      setIsOpen(true);
+      setIsOpen(false);
     }
   };
 
@@ -141,6 +145,8 @@ export default function PopoverDatePicker({
               mode="selectable"
               selectedRange={selectedRange}
               onSelect={handleDateSelect}
+              excludeRange={excludeRange}
+              initialMonth={initialMonth}
             />
           </div>
         )}

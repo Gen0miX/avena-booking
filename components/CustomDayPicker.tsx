@@ -15,11 +15,14 @@ function isDateInList(date: Date, list: Date[]) {
 type CustomDayPickerProps =
   | {
       mode: "readOnly";
+      initialMonth?: Date;
     }
   | {
       mode: "selectable";
       selectedRange: DateRange | undefined;
       onSelect: (range: DateRange | undefined) => void;
+      excludeRange?: DateRange; // plage à ignorer (réservation en cours)
+      initialMonth?: Date;
     };
 
 export default function CustomDayPicker(props: CustomDayPickerProps) {
@@ -38,9 +41,24 @@ export default function CustomDayPicker(props: CustomDayPickerProps) {
     const current = new Date(range.from);
     const end = new Date(range.to);
 
+    const inExcludeRange = (date: Date) => {
+      if (props.mode !== "selectable" || !props.excludeRange) return false;
+      const from = props.excludeRange.from
+        ? normalizeDate(new Date(props.excludeRange.from))
+        : undefined;
+      const to = props.excludeRange.to
+        ? normalizeDate(new Date(props.excludeRange.to))
+        : undefined;
+      const d = normalizeDate(date);
+      if (!from || !to) return false;
+      return d.getTime() >= from.getTime() && d.getTime() <= to.getTime();
+    };
+
     while (current <= end) {
       const normalized = normalizeDate(current);
-      if (normalized < today || isDateInList(normalized, occupiedDates)) {
+      const isOccupied = isDateInList(normalized, occupiedDates);
+      const isExcluded = inExcludeRange(normalized);
+      if (normalized < today || (isOccupied && !isExcluded)) {
         // Une date invalide est dans la plage => annuler la sélection
         return;
       }
@@ -63,6 +81,7 @@ export default function CustomDayPicker(props: CustomDayPickerProps) {
         className="react-day-picker self-center"
         showOutsideDays
         locale={frCH}
+        defaultMonth={props.initialMonth}
         modifiers={{ occupied: occupiedDates }}
         modifiersClassNames={{
           occupied: "occupied",
@@ -71,17 +90,36 @@ export default function CustomDayPicker(props: CustomDayPickerProps) {
     );
   }
 
+  // Calcule une liste occupée effective en ignorant excludeRange si fournie
+  const effectiveOccupied =
+    props.mode === "selectable" && props.excludeRange
+      ? occupiedDates.filter((d) => {
+          const nd = normalizeDate(d);
+          const from = props.excludeRange?.from
+            ? normalizeDate(new Date(props.excludeRange.from))
+            : undefined;
+          const to = props.excludeRange?.to
+            ? normalizeDate(new Date(props.excludeRange.to))
+            : undefined;
+          if (!from || !to) return true;
+          return !(
+            nd.getTime() >= from.getTime() && nd.getTime() <= to.getTime()
+          );
+        })
+      : occupiedDates;
+
   return (
     <DayPicker
       className="react-day-picker"
       showOutsideDays
       locale={frCH}
       mode="range"
-      selected={props.selectedRange}
+      selected={props.mode === "selectable" ? props.selectedRange : undefined}
       onSelect={handleSelect}
+      defaultMonth={props.initialMonth}
       required={false}
-      disabled={[{ before: today }, today, ...occupiedDates]}
-      modifiers={{ occupied: occupiedDates }}
+      disabled={[{ before: today }, today, ...effectiveOccupied]}
+      modifiers={{ occupied: effectiveOccupied }}
       modifiersClassNames={{
         occupied: "occupied",
         range_start:
