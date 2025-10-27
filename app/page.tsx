@@ -87,7 +87,7 @@ export default function Home() {
                 <li>
                   Deux chambres spacieuses avec literie de qualité{" "}
                   <Tooltip
-                    content="Possibilité d'ajouter un matelas et un duvet pour une 5ᵉ personne au salon"
+                    content="Possibilité d'ajouter un matelas et un duvet au salon pour une 5ᵉ personne"
                     placement="top"
                     className="inline-block align-middle"
                   >
