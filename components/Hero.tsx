@@ -45,7 +45,7 @@ export default function Hero() {
             personnes.
           </p>
           <p className="italic textl-xl">
-            Deux chambres, salon lumineux et cuisine équipée.
+            Deux chambres, salon chaleureux et cuisine équipée.
           </p>
           <div>
             <Link

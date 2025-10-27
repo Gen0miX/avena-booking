@@ -29,7 +29,7 @@ function Amenitie({ icon, name }: AmenitieProps) {
 export default function Amenities() {
   const amenitiesList = [
     { icon: <PiWifiHigh />, name: "Wi-Fi" },
-    { icon: <PiTelevisionSimple />, name: "Télévision" },
+    { icon: <PiTelevisionSimple />, name: "Écran" },
     { icon: <PiOven />, name: "Four" },
     { icon: <RiFridgeLine className="text-base-content/80" />, name: "Frigo" },
     { icon: <PiCookingPot />, name: "Plaques" },
