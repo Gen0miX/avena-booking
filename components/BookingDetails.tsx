@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import useBooking from "@/hooks/useBooking";
 import { useBookings } from "@/hooks/usebookings";
 import { Booking } from "@/lib/bookings";
 import StatusBadge from "@/components/StatusBadge";
@@ -31,8 +32,8 @@ export default function BookingDetails({
   bookingId,
   onBack,
 }: BookingDetailsProps) {
-  const { bookings, isLoading, updateBookingStatus, refresh } = useBookings();
-  const [booking, setBooking] = useState<Booking | null>(null);
+  const { booking, loading, updateBooking, refresh } = useBooking(bookingId);
+  const { updateBookingStatus } = useBookings();
   const [isUpdating, setIsUpdating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -91,12 +92,10 @@ export default function BookingDetails({
   };
 
   useEffect(() => {
-    const foundBooking = bookings.find((b: Booking) => b.id === bookingId);
-    setBooking(foundBooking || null);
-    if (foundBooking && isEditing) {
-      hydrateForm(foundBooking);
+    if (booking && isEditing) {
+      hydrateForm(booking);
     }
-  }, [bookingId, bookings]);
+  }, [booking, bookingId, isEditing]);
 
   const handleAction = async (
     action: "confirm" | "terminate" | "cancel" | "payment"
@@ -108,7 +107,7 @@ export default function BookingDetails({
       const success = await updateBookingStatus(booking.id, action);
       if (success) {
         console.log("Réservation mise à jour :", action);
-        // Le booking sera mis à jour automatiquement via le hook useBookings
+        await refresh(); // Rafraîchir via le hook useBooking
       } else {
         console.error("Erreur lors de la mise à jour");
       }
@@ -195,28 +194,18 @@ export default function BookingDetails({
     }
 
     try {
-      const response = await fetch(`/api/bookings/${booking.id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          arrival_date: formValues.arrival_date,
-          departure_date: formValues.departure_date,
-          no_adults: formValues.no_adults,
-          no_childs: formValues.no_childs,
-          mail: formValues.mail || null,
-          phone: formValues.phone || null,
-          price: formValues.price,
-          is_paid: formValues.is_paid,
-          is_cleaning: formValues.is_cleaning,
-        }),
+      await updateBooking({
+        arrival_date: formValues.arrival_date,
+        departure_date: formValues.departure_date,
+        no_adults: formValues.no_adults,
+        no_childs: formValues.no_childs,
+        mail: formValues.mail || null,
+        phone: formValues.phone || null,
+        price: formValues.price,
+        is_paid: formValues.is_paid,
+        is_cleaning: formValues.is_cleaning,
       });
 
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}));
-        throw new Error(err.error || "Erreur lors de l'enregistrement");
-      }
-
-      await refresh();
       setIsEditing(false);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Erreur inconnue";
@@ -245,7 +234,7 @@ export default function BookingDetails({
     }
   };
 
-  if (isLoading || !booking) {
+  if (loading || !booking) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="loading loading-dots loading-lg text-primary"></div>
