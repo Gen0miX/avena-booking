@@ -18,7 +18,7 @@ function ServiceBadge({ type }: ServiceBadgeProps) {
   };
 
   const texts = {
-    bedroom: "3 chambres",
+    bedroom: "2 chambres",
     people: "5 personnes",
     bathroom: "1 salle de bain",
     pets: "pas d'animaux",

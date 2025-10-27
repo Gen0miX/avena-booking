@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { DateRange } from "react-day-picker";
 import { IoCalendarOutline } from "react-icons/io5";
 import CustomDayPicker from "./CustomDayPicker";
@@ -48,62 +48,26 @@ export default function PopoverDatePicker({
 
   // Utilisation des hooks d'interactions de Floating UI
   const click = useClick(context, {
-    toggle: false,
+    toggle: true,
     ignoreMouse: false,
     event: "mousedown",
+  });
+  const dismiss = useDismiss(context, {
+    enabled: isOpen,
+    outsidePress: true,
+    outsidePressEvent: "mousedown",
   });
   const role = useRole(context);
 
   const { getReferenceProps, getFloatingProps } = useInteractions([
     click,
+    dismiss,
     role,
   ]);
 
-  // Gestion manuelle de la fermeture
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-
-      // Vérifie si le clic est à l'extérieur du référence ET du floating
-      if (
-        refs.reference.current &&
-        refs.floating.current &&
-        refs.reference.current instanceof HTMLElement &&
-        !refs.reference.current.contains(target) &&
-        !refs.floating.current.contains(target)
-      ) {
-        setIsOpen(false);
-      }
-    };
-
-    const handleEscapeKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
-        setIsOpen(false);
-      }
-    };
-
-    // Délai pour éviter la fermeture immédiate
-    const timeoutId = setTimeout(() => {
-      document.addEventListener("mousedown", handleClickOutside);
-      document.addEventListener("keydown", handleEscapeKey);
-    }, 0);
-
-    return () => {
-      clearTimeout(timeoutId);
-      document.removeEventListener("mousedown", handleClickOutside);
-      document.removeEventListener("keydown", handleEscapeKey);
-    };
-  }, [isOpen, refs]);
-
-  // Gère le choix de date et fermeture uniquement si range complet
+  // Gère le choix de date
   const handleDateSelect = (range: DateRange | undefined) => {
     onSelect(range);
-    // Ferme seulement si on a une plage complète (from et to)
-    if (range?.from && range?.to) {
-      setIsOpen(false);
-    }
   };
 
   // Formatte l'affichage des dates

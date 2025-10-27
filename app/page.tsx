@@ -11,6 +11,8 @@ import ServiceBadges from "@/components/ServiceBadges";
 import SectionTitle from "@/components/SectionTitle";
 import Amenities from "@/components/Amenities";
 import { GoogleMapsEmbed } from "@next/third-parties/google";
+import { FaInfoCircle } from "react-icons/fa";
+import Tooltip from "@/components/Tooltip";
 
 export default function Home() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -82,8 +84,16 @@ export default function Home() {
                 dispose de :
               </p>
               <ul className="list-disc list-inside text-sm sm:text-base pl-5 sm:pl-10 text-base-content/70 mb-10">
-                <li>Deux chambres spacieuses avec literie de qualité</li>
-                <li>Un petit studio mis à dispostion pour la 5ème personne</li>
+                <li>
+                  Deux chambres spacieuses avec literie de qualité{" "}
+                  <Tooltip
+                    content="Possibilité d'ajouter un matelas et un duvet pour une 5ᵉ personne au salon"
+                    placement="top"
+                    className="inline-block align-middle"
+                  >
+                    <FaInfoCircle className="text-info -mt-0.5" size={18} />
+                  </Tooltip>
+                </li>
                 <li>Un salon chaleureux avec coin repas</li>
                 <li>
                   Une cuisine équipée (four, plaques, lave-vaisselle, machine à
