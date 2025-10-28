@@ -1,7 +1,12 @@
 "use client";
 
-import { useState } from "react";
-import { useBookings, SortField, SortOrder } from "@/hooks/usebookings";
+import { useEffect, useState } from "react";
+import {
+  useBookings,
+  SortField,
+  SortOrder,
+  BookingFilters,
+} from "@/hooks/usebookings";
 import { Booking } from "@/lib/bookings";
 import StatusBadge from "@/components/StatusBadge";
 import StatusFilter from "@/components/StatusFilter";
@@ -25,9 +30,17 @@ type ModalAction = {
 
 interface BookingTableProps {
   onBookingSelect: (bookingId: number) => void;
+  statusGroup?: "current" | "terminated";
+  initialFilters?: Partial<BookingFilters>;
+  onFiltersChange?: (filters: BookingFilters) => void;
 }
 
-export default function BookingTable({ onBookingSelect }: BookingTableProps) {
+export default function BookingTable({
+  onBookingSelect,
+  statusGroup = "current",
+  initialFilters,
+  onFiltersChange,
+}: BookingTableProps) {
   const {
     bookings,
     isLoading,
@@ -36,7 +49,15 @@ export default function BookingTable({ onBookingSelect }: BookingTableProps) {
     updateBookingStatus,
     filters,
     updateFilters,
-  } = useBookings();
+  } = useBookings(initialFilters, statusGroup);
+
+  useEffect(() => {
+    if (onFiltersChange) onFiltersChange(filters);
+  }, [filters, onFiltersChange]);
+  const groupStatuses = statusGroup === "terminated" ? [3, 4] : [1, 2];
+  const groupedBookings = bookings.filter((b: Booking) =>
+    groupStatuses.includes(b.status.id)
+  );
   const [processingIds, setProcessingIds] = useState<Set<number>>(new Set());
   const [modalAction, setModalAction] = useState<ModalAction | null>(null);
 
@@ -209,7 +230,11 @@ export default function BookingTable({ onBookingSelect }: BookingTableProps) {
     <>
       {/* Contrôles de filtrage pour desktop */}
       <div className="hidden lg:flex mb-4 items-center gap-4 justify-end">
-        <StatusFilter filters={filters} updateFilters={updateFilters} />
+        <StatusFilter
+          filters={filters}
+          updateFilters={updateFilters}
+          statusGroup={statusGroup}
+        />
       </div>
 
       {/* Vue tableau pour desktop */}
@@ -256,7 +281,7 @@ export default function BookingTable({ onBookingSelect }: BookingTableProps) {
               </tr>
             </thead>
             <tbody>
-              {bookings.map((booking: Booking) => {
+              {groupedBookings.map((booking: Booking) => {
                 const status = booking.status.id;
                 const showConfirmBtn = status === 1 || status === 2;
                 const showCancelBtn = status === 1 || status === 2;
@@ -377,11 +402,15 @@ export default function BookingTable({ onBookingSelect }: BookingTableProps) {
       <div className="lg:hidden h-full overflow-y-auto">
         {/* Contrôles de filtrage pour mobile/tablet */}
         <div className="mt-2 mb-4 p-1 flex gap-2 justify-end">
-          <StatusFilter filters={filters} updateFilters={updateFilters} />
+          <StatusFilter
+            filters={filters}
+            updateFilters={updateFilters}
+            statusGroup={statusGroup}
+          />
           <SortFilter filters={filters} updateFilters={updateFilters} />
         </div>
         <div className="grid gap-4 md:grid-cols-2 grid-cols-1 p-1 my-4">
-          {bookings.map((booking: Booking) => (
+          {groupedBookings.map((booking: Booking) => (
             <BookingCard key={booking.id} booking={booking} />
           ))}
         </div>

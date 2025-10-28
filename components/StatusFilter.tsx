@@ -4,19 +4,26 @@ import { FaFilter } from "react-icons/fa";
 interface StatusFilterProps {
   filters: BookingFilters;
   updateFilters: (newFilters: Partial<BookingFilters>) => void;
+  statusGroup?: "current" | "terminated";
 }
 
 export default function StatusFilter({
   filters,
   updateFilters,
+  statusGroup = "current",
 }: StatusFilterProps) {
-  const statusOptions = [
-    { value: "all", label: "Tous les statuts" },
-    { value: 1, label: "En attente" },
-    { value: 2, label: "Confirmée" },
-    { value: 3, label: "Terminée" },
-    { value: 4, label: "Annulée" },
-  ];
+  const statusOptions =
+    statusGroup === "terminated"
+      ? [
+          { value: "all", label: "Tous les statuts" },
+          { value: 3, label: "Terminée" },
+          { value: 4, label: "Annulée" },
+        ]
+      : [
+          { value: "all", label: "Tous les statuts" },
+          { value: 1, label: "En attente" },
+          { value: 2, label: "Confirmée" },
+        ];
 
   return (
     <div className="flex bg-base-300 rounded justify-center items-center border border-primary/50 max-w-48">

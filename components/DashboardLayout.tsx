@@ -12,6 +12,7 @@ import {
 } from "react-icons/fa";
 import BookingTable from "@/components/BookingTable";
 import BookingDetails from "@/components/BookingDetails";
+import { BookingFilters } from "@/hooks/usebookings";
 
 const menuItems = [
   { key: "bookings", label: "Réservations", icon: <FaCalendarAlt /> },
@@ -41,6 +42,11 @@ export default function DashboardLayout({
   const [selectedBookingId, setSelectedBookingId] = useState<number | null>(
     null
   );
+  const [bookingsFilters, setBookingsFilters] = useState<BookingFilters | null>(
+    null
+  );
+  const [terminatedFilters, setTerminatedFilters] =
+    useState<BookingFilters | null>(null);
 
   const handleBookingSelect = (bookingId: number) => {
     setSelectedBookingId(bookingId);
@@ -85,9 +91,27 @@ export default function DashboardLayout({
 
     switch (active) {
       case "bookings":
-        return <BookingTable onBookingSelect={handleBookingSelect} />;
+        return (
+          <BookingTable
+            key="current"
+            onBookingSelect={handleBookingSelect}
+            statusGroup="current"
+            initialFilters={bookingsFilters ?? undefined}
+            onFiltersChange={setBookingsFilters as (f: BookingFilters) => void}
+          />
+        );
       case "terminated":
-        return <p>Historique des réservations à venir...</p>;
+        return (
+          <BookingTable
+            key="terminated"
+            onBookingSelect={handleBookingSelect}
+            statusGroup="terminated"
+            initialFilters={terminatedFilters ?? undefined}
+            onFiltersChange={
+              setTerminatedFilters as (f: BookingFilters) => void
+            }
+          />
+        );
       case "statistics":
         return <p>Statistiques à venir...</p>;
       case "settings":

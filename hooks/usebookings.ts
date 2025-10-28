@@ -5,17 +5,14 @@ import { compareAsc } from "date-fns";
 
 const fetcher = async (url: string) => {
   const res = await fetch(url);
-
   if (!res.ok) {
     const err = await res.json();
     throw new Error(err.error || "Erreur de chargement");
   }
-
   return res.json();
 };
 
-export type FilterStatus = "all" | number; // number = status id
-
+export type FilterStatus = "all" | number;
 export type SortField = "dates" | "name" | "price" | "status";
 export type SortOrder = "asc" | "desc";
 
@@ -31,35 +28,50 @@ const defaultFilters: BookingFilters = {
   sortOrder: "asc",
 };
 
-export function useBookings(initialFilters?: Partial<BookingFilters>) {
-  const { data, error, isLoading, mutate } = useSWR("/api/bookings", fetcher);
+export function useBookings(
+  initialFilters?: Partial<BookingFilters>,
+  key: string = "default"
+) {
+  const { data, error, isLoading, mutate } = useSWR(`/api/bookings`, fetcher);
 
-  const [filters, setFilters] = useState<BookingFilters>({
-    ...defaultFilters,
-    ...initialFilters,
+  // ✅ état local propre à chaque clé
+  const [filtersByKey, setFiltersByKey] = useState<
+    Record<string, BookingFilters>
+  >({
+    [key]: { ...defaultFilters, ...initialFilters },
   });
 
-  // Fonction pour appliquer les filtres
+  const filters = filtersByKey[key];
+
+  const updateFilters = (newFilters: Partial<BookingFilters>) => {
+    setFiltersByKey((prev) => ({
+      ...prev,
+      [key]: { ...prev[key], ...newFilters },
+    }));
+  };
+
+  const resetFilters = () => {
+    setFiltersByKey((prev) => ({
+      ...prev,
+      [key]: { ...defaultFilters },
+    }));
+  };
+
+  // --- filtrage et tri ---
   const filterBookings = (bookings: Booking[]): Booking[] => {
     let filtered = [...bookings];
-
-    // Filtrage par statut
     if (filters.status !== "all") {
       filtered = filtered.filter(
         (booking) => booking.status.id === filters.status
       );
     }
-
     return filtered;
   };
 
-  // Fonction pour appliquer le tri
   const sortBookings = (bookings: Booking[]): Booking[] => {
     const sorted = [...bookings];
-
     sorted.sort((a, b) => {
       let comparison = 0;
-
       switch (filters.sortBy) {
         case "dates":
           comparison = compareAsc(
@@ -68,9 +80,9 @@ export function useBookings(initialFilters?: Partial<BookingFilters>) {
           );
           break;
         case "name":
-          const nameA = `${a.fname} ${a.lname}`.toLowerCase();
-          const nameB = `${b.fname} ${b.lname}`.toLowerCase();
-          comparison = nameA.localeCompare(nameB);
+          comparison = `${a.fname} ${a.lname}`
+            .toLowerCase()
+            .localeCompare(`${b.fname} ${b.lname}`.toLowerCase());
           break;
         case "price":
           comparison = a.price - b.price;
@@ -79,29 +91,16 @@ export function useBookings(initialFilters?: Partial<BookingFilters>) {
           comparison = a.status.id - b.status.id;
           break;
       }
-
       return filters.sortOrder === "asc" ? comparison : -comparison;
     });
-
     return sorted;
   };
 
-  // Résultat filtré et trié
   const filteredBookings = useMemo(() => {
     if (!data) return [];
     const filtered = filterBookings(data);
     return sortBookings(filtered);
   }, [data, filters]);
-
-  // Fonction pour mettre à jour les filtres
-  const updateFilters = (newFilters: Partial<BookingFilters>) => {
-    setFilters((prev) => ({ ...prev, ...newFilters }));
-  };
-
-  // Fonction pour réinitialiser les filtres
-  const resetFilters = () => {
-    setFilters(defaultFilters);
-  };
 
   const updateBookingStatus = async (
     bookingId: number,
@@ -112,12 +111,10 @@ export function useBookings(initialFilters?: Partial<BookingFilters>) {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
       });
-
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to update booking");
       }
-
       await mutate(); // refresh SWR
       return true;
     } catch (error) {
