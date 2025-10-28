@@ -28,7 +28,7 @@ export interface BookingFilters {
 const defaultFilters: BookingFilters = {
   status: "all",
   sortBy: "dates",
-  sortOrder: "desc",
+  sortOrder: "asc",
 };
 
 export function useBookings(initialFilters?: Partial<BookingFilters>) {
