@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useBookings } from "@/hooks/usebookings";
+import { useBookings, SortField, SortOrder } from "@/hooks/usebookings";
 import { Booking } from "@/lib/bookings";
 import StatusBadge from "@/components/StatusBadge";
+import StatusFilter from "@/components/StatusFilter";
+import SortFilter from "@/components/SortFilter";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {
@@ -11,7 +13,9 @@ import {
   FaTimes,
   FaDollarSign,
   FaEye,
-  FaEllipsisV,
+  FaSort,
+  FaSortUp,
+  FaSortDown,
 } from "react-icons/fa";
 
 type ModalAction = {
@@ -24,8 +28,15 @@ interface BookingTableProps {
 }
 
 export default function BookingTable({ onBookingSelect }: BookingTableProps) {
-  const { bookings, isLoading, isError, refresh, updateBookingStatus } =
-    useBookings();
+  const {
+    bookings,
+    isLoading,
+    isError,
+    refresh,
+    updateBookingStatus,
+    filters,
+    updateFilters,
+  } = useBookings();
   const [processingIds, setProcessingIds] = useState<Set<number>>(new Set());
   const [modalAction, setModalAction] = useState<ModalAction | null>(null);
 
@@ -51,6 +62,17 @@ export default function BookingTable({ onBookingSelect }: BookingTableProps) {
       });
       setModalAction(null);
     }
+  };
+
+  const handleSort = (field: SortField) => {
+    const newOrder: SortOrder =
+      filters.sortBy === field && filters.sortOrder === "asc" ? "desc" : "asc";
+    updateFilters({ sortBy: field, sortOrder: newOrder });
+  };
+
+  const getSortIcon = (field: SortField) => {
+    if (filters.sortBy !== field) return <FaSort />;
+    return filters.sortOrder === "asc" ? <FaSortUp /> : <FaSortDown />;
   };
 
   const BookingCard = ({ booking }: { booking: Booking }) => {
@@ -185,19 +207,52 @@ export default function BookingTable({ onBookingSelect }: BookingTableProps) {
 
   return (
     <>
+      {/* Contrôles de filtrage pour desktop */}
+      <div className="hidden lg:flex mb-4 items-center gap-4 justify-end">
+        <StatusFilter filters={filters} updateFilters={updateFilters} />
+      </div>
+
       {/* Vue tableau pour desktop */}
       <div className="hidden lg:block h-full">
         <div className="flex-1 overflow-auto shadow-lg rounded-box border border-primary/40">
           <table className="table table-zebra table-pin-rows w-full">
             <thead>
               <tr>
-                <th className="min-w-[120px]">Nom</th>
-                <th className="min-w-[140px]">Dates</th>
+                <th
+                  className="min-w-[120px] cursor-pointer hover:bg-base-300"
+                  onClick={() => handleSort("name")}
+                >
+                  <div className="flex items-center gap-2">
+                    Nom {getSortIcon("name")}
+                  </div>
+                </th>
+                <th
+                  className="min-w-[140px] cursor-pointer hover:bg-base-300"
+                  onClick={() => handleSort("dates")}
+                >
+                  <div className="flex items-center gap-2">
+                    Dates {getSortIcon("dates")}
+                  </div>
+                </th>
                 <th className="min-w-[100px]">Personnes</th>
-                <th className="min-w-[80px]">Statut</th>
+                <th
+                  className="min-w-[80px] cursor-pointer hover:bg-base-300"
+                  onClick={() => handleSort("status")}
+                >
+                  <div className="flex items-center gap-2">
+                    Statut {getSortIcon("status")}
+                  </div>
+                </th>
                 <th className="min-w-[130px]">Actions</th>
                 <th className="min-w-[70px]">Payée</th>
-                <th className="min-w-[80px]">Prix</th>
+                <th
+                  className="min-w-[80px] cursor-pointer hover:bg-base-300"
+                  onClick={() => handleSort("price")}
+                >
+                  <div className="flex items-center gap-2">
+                    Prix {getSortIcon("price")}
+                  </div>
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -320,6 +375,11 @@ export default function BookingTable({ onBookingSelect }: BookingTableProps) {
 
       {/* Vue cartes pour tablet et mobile */}
       <div className="lg:hidden h-full overflow-y-auto">
+        {/* Contrôles de filtrage pour mobile/tablet */}
+        <div className="mt-2 mb-4 p-1 flex gap-2 justify-end">
+          <StatusFilter filters={filters} updateFilters={updateFilters} />
+          <SortFilter filters={filters} updateFilters={updateFilters} />
+        </div>
         <div className="grid gap-4 md:grid-cols-2 grid-cols-1 p-1 my-4">
           {bookings.map((booking: Booking) => (
             <BookingCard key={booking.id} booking={booking} />

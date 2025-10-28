@@ -113,7 +113,7 @@ export default function DashboardLayout({
       {/* Main content — on décale sur desktop avec lg:ml-64 */}
       <div className="drawer-content flex flex-col h-screen lg:ml-64">
         {/* Header sticky */}
-        <header className="flex justify-between items-center p-4 border-b border-base-300 bg-base-100 z-10 flex-shrink-0 sticky top-0">
+        <header className="flex justify-between items-center p-4 border-b border-primary/40 bg-base-100 z-10 flex-shrink-0 sticky top-0">
           <div className="flex items-center gap-4">
             <Image
               src={logoSrc}
