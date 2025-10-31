@@ -517,7 +517,7 @@ export default function Booking() {
                           currency: "CHF",
                         })}
                       </p>
-                      <p className="text-xs text-secondary mt-1">
+                      <p className="text-xs text-base-content/70 mt-1">
                         -{promoPercent}% appliqué
                       </p>
                     </div>
