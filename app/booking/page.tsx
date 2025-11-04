@@ -1,6 +1,10 @@
 "use client";
 
-import { IoPersonCircleOutline, IoMailOutline } from "react-icons/io5";
+import {
+  IoPersonCircleOutline,
+  IoMailOutline,
+  IoArrowForwardOutline,
+} from "react-icons/io5";
 import { useRouter } from "next/navigation";
 import { HiOutlinePhone } from "react-icons/hi";
 import { useBooking } from "@/context/BookingContext";
@@ -39,6 +43,11 @@ export default function Booking() {
   const { range, setRange, travelers, setTravelers } = useBooking();
   const [price, setPrice] = useState<number | null>(null);
   const [priceError, setPriceError] = useState<string | null>(null);
+  const [promoCode, setPromoCode] = useState("");
+  const [promoChecking, setPromoChecking] = useState(false);
+  const [promoError, setPromoError] = useState<string | null>(null);
+  const [promoPercent, setPromoPercent] = useState<number | null>(null);
+  const [discountedPrice, setDiscountedPrice] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitMessage, setSubmitMessage] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
@@ -147,16 +156,88 @@ export default function Booking() {
       if (error) {
         setPriceError(error);
         setPrice(null);
+        // reset promo si le prix de base devient invalide
+        setPromoPercent(null);
+        setDiscountedPrice(null);
       } else {
         setPriceError(null);
         // ménage toujours inclus → pas de toggle
         setPrice(calculatedPrice || null);
+        // si un code promo est appliqué, recalculer
+        if (calculatedPrice && promoPercent) {
+          const newDiscounted = Math.max(
+            0,
+            Math.round(calculatedPrice * (1 - promoPercent / 100))
+          );
+          setDiscountedPrice(newDiscounted);
+        }
       }
     } else {
       setPrice(null);
       setPriceError(null);
+      setPromoPercent(null);
+      setDiscountedPrice(null);
     }
   }, [range, travelers]);
+
+  // Invalider la promo si on modifie le code saisi
+  useEffect(() => {
+    setPromoError(null);
+    setPromoPercent(null);
+    setDiscountedPrice(null);
+  }, [promoCode]);
+
+  const handleCheckPromo = async () => {
+    if (!range?.from || !range?.to || !price) {
+      setPromoError("Sélectionnez d'abord vos dates et voyageurs");
+      return;
+    }
+    if (!promoCode.trim()) {
+      setPromoError("Entrez un code promo");
+      return;
+    }
+    setPromoChecking(true);
+    setPromoError(null);
+    try {
+      const arrivalDateString = range.from.toLocaleDateString("en-CA");
+      const departureDateString = range.to.toLocaleDateString("en-CA");
+      const res = await fetch("/api/promo/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: promoCode.trim(),
+          arrival_date: arrivalDateString,
+          departure_date: departureDateString,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setPromoError(data?.reason || "Erreur lors de la vérification");
+        setPromoPercent(null);
+        setDiscountedPrice(null);
+        return;
+      }
+      if (!data.active) {
+        setPromoError(data?.reason || "Code non valide");
+        setPromoPercent(null);
+        setDiscountedPrice(null);
+        return;
+      }
+      const percent = Number(data.percentage) || 0;
+      setPromoPercent(percent);
+      const newDiscounted = Math.max(
+        0,
+        Math.round(price * (1 - percent / 100))
+      );
+      setDiscountedPrice(newDiscounted);
+    } catch (e) {
+      setPromoError("Erreur lors de la vérification");
+      setPromoPercent(null);
+      setDiscountedPrice(null);
+    } finally {
+      setPromoChecking(false);
+    }
+  };
 
   // Soumission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -194,7 +275,7 @@ export default function Booking() {
         status: 1,
         arrival_date: arrivalDateString,
         departure_date: departureDateString,
-        price: price!,
+        price: discountedPrice ?? price!,
         is_cleaning: true, // toujours inclus
       };
 
@@ -418,18 +499,66 @@ export default function Booking() {
                     {getNights(range.from, range.to)}
                   </p>
                   <div className="divider my-0"></div>
-                  <p className="text-center text-lg font-medium">
-                    <span className="font-semibold">
-                      Prix total <br />
-                    </span>
-                    {price?.toLocaleString("fr-CH", {
-                      style: "currency",
-                      currency: "CHF",
-                    })}
-                  </p>
+                  {discountedPrice && promoPercent ? (
+                    <div className="text-center">
+                      <p className="text-lg font-medium">
+                        <span className="font-semibold">Prix total</span>
+                      </p>
+                      <p className="text-sm line-through opacity-70">
+                        {price?.toLocaleString("fr-CH", {
+                          style: "currency",
+                          currency: "CHF",
+                        })}
+                      </p>
+                      <p className="text-xl font-semibold">
+                        {discountedPrice.toLocaleString("fr-CH", {
+                          style: "currency",
+                          currency: "CHF",
+                        })}
+                      </p>
+                      <p className="text-xs text-base-content/70 mt-1">
+                        -{promoPercent}% appliqué
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-center text-lg font-medium">
+                      <span className="font-semibold">
+                        Prix total <br />
+                      </span>
+                      {price?.toLocaleString("fr-CH", {
+                        style: "currency",
+                        currency: "CHF",
+                      })}
+                    </p>
+                  )}
                   <p className="text-xs text-center mt-2 text-base-content/70">
                     Ménage et taxes inclus
                   </p>
+                  <div className="mt-3 flex gap-2">
+                    <input
+                      type="text"
+                      value={promoCode}
+                      onChange={(e) => setPromoCode(e.target.value)}
+                      placeholder="Code promo"
+                      className="input input-sm input-primary input-bordered flex-1"
+                    />
+                    <button
+                      type="button"
+                      className={`btn btn-sm btn-primary btn-circle ${promoChecking ? "loading" : ""}`}
+                      onClick={handleCheckPromo}
+                      disabled={promoChecking || !price}
+                      aria-label="Vérifier le code promo"
+                    >
+                      {promoChecking ? (
+                        <span className="loading loading-spinner loading-sm"></span>
+                      ) : (
+                        <IoArrowForwardOutline className="text-lg" />
+                      )}
+                    </button>
+                  </div>
+                  {promoError && (
+                    <p className="text-error text-xs mt-1">{promoError}</p>
+                  )}
                 </>
               ) : (
                 <p className="text-base-content/50">

@@ -77,8 +77,7 @@ export default function BookingConfirmationEmail({
             <Text style={subheading}>📌 Informations pratiques</Text>
             <Text style={text}>
               ✅ Arrivée autonome via boîte à clés <br />⏰ Check-in :{" "}
-              <b>{checkin_time}</b> si arrivée après <b>21:00</b> prière de nous
-              avertir <br />⏰ Check-out : <b>{checkout_time}</b>
+              <b>{checkin_time}</b> <br />⏰ Check-out : <b>{checkout_time}</b>
             </Text>
 
             <Text style={subheading}>📋 Avant votre départ</Text>
