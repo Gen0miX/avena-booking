@@ -1,9 +1,11 @@
-import { createClient } from "@/utils/supabase/client";
-import { Status } from "@/utils/status";
-
 export type Travelers = {
   adults: number;
   children: number;
+};
+
+export type Status = {
+  id: number;
+  name: string;
 };
 
 export interface Booking {
