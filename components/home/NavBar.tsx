@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import ThemeToggleButton from "@/components/ThemeToggleButton";
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import Link from "next/link";
 

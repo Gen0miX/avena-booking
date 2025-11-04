@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import useBooking from "@/hooks/useBooking";
 import { useBookings } from "@/hooks/usebookings";
 import { Booking } from "@/lib/bookings";
-import StatusBadge from "@/components/StatusBadge";
+import StatusBadge from "@/components/admin/StatusBadge";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { DateRange } from "react-day-picker";

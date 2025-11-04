@@ -129,8 +129,6 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // ⚠️ CHANGEMENT PRINCIPAL : Envoi synchrone au lieu d'after()
-    // L'after() de Vercel peut avoir des problèmes avec les variables d'env
     try {
       console.log("📧 Envoi email...");
       await sendBookingEmail({
@@ -145,7 +143,6 @@ export async function POST(request: NextRequest) {
       console.log("✅ Email envoyé");
     } catch (emailError) {
       console.error("❌ Erreur d'envoi de l'email:", emailError);
-      // Ne pas faire échouer la réponse pour un problème d'email
     }
 
     try {
@@ -158,7 +155,6 @@ export async function POST(request: NextRequest) {
       console.log("✅ Notification Telegram envoyée");
     } catch (tgError) {
       console.error("❌ Erreur d'envoi Telegram:", tgError);
-      // Ne pas faire échouer la réponse pour un problème Telegram
     }
 
     // Retourner directement l'objet booking

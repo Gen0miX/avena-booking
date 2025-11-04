@@ -93,52 +93,6 @@ export async function sendBookingEmail({
   }
 }
 
-export async function sendBookingEmail2({
-  to,
-  fname,
-  lname,
-  arrival_date,
-  departure_date,
-  price,
-  bookingId,
-}: {
-  to: string;
-  fname: string;
-  lname: string;
-  arrival_date: string;
-  departure_date: string;
-  price: number;
-  bookingId: number;
-}) {
-  try {
-    const emailHtml = await render(
-      BookingEmail({
-        fname,
-        lname,
-        arrival_date,
-        departure_date,
-        price,
-        bookingId,
-      })
-    );
-
-    const result = await resend.emails.send({
-      from: "noreply@avena39.ch",
-      to,
-      subject: "Votre réservation",
-      html: emailHtml,
-    });
-
-    if (result.error) throw result.error;
-
-    console.log("Email envoyé avec succès:", result.data?.id);
-    return result.data;
-  } catch (err) {
-    console.error("Erreur lors de l'envoi de l'email:", err);
-    throw err;
-  }
-}
-
 export async function sendBookingConfirmationEmail({
   to,
   fname,

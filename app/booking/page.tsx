@@ -1,10 +1,6 @@
 "use client";
 
-import {
-  IoPersonCircleOutline,
-  IoCalendarOutline,
-  IoMailOutline,
-} from "react-icons/io5";
+import { IoPersonCircleOutline, IoMailOutline } from "react-icons/io5";
 import { useRouter } from "next/navigation";
 import { HiOutlinePhone } from "react-icons/hi";
 import { useBooking } from "@/context/BookingContext";
@@ -12,8 +8,8 @@ import ReCAPTCHA from "react-google-recaptcha";
 import { useEffect, useState, useRef } from "react";
 import CustomDayPicker from "@/components/CustomDayPicker";
 import TravelersSelector from "@/components/TravelersSelector";
-import NavBar from "@/components/NavBar";
-import Footer from "@/components/Footer";
+import NavBar from "@/components/home/NavBar";
+import Footer from "@/components/home/Footer";
 import PopoverDatePicker from "@/components/PopoverDatePicker";
 import {
   getPriceResult,

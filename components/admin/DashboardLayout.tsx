@@ -10,8 +10,8 @@ import {
   FaBars,
   FaPowerOff,
 } from "react-icons/fa";
-import BookingTable from "@/components/BookingTable";
-import BookingDetails from "@/components/BookingDetails";
+import BookingTable from "@/components/admin/BookingTable";
+import BookingDetails from "@/components/admin/BookingDetails";
 import { BookingFilters } from "@/hooks/usebookings";
 
 const menuItems = [

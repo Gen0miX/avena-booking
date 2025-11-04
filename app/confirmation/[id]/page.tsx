@@ -2,8 +2,8 @@
 
 import { useParams } from "next/navigation";
 import useBooking from "@/hooks/useBooking";
-import NavBar from "@/components/NavBar";
-import Footer from "@/components/Footer";
+import NavBar from "@/components/home/NavBar";
+import Footer from "@/components/home/Footer";
 import Link from "next/link";
 
 export default function ConfirmationPage() {

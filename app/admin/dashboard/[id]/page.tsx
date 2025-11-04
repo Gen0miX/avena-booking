@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useParams } from "next/navigation";
 import useBooking from "@/hooks/useBooking";
-import StatusBadge from "@/components/StatusBadge";
+import StatusBadge from "@/components/admin/StatusBadge";
 import { FaLongArrowAltRight } from "react-icons/fa";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
@@ -38,12 +38,8 @@ export default function BookingDetailPage() {
     }));
   };
 
-  // Gérer la sauvegarde (à adapter selon ton API)
   const handleSave = async () => {
-    // Appelle ici ton endpoint de mise à jour
-    // await updateBooking(id, form);
     setIsEditing(false);
-    // Optionnel: rafraîchir les données
   };
 
   if (loading) return <p>Chargement...</p>;
@@ -172,7 +168,6 @@ export default function BookingDetailPage() {
               onChange={handleChange}
             />
           </div>
-          {/* Ajoute d'autres champs si besoin */}
           <div className="mt-6 flex gap-2">
             <button className="btn btn-success" type="submit">
               Sauvegarder

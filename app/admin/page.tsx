@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { IoMailOutline, IoKeyOutline } from "react-icons/io5";
 import Image from "next/image";
 import { useTheme } from "next-themes";
@@ -39,7 +39,7 @@ export default function admin() {
       : "/logos/logo_Avena_L.svg";
 
   const handleLogin = async (e?: React.FormEvent) => {
-    if(e) e.preventDefault();
+    if (e) e.preventDefault();
     setError("");
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -55,8 +55,9 @@ export default function admin() {
   return (
     <section className="flex flex-col items-center justify-center xl:mx-auto h-svh">
       <form
-      onSubmit={handleLogin} 
-      className="fieldset bg-base-200 p-5 rounded-box border border-primary/40 shadow-lg mb-20 lg:w-96">
+        onSubmit={handleLogin}
+        className="fieldset bg-base-200 p-5 rounded-box border border-primary/40 shadow-lg mb-20 lg:w-96"
+      >
         <h1 className="text-4xl font-light font-heading text-accent mb-5 text-center">
           Connexion
         </h1>

@@ -34,7 +34,7 @@ export async function GET(
     `
     )
     .eq("id", parsedId)
-    .single(); // récupère un seul élément
+    .single();
 
   if (error) {
     return NextResponse.json(

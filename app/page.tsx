@@ -2,14 +2,14 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import NavBar from "@/components/NavBar";
-import Footer from "@/components/Footer";
-import Hero from "@/components/Hero";
-import Disponibility from "@/components/Disponibility";
-import Gallery from "@/components/Gallery";
-import ServiceBadges from "@/components/ServiceBadges";
-import SectionTitle from "@/components/SectionTitle";
-import Amenities from "@/components/Amenities";
+import NavBar from "@/components/home/NavBar";
+import Footer from "@/components/home/Footer";
+import Hero from "@/components/home/Hero";
+import Disponibility from "@/components/home/Disponibility";
+import Gallery from "@/components/home/Gallery";
+import ServiceBadges from "@/components/home/ServiceBadges";
+import SectionTitle from "@/components/home/SectionTitle";
+import Amenities from "@/components/home/Amenities";
 import { GoogleMapsEmbed } from "@next/third-parties/google";
 import { FaInfoCircle } from "react-icons/fa";
 import Tooltip from "@/components/Tooltip";

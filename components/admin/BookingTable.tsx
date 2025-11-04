@@ -8,9 +8,9 @@ import {
   BookingFilters,
 } from "@/hooks/usebookings";
 import { Booking } from "@/lib/bookings";
-import StatusBadge from "@/components/StatusBadge";
-import StatusFilter from "@/components/StatusFilter";
-import SortFilter from "@/components/SortFilter";
+import StatusBadge from "@/components/admin/StatusBadge";
+import StatusFilter from "@/components/admin/StatusFilter";
+import SortFilter from "@/components/admin/SortFilter";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import {

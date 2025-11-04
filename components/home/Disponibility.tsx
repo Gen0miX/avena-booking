@@ -1,6 +1,6 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import SectionTitle from "@/components/SectionTitle";
+import SectionTitle from "@/components/home/SectionTitle";
 import CustomDayPicker from "@/components/CustomDayPicker";
 import TravelersSelector from "@/components/TravelersSelector";
 import { getPriceResult } from "@/utils/priceCalculator";

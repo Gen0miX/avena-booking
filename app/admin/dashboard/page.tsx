@@ -3,8 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { createClient } from "@/utils/supabase/client";
-import DashboardLayout from "@/components/DashboardLayout";
-import { FaPowerOff } from "react-icons/fa";
+import DashboardLayout from "@/components/admin/DashboardLayout";
 
 export default function DashboardPage() {
   const { resolvedTheme } = useTheme();

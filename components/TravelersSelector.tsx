@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { FaChevronDown } from "react-icons/fa";
 import { Travelers } from "@/lib/bookings";
 import { IoPersonAddOutline } from "react-icons/io5";

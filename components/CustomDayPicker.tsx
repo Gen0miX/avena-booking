@@ -1,7 +1,6 @@
 import { DayPicker, DateRange } from "react-day-picker";
 import { frCH } from "react-day-picker/locale";
 import useOccupiedDates from "@/hooks/useOccupiedDates";
-import { div } from "framer-motion/client";
 
 function normalizeDate(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
