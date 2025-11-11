@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Playfair, Work_Sans } from "next/font/google";
-import "/globals.css";
+import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { BookingProvider } from "@/context/BookingContext";
 import { Analytics } from "@vercel/analytics/next";
