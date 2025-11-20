@@ -2,22 +2,47 @@ import ThemeToggleButton from "@/components/ThemeToggleButton";
 import Link from "next/link";
 import Image from "next/image";
 import heroImage from "@/public/images/hero.webp";
+import heroImage2 from "@/public/images/hero2.webp";
+import { useEffect, useState } from "react";
 
 export default function Hero() {
+  const images = [heroImage, heroImage2];
+  const [index, setIndex] = useState<number>(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setIndex((i) => (i + 1) % images.length);
+    }, 11000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <section className="hero min-h-svh relative overflow-hidden">
-      <div className="fixed inset-0 w-full h-full -z-10" aria-hidden="true">
-        <Image
-          src={heroImage}
-          alt="Saas-fee landscape with moutains"
-          placeholder="blur"
-          fill
-          priority
-          quality={100}
-          sizes="100vw"
-          style={{ objectFit: "cover" }}
-        />
-      </div>
+      {/* Background slideshow */}
+      {images.map((img, i) => (
+        <div
+          key={i}
+          className={`fixed inset-0 w-full h-full -z-10 transition-opacity duration-1000 ease-in-out ${
+            i === index ? "opacity-100" : "opacity-0"
+          }`}
+          aria-hidden="true"
+        >
+          <Image
+            src={img}
+            alt={`Hero image ${i + 1}`}
+            placeholder="blur"
+            fill
+            priority={i === 0}
+            quality={100}
+            sizes="100vw"
+            style={{
+              objectFit: "cover",
+              transform: i === index ? "scale(1)" : "scale(1.04)",
+              transition: "transform 8s ease",
+            }}
+          />
+        </div>
+      ))}
       <div className="absolute top-0 left-0 w-full">
         <div className="flex justify-between items-center m-3 mt-5 sm:mx-5 sm:mt-7">
           <div className="flex text-neutral-content gap-3 sm:gap-5">
