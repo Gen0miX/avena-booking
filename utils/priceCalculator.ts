@@ -19,6 +19,10 @@ const rates = {
     family: { base: 200, perNight: 200 }, // famille ou 4 adultes
     five: { base: 250, perNight: 250 }, // 5 adultes
   },
+  special: {
+    family: { base: 230, perNight: 230 }, // période spéciale : 230€/nuit pour <=4 adultes
+    five: { base: 250, perNight: 250 }, // période spéciale : 250€/nuit pour 5 adultes
+  },
 };
 
 export type Category =
@@ -32,6 +36,13 @@ export function getCategory(
   start?: Date,
   end?: Date
 ): Category {
+  // Si toutes les nuits sont dans la période spéciale, afficher seulement "Plein".
+  if (start && end && areAllNightsSpecial(start, end)) {
+    return "Plein";
+  }
+
+  // Si au moins une nuit est en haute saison (hors périodes spéciales),
+  // on garde le comportement détaillé pour la haute saison.
   const season: "high" | "low" = isHighSeason(start, end) ? "high" : "low";
 
   if (season === "high") {
@@ -45,13 +56,80 @@ export function getCategory(
 }
 
 export function isHighSeason(start?: Date, end?: Date): boolean {
-  const isMonthHigh = (date?: Date) => {
-    if (!date) return false;
-    const month = date.getMonth();
-    return month >= 10 || month <= 3; // novembre (10) à avril (3)
-  };
+  // Détecte si AU MOINS une nuit du séjour est en haute saison
+  // en excluant les nuits qui sont dans les périodes spéciales.
+  if (!start || !end) return false;
 
-  return isMonthHigh(start) || isMonthHigh(end);
+  return hasAnyHighNight(start, end);
+}
+
+function hasAnyHighNight(start: Date, end: Date): boolean {
+  const msPerNight = 1000 * 60 * 60 * 24;
+  let cur = stripTime(start);
+  const endDay = stripTime(end);
+
+  while (cur.getTime() < endDay.getTime()) {
+    // si ce jour n'est pas dans les périodes spéciales et est dans un mois "high"
+    if (!isDateInSpecialRanges(cur)) {
+      const month = cur.getMonth();
+      if (month >= 10 || month <= 3) return true;
+    }
+    cur = new Date(cur.getTime() + msPerNight);
+  }
+
+  return false;
+}
+
+function areAllNightsSpecial(start: Date, end: Date): boolean {
+  const msPerNight = 1000 * 60 * 60 * 24;
+  let cur = stripTime(start);
+  const endDay = stripTime(end);
+
+  while (cur.getTime() < endDay.getTime()) {
+    if (!isDateInSpecialRanges(cur)) return false;
+    cur = new Date(cur.getTime() + msPerNight);
+  }
+
+  return true;
+}
+
+// Vérifie si une date (jour/nuit) est dans l'une des périodes spéciales demandées :
+// 01.11 -> 19.12  et  04.01 -> 23.01 (inclus)
+function isDateInSpecialRanges(date: Date): boolean {
+  const d = stripTime(date);
+  const month = d.getMonth();
+  const day = d.getDate();
+
+  // Nov 01 (10/1) -> Dec 19 (11/19)
+  if (month === 10 && day >= 1) return true; // Nov remainder
+  if (month === 11 && day <= 19) return true; // Dec up to 19
+
+  // Jan 04 -> Jan 23
+  if (month === 0 && day >= 4 && day <= 23) return true;
+
+  return false;
+}
+
+function getPerNightRateForDate(date: Date, adults: number): number {
+  // priorité aux périodes spéciales
+  if (isDateInSpecialRanges(date)) {
+    return adults === 5
+      ? rates.special.five.perNight
+      : rates.special.family.perNight;
+  }
+
+  // sinon déterminer saison par le mois de la nuit
+  const month = date.getMonth();
+  const season: "high" | "low" = month >= 10 || month <= 3 ? "high" : "low";
+
+  if (season === "high") {
+    if (adults <= 2) return rates.high.family.perNight;
+    if (adults <= 4) return rates.high.threeFour.perNight;
+    return rates.high.five.perNight;
+  } else {
+    if (adults <= 4) return rates.low.family.perNight;
+    return rates.low.five.perNight;
+  }
 }
 
 function stripTime(date: Date): Date {
@@ -79,14 +157,18 @@ function getRate(season: "high" | "low", adults: number): Rate | null {
 }
 
 function calculatePrice(start: Date, end: Date, adults: number): number {
-  const season: "high" | "low" = isHighSeason(start, end) ? "high" : "low";
-  const nights = getNights(start, end);
+  // Calculer prix nuit-par-nuit pour pouvoir mixer périodes spéciales et autres saisons.
+  const msPerNight = 1000 * 60 * 60 * 24;
+  let cur = stripTime(start);
+  const endDay = stripTime(end);
 
-  const rate = getRate(season, adults);
-  if (!rate) return 0;
+  let total = 0;
+  while (cur.getTime() < endDay.getTime()) {
+    total += getPerNightRateForDate(cur, adults);
+    cur = new Date(cur.getTime() + msPerNight);
+  }
 
-  // 1ère nuit incluse dans le prix de base
-  return rate.base + (nights - 1) * rate.perNight;
+  return total;
 }
 
 export function getPriceResult({ start, end, adults }: PriceParams): {
