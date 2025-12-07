@@ -163,7 +163,7 @@ export const getChartData = (bookings: Booking[], period: Period, metric: "reven
     labels,
     datasets: [
       {
-        label: metric === "revenue" ? "Revenus (€)" : metric === "reservations" ? "Réservations" : metric === "occupancy" ? "Taux d'occupation (%)" : "Durée moyenne (nuits)",
+        label: metric === "revenue" ? "Revenus (CHF)" : metric === "reservations" ? "Réservations" : metric === "occupancy" ? "Taux d'occupation (%)" : "Durée moyenne (nuits)",
         data,
         backgroundColor: metric === "revenue" ? "rgba(75, 192, 192, 0.5)" : metric === "reservations" ? "rgba(54, 162, 235, 0.5)" : metric === "occupancy" ? "rgba(255, 206, 86, 0.5)" : "rgba(153, 102, 255, 0.5)",
         borderColor: metric === "revenue" ? "rgb(75, 192, 192)" : metric === "reservations" ? "rgb(54, 162, 235)" : metric === "occupancy" ? "rgb(255, 206, 86)" : "rgb(153, 102, 255)",

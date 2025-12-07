@@ -50,7 +50,7 @@ export default function RevenueChart({ data }: RevenueChartProps) {
             ticks: {
                 color: textColor,
                 callback: function(value: any) {
-                    return value + "€";
+                    return value + " CHF";
                 }
             },
             grid: {
