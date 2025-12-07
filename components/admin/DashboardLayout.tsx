@@ -13,6 +13,7 @@ import {
 import BookingTable from "@/components/admin/BookingTable";
 import BookingDetails from "@/components/admin/BookingDetails";
 import { BookingFilters } from "@/hooks/usebookings";
+import StatisticsDashboard from "@/components/admin/statistics/StatisticsDashboard";
 
 const menuItems = [
   { key: "bookings", label: "Réservations", icon: <FaCalendarAlt /> },
@@ -113,7 +114,7 @@ export default function DashboardLayout({
           />
         );
       case "statistics":
-        return <p>Statistiques à venir...</p>;
+        return <StatisticsDashboard />;
       case "settings":
         return <p>Paramètres à venir...</p>;
       default:
