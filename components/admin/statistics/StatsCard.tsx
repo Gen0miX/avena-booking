@@ -9,7 +9,7 @@ interface StatsCardProps {
 
 export default function StatsCard({ title, value, description, icon }: StatsCardProps) {
   return (
-    <div className="stats shadow bg-base-100 border border-primary/20">
+    <div className="stats shadow bg-base-200 border border-primary/20">
       <div className="stat">
         {icon && <div className="stat-figure text-secondary">{icon}</div>}
         <div className="stat-title text-base-content">{title}</div>

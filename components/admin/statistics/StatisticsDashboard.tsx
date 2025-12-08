@@ -75,32 +75,32 @@ export default function StatisticsDashboard() {
   return (
     <div className="py-4 sm:p-4 space-y-6">
       {/* Controls */}
-      <div className="flex flex-col md:flex-row justify-between items-center bg-base-100 p-4 rounded-box shadow-sm gap-4 border border-primary/20">
+      <div className="flex flex-col md:flex-row justify-between items-center bg-base-200 p-4 rounded-box shadow-sm gap-4 border border-primary/20">
         <h2 className="text-xl font-bold">Statistiques</h2>
         
         <div className="flex flex-col sm:flex-row items-center gap-4">
             <div className="join">
             <button
-                className={`join-item btn btn-xs sm:btn-sm ${period === "month" ? "btn-active btn-primary" : ""}`}
+                className={`join-item btn btn-xs sm:btn-sm ${period === "month" ? "btn-active btn-primary" : "bg-base-100"}`}
                 onClick={() => setPeriod("month")}
             >
                 Mois
             </button>
             <button
-                className={`join-item btn btn-xs sm:btn-sm ${period === "quarter" ? "btn-active btn-primary" : ""}`}
+                className={`join-item btn btn-xs sm:btn-sm ${period === "quarter" ? "btn-active btn-primary" : "bg-base-100"}`}
                 onClick={() => setPeriod("quarter")}
             >
                 Trimestre
             </button>
             <button
-                className={`join-item btn btn-xs sm:btn-sm ${period === "year" ? "btn-active btn-primary" : ""}`}
+                className={`join-item btn btn-xs  sm:btn-sm ${period === "year" ? "btn-active btn-primary" : "bg-base-100"}`}
                 onClick={() => setPeriod("year")}
             >
                 Année
             </button>
             </div>
 
-            <div className="flex items-center gap-2 bg-base-200 rounded-lg p-1">
+            <div className="flex items-center gap-2 bg-base-100 rounded-lg p-1">
                 <button className="btn btn-sm btn-ghost btn-square" onClick={handlePrevious}>
                     <FaChevronLeft />
                 </button>
@@ -140,7 +140,7 @@ export default function StatisticsDashboard() {
       {period !== "month" && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {chartsData?.occupancy && (
-            <div className="card bg-base-100 shadow-sm border border-primary/20">
+            <div className="card bg-base-200 shadow-sm border border-primary/20">
               <div className="card-body p-4">
                 <h3 className="card-title text-base-content">Taux d'occupation</h3>
                 <OccupancyChart data={chartsData.occupancy} />
@@ -148,7 +148,7 @@ export default function StatisticsDashboard() {
             </div>
           )}
           {chartsData?.revenue && (
-            <div className="card bg-base-100 shadow-sm border border-primary/20">
+            <div className="card bg-base-200 shadow-sm border border-primary/20">
               <div className="card-body p-4">
                 <h3 className="card-title text-base-content">Revenus générés</h3>
                 <RevenueChart data={chartsData.revenue} />
@@ -156,7 +156,7 @@ export default function StatisticsDashboard() {
             </div>
           )}
           {chartsData?.reservations && (
-            <div className="card bg-base-100 shadow-sm border border-primary/20">
+            <div className="card bg-base-200 shadow-sm border border-primary/20">
               <div className="card-body p-4">
                 <h3 className="card-title text-base-content">Nombre de réservations</h3>
                 <ReservationsChart data={chartsData.reservations} />
@@ -164,7 +164,7 @@ export default function StatisticsDashboard() {
             </div>
           )}
           {chartsData?.avgStay && (
-            <div className="card bg-base-100 shadow-sm border border-primary/20">
+            <div className="card bg-base-200 shadow-sm border border-primary/20">
               <div className="card-body p-4">
                 <h3 className="card-title text-base-content">Durée moyenne des séjours</h3>
                 <AverageStayChart data={chartsData.avgStay} />
