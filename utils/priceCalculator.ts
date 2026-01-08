@@ -15,6 +15,10 @@ const rates = {
     threeFour: { base: 280, perNight: 280 }, // 3-4 adultes
     five: { base: 300, perNight: 300 }, // 5 adultes
   },
+  peak2027: {
+    family: { base: 330, perNight: 330 }, // max 4 adultes
+    five: { base: 400, perNight: 400 }, // 5 adultes
+  },
   low: {
     family: { base: 200, perNight: 200 }, // famille ou 4 adultes
     five: { base: 250, perNight: 250 }, // 5 adultes
@@ -93,6 +97,34 @@ function areAllNightsSpecial(start: Date, end: Date): boolean {
   return true;
 }
 
+// Vérifie si une date (jour/nuit) est dans les périodes Peak (Nouveaux tarifs)
+// S'applique à partir du 18 décembre 2026
+function isPeak2027(date: Date): boolean {
+  const d = stripTime(date);
+  const year = d.getFullYear();
+
+  // Avant 2026, jamais de Peak
+  if (year < 2026) return false;
+
+  const month = d.getMonth();
+  const day = d.getDate();
+
+  // En 2026, seule la période de décembre (partie du 18.12 au 31.12) compte
+  if (year === 2026) {
+    return month === 11 && day >= 18;
+  }
+
+  // Pour les années >= 2027
+  // 18.12 -> 04.01
+  if (month === 11 && day >= 18) return true; // Dec 18+
+  if (month === 0 && day <= 4) return true; // Jan 1-4
+
+  // 05.02 -> 14.02
+  if (month === 1 && day >= 5 && day <= 14) return true; // Feb 5-14
+
+  return false;
+}
+
 // Vérifie si une date (jour/nuit) est dans l'une des périodes spéciales demandées :
 // 01.11 -> 19.12  et  04.01 -> 23.01 (inclus)
 function isDateInSpecialRanges(date: Date): boolean {
@@ -111,6 +143,13 @@ function isDateInSpecialRanges(date: Date): boolean {
 }
 
 function getPerNightRateForDate(date: Date, adults: number): number {
+  // priorité aux périodes Peak 2027
+  if (isPeak2027(date)) {
+    return adults === 5
+      ? rates.peak2027.five.perNight
+      : rates.peak2027.family.perNight;
+  }
+
   // priorité aux périodes spéciales
   if (isDateInSpecialRanges(date)) {
     return adults === 5
