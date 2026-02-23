@@ -48,6 +48,15 @@ export const filterBookingsByPeriod = (bookings: Booking[], period: Period, date
   });
 };
 
+export const filterBookingsByStartDate = (bookings: Booking[], period: Period, date: Date = new Date()) => {
+  const { start, end } = getPeriodDates(period, date);
+  return bookings.filter((booking) => {
+    if (booking.status.id === 4) return false;
+    const bookingStart = new Date(booking.arrival_date);
+    return isWithinInterval(bookingStart, { start, end });
+  });
+};
+
 export const calculateOccupancyRate = (bookings: Booking[], period: Period, date: Date = new Date()) => {
   const { start, end } = getPeriodDates(period, date);
   const totalDays = differenceInDays(end, start) + 1;
@@ -95,17 +104,19 @@ export const getChartData = (bookings: Booking[], period: Period, metric: "reven
     for (let i = 0; i < 12; i++) {
         const monthDate = new Date(date.getFullYear(), i, 1);
         labels.push(format(monthDate, "MMMM", { locale: fr }));
-        
-        const monthBookings = filterBookingsByPeriod(bookings, "month", monthDate);
-        
-        if (metric === "revenue") {
-            data.push(calculateTotalRevenue(monthBookings));
-        } else if (metric === "reservations") {
-            data.push(monthBookings.length);
-        } else if (metric === "occupancy") {
-            data.push(calculateOccupancyRate(monthBookings, "month", monthDate));
-        } else if (metric === "avgStay") {
-            data.push(calculateAverageStayDuration(monthBookings));
+
+        if (metric === "occupancy") {
+            data.push(calculateOccupancyRate(bookings, "month", monthDate));
+        } else {
+            // Pour revenue, reservations, avgStay: filtrer par date de début
+            const monthBookings = filterBookingsByStartDate(bookings, "month", monthDate);
+            if (metric === "revenue") {
+                data.push(calculateTotalRevenue(monthBookings));
+            } else if (metric === "reservations") {
+                data.push(monthBookings.length);
+            } else if (metric === "avgStay") {
+                data.push(calculateAverageStayDuration(monthBookings));
+            }
         }
     }
   } else {
@@ -121,11 +132,15 @@ export const getChartData = (bookings: Booking[], period: Period, metric: "reven
            for (let i = 0; i < 3; i++) {
                const monthDate = new Date(date.getFullYear(), startMonth + i, 1);
                labels.push(format(monthDate, "MMMM", { locale: fr }));
-               const monthBookings = filterBookingsByPeriod(bookings, "month", monthDate);
-               if (metric === "revenue") data.push(calculateTotalRevenue(monthBookings));
-               else if (metric === "reservations") data.push(monthBookings.length);
-               else if (metric === "occupancy") data.push(calculateOccupancyRate(monthBookings, "month", monthDate));
-               else if (metric === "avgStay") data.push(calculateAverageStayDuration(monthBookings));
+               if (metric === "occupancy") {
+                   data.push(calculateOccupancyRate(bookings, "month", monthDate));
+               } else {
+                   // Pour revenue, reservations, avgStay: filtrer par date de début
+                   const monthBookings = filterBookingsByStartDate(bookings, "month", monthDate);
+                   if (metric === "revenue") data.push(calculateTotalRevenue(monthBookings));
+                   else if (metric === "reservations") data.push(monthBookings.length);
+                   else if (metric === "avgStay") data.push(calculateAverageStayDuration(monthBookings));
+               }
            }
       } else {
           // Month -> Days

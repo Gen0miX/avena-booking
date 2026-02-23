@@ -6,7 +6,7 @@ import {
   calculateOccupancyRate,
   calculateTotalRevenue,
   calculateAverageStayDuration,
-  filterBookingsByPeriod,
+  filterBookingsByStartDate,
 } from "@/lib/statistics";
 import StatsCard from "./StatsCard";
 import OccupancyChart from "./charts/OccupancyChart";
@@ -46,7 +46,7 @@ export default function StatisticsDashboard() {
 
   const filteredBookings = useMemo(() => {
     if (!bookings) return [];
-    return filterBookingsByPeriod(bookings, period, date);
+    return filterBookingsByStartDate(bookings, period, date);
   }, [bookings, period, date]);
 
   const stats = useMemo(() => {
