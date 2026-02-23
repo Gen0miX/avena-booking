@@ -15,6 +15,9 @@ export interface Booking {
   lname: string;
   mail: string;
   phone: string;
+  address?: string;
+  postal_code?: string;
+  birthdate?: Date;
   no_adults: number;
   no_childs?: number;
   status: Status;
@@ -30,6 +33,9 @@ export interface BookingInput {
   lname: string;
   mail: string;
   phone: string;
+  address?: string;
+  postal_code?: string;
+  birthdate?: string;
   no_adults: number;
   no_childs?: number;
   status: number;

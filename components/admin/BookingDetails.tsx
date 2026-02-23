@@ -12,6 +12,7 @@ import PopoverDatePicker from "@/components/PopoverDatePicker";
 import TravelersSelector from "@/components/TravelersSelector";
 import { Travelers } from "@/lib/bookings";
 import { getPriceResult } from "@/utils/priceCalculator";
+import { usePricingPeriods } from "@/hooks/usePricingPeriods";
 import {
   FaUser,
   FaCalendarAlt,
@@ -34,6 +35,7 @@ export default function BookingDetails({
 }: BookingDetailsProps) {
   const { booking, loading, updateBooking, refresh } = useBooking(bookingId);
   const { updateBookingStatus } = useBookings();
+  const { periods } = usePricingPeriods();
   const [isUpdating, setIsUpdating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -51,6 +53,9 @@ export default function BookingDetails({
     no_childs: 0 as number | null,
     mail: "",
     phone: "",
+    address: "",
+    postal_code: "",
+    birthdate: "",
     price: 0,
     is_paid: false,
     is_cleaning: false,
@@ -80,6 +85,9 @@ export default function BookingDetails({
       no_childs: b.no_childs ?? 0,
       mail: b.mail ?? "",
       phone: b.phone ?? "",
+      address: b.address ?? "",
+      postal_code: b.postal_code ?? "",
+      birthdate: b.birthdate ? formatDateForInput(b.birthdate) : "",
       price: b.price,
       is_paid: !!b.is_paid,
       is_cleaning: !!b.is_cleaning,
@@ -164,14 +172,14 @@ export default function BookingDetails({
     const end = selectedRange?.to ? new Date(selectedRange.to) : undefined;
     const adults = travelers.adults;
 
-    const { price, error } = getPriceResult({ start, end, adults });
+    const { price, error } = getPriceResult({ start, end, adults, customPeriods: periods });
     setPriceError(error);
     setSuggestedPrice(price);
 
     if (autoPrice && price !== null) {
       setFormValues((prev) => ({ ...prev, price }));
     }
-  }, [isEditing, selectedRange, travelers.adults, autoPrice]);
+  }, [isEditing, selectedRange, travelers.adults, autoPrice, periods]);
 
   const handleSave = async () => {
     if (!booking) return;
@@ -201,6 +209,9 @@ export default function BookingDetails({
         no_childs: formValues.no_childs,
         mail: formValues.mail || null,
         phone: formValues.phone || null,
+        address: formValues.address || null,
+        postal_code: formValues.postal_code || null,
+        birthdate: formValues.birthdate || null,
         price: formValues.price,
         is_paid: formValues.is_paid,
         is_cleaning: formValues.is_cleaning,
@@ -507,6 +518,58 @@ export default function BookingDetails({
                   name="phone"
                   className="input input-bordered w-full"
                   value={formValues.phone}
+                  onChange={handleInputChange}
+                />
+              )}
+            </div>
+            <div>
+              <label className="font-semibold text-sm">Adresse</label>
+              {!isEditing ? (
+                <div className="text-lg">
+                  {booking.address || "Non renseigné"}
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  name="address"
+                  className="input input-bordered w-full"
+                  value={formValues.address}
+                  onChange={handleInputChange}
+                />
+              )}
+            </div>
+            <div>
+              <label className="font-semibold text-sm">Code postal</label>
+              {!isEditing ? (
+                <div className="text-lg">
+                  {booking.postal_code || "Non renseigné"}
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  name="postal_code"
+                  className="input input-bordered w-full"
+                  value={formValues.postal_code}
+                  onChange={handleInputChange}
+                />
+              )}
+            </div>
+            <div>
+              <label className="font-semibold text-sm">Date de naissance</label>
+              {!isEditing ? (
+                <div className="text-lg">
+                  {booking.birthdate
+                    ? format(new Date(booking.birthdate), "dd/MM/yyyy", {
+                        locale: fr,
+                      })
+                    : "Non renseigné"}
+                </div>
+              ) : (
+                <input
+                  type="date"
+                  name="birthdate"
+                  className="input input-bordered w-full"
+                  value={formValues.birthdate}
                   onChange={handleInputChange}
                 />
               )}

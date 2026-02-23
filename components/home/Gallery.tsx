@@ -7,12 +7,13 @@ const images = [
   { src: "/images/appartements/cuisine.webp", alt: "Cuisine" },
   { src: "/images/appartements/chambre1.webp", alt: "Chambre 1" },
   { src: "/images/appartements/chambre2.webp", alt: "Chambre 2" },
+  { src: "/images/appartements/balcony.webp", alt: "Balcon" },
 ];
 
 export default function Gallery() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [imageLoading, setImageLoading] = useState<string[]>(
-    images.map((img) => img.src)
+    images.map((img) => img.src),
   );
   const [modalLoading, setModalLoading] = useState<boolean>(false);
 

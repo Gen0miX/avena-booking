@@ -3,6 +3,7 @@ import { createClient } from "@/utils/supabase/server";
 import { BookingInput, Booking } from "@/lib/bookings";
 import { sendBookingEmail } from "@/lib/email";
 import { sendTelegramNotification } from "@/utils/telegram";
+import { DEFAULT_BOOKING_BLOCKED_AFTER } from "@/lib/settings";
 
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
@@ -29,6 +30,9 @@ export async function GET() {
       lname,
       mail,
       phone,
+      address,
+      postal_code,
+      birthdate,
       no_adults,
       no_childs,
       arrival_date,
@@ -108,6 +112,30 @@ export async function POST(request: NextRequest) {
     }
 
     const supabase = await createClient();
+
+    // Vérifier la date limite des réservations
+    const { data: settingsData } = await supabase
+      .from("settings")
+      .select("booking_blocked_after")
+      .single();
+
+    const blockedAfter =
+      settingsData?.booking_blocked_after || DEFAULT_BOOKING_BLOCKED_AFTER;
+
+    if (blockedAfter) {
+      const limitDate = new Date(blockedAfter);
+      limitDate.setHours(23, 59, 59, 999);
+      const arrivalDateObj = new Date(arrivalDate);
+
+      if (arrivalDateObj > limitDate) {
+        return NextResponse.json(
+          {
+            message: `Les réservations sont limitées jusqu'au ${new Date(blockedAfter).toLocaleDateString("fr-CH")}`,
+          },
+          { status: 400 }
+        );
+      }
+    }
 
     // Insertion directe avec les strings formatés
     const { data: booking, error } = await supabase

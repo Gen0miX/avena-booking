@@ -14,6 +14,7 @@ import BookingTable from "@/components/admin/BookingTable";
 import BookingDetails from "@/components/admin/BookingDetails";
 import { BookingFilters } from "@/hooks/usebookings";
 import StatisticsDashboard from "@/components/admin/statistics/StatisticsDashboard";
+import SettingsPage from "@/components/admin/settings/SettingsPage";
 
 const menuItems = [
   { key: "bookings", label: "Réservations", icon: <FaCalendarAlt /> },
@@ -116,7 +117,7 @@ export default function DashboardLayout({
       case "statistics":
         return <StatisticsDashboard />;
       case "settings":
-        return <p>Paramètres à venir...</p>;
+        return <SettingsPage />;
       default:
         return null;
     }

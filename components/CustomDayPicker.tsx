@@ -1,6 +1,7 @@
 import { DayPicker, DateRange } from "react-day-picker";
 import { frCH } from "react-day-picker/locale";
 import useOccupiedDates from "@/hooks/useOccupiedDates";
+import { useSettings } from "@/hooks/useSettings";
 
 function normalizeDate(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -26,8 +27,17 @@ type CustomDayPickerProps =
 
 export default function CustomDayPicker(props: CustomDayPickerProps) {
   const { dates: occupiedDates, loading } = useOccupiedDates();
+  const { settings, isLoading: settingsLoading } = useSettings();
 
   const today = normalizeDate(new Date());
+
+  // Calculer la date limite après laquelle les réservations sont bloquées
+  const getBlockedAfterDate = (): Date | null => {
+    if (!settings?.booking_blocked_after) return null;
+    return normalizeDate(new Date(settings.booking_blocked_after));
+  };
+
+  const blockedAfterDate = getBlockedAfterDate();
 
   const handleSelect = (range: DateRange | undefined) => {
     if (props.mode !== "selectable") return;
@@ -57,7 +67,9 @@ export default function CustomDayPicker(props: CustomDayPickerProps) {
       const normalized = normalizeDate(current);
       const isOccupied = isDateInList(normalized, occupiedDates);
       const isExcluded = inExcludeRange(normalized);
-      if (normalized < today || (isOccupied && !isExcluded)) {
+      const isBeforeToday = normalized < today;
+      const isAfterLimit = blockedAfterDate && normalized > blockedAfterDate;
+      if (isBeforeToday || isAfterLimit || (isOccupied && !isExcluded)) {
         // Une date invalide est dans la plage => annuler la sélection
         return;
       }
@@ -67,7 +79,7 @@ export default function CustomDayPicker(props: CustomDayPickerProps) {
     props.onSelect(range);
   };
 
-  if (loading)
+  if (loading || settingsLoading)
     return (
       <div className="flex justify-center items-center h-full">
         <span className="loading loading-spinner loading-xl text-primary"></span>
@@ -107,6 +119,18 @@ export default function CustomDayPicker(props: CustomDayPickerProps) {
         })
       : occupiedDates;
 
+  // Construire la liste des dates désactivées
+  const disabledDates: (Date | { before: Date } | { after: Date })[] = [
+    { before: today },
+    today,
+    ...effectiveOccupied,
+  ];
+
+  // Ajouter la limite "après" si elle existe
+  if (blockedAfterDate) {
+    disabledDates.push({ after: blockedAfterDate });
+  }
+
   return (
     <DayPicker
       className="react-day-picker"
@@ -117,7 +141,7 @@ export default function CustomDayPicker(props: CustomDayPickerProps) {
       onSelect={handleSelect}
       defaultMonth={props.initialMonth}
       required={false}
-      disabled={[{ before: today }, today, ...effectiveOccupied]}
+      disabled={disabledDates}
       modifiers={{ occupied: effectiveOccupied }}
       modifiersClassNames={{
         occupied: "occupied",

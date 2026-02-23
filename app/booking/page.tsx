@@ -4,6 +4,8 @@ import {
   IoPersonCircleOutline,
   IoMailOutline,
   IoArrowForwardOutline,
+  IoLocationOutline,
+  IoCalendarOutline,
 } from "react-icons/io5";
 import { useRouter } from "next/navigation";
 import { HiOutlinePhone } from "react-icons/hi";
@@ -17,10 +19,10 @@ import Footer from "@/components/home/Footer";
 import PopoverDatePicker from "@/components/PopoverDatePicker";
 import {
   getPriceResult,
-  isHighSeason,
   getCategory,
   getNights,
 } from "@/utils/priceCalculator";
+import { usePricingPeriods } from "@/hooks/usePricingPeriods";
 import { mutate } from "swr";
 import { type BookingInput } from "@/lib/bookings";
 import Link from "next/link";
@@ -30,6 +32,9 @@ interface FormData {
   prenom: string;
   email: string;
   telephone: string;
+  adresse: string;
+  codePostal: string;
+  dateNaissance: string;
 }
 
 interface FormErrors {
@@ -37,10 +42,14 @@ interface FormErrors {
   prenom?: string;
   email?: string;
   telephone?: string;
+  adresse?: string;
+  codePostal?: string;
+  dateNaissance?: string;
 }
 
 export default function Booking() {
   const { range, setRange, travelers, setTravelers } = useBooking();
+  const { periods } = usePricingPeriods();
   const [price, setPrice] = useState<number | null>(null);
   const [priceError, setPriceError] = useState<string | null>(null);
   const [promoCode, setPromoCode] = useState("");
@@ -63,6 +72,9 @@ export default function Booking() {
     prenom: "",
     email: "",
     telephone: "",
+    adresse: "",
+    codePostal: "",
+    dateNaissance: "",
   });
 
   const [formErrors, setFormErrors] = useState<FormErrors>({});
@@ -71,7 +83,7 @@ export default function Booking() {
   // Validation des champs
   const validateField = (
     name: keyof FormData,
-    value: string
+    value: string,
   ): string | undefined => {
     switch (name) {
       case "nom":
@@ -93,6 +105,24 @@ export default function Booking() {
         const phoneRegex = /^[+]?[\d\s\-\(\)]{8,15}$/;
         if (!phoneRegex.test(value.replace(/\s/g, "")))
           return "Format de téléphone invalide";
+        break;
+      case "adresse":
+        if (!value.trim()) return "L'adresse est requise";
+        if (value.trim().length < 5)
+          return "L'adresse doit contenir au moins 5 caractères";
+        break;
+      case "codePostal":
+        if (!value.trim()) return "Le code postal est requis";
+        if (!/^[0-9]{4,6}$/.test(value.trim()))
+          return "Code postal invalide (4-6 chiffres)";
+        break;
+      case "dateNaissance":
+        if (!value.trim()) return "La date de naissance est requise";
+        const birthDate = new Date(value);
+        const today = new Date();
+        if (isNaN(birthDate.getTime())) return "Date invalide";
+        if (birthDate >= today)
+          return "La date de naissance doit être dans le passé";
         break;
     }
     return undefined;
@@ -132,7 +162,7 @@ export default function Booking() {
   const isFormValid = (): boolean | undefined => {
     return (
       (Object.keys(formData) as Array<keyof FormData>).every(
-        (key) => !validateField(key, formData[key])
+        (key) => !validateField(key, formData[key]),
       ) &&
       range?.from &&
       range?.to &&
@@ -151,6 +181,7 @@ export default function Booking() {
         start: range.from,
         end: range.to,
         adults: travelers.adults,
+        customPeriods: periods,
       });
 
       if (error) {
@@ -167,7 +198,7 @@ export default function Booking() {
         if (calculatedPrice && promoPercent) {
           const newDiscounted = Math.max(
             0,
-            Math.round(calculatedPrice * (1 - promoPercent / 100))
+            Math.round(calculatedPrice * (1 - promoPercent / 100)),
           );
           setDiscountedPrice(newDiscounted);
         }
@@ -178,7 +209,7 @@ export default function Booking() {
       setPromoPercent(null);
       setDiscountedPrice(null);
     }
-  }, [range, travelers]);
+  }, [range, travelers, periods]);
 
   // Invalider la promo si on modifie le code saisi
   useEffect(() => {
@@ -227,7 +258,7 @@ export default function Booking() {
       setPromoPercent(percent);
       const newDiscounted = Math.max(
         0,
-        Math.round(price * (1 - percent / 100))
+        Math.round(price * (1 - percent / 100)),
       );
       setDiscountedPrice(newDiscounted);
     } catch (e) {
@@ -270,6 +301,9 @@ export default function Booking() {
         lname: formData.nom,
         mail: formData.email,
         phone: formData.telephone,
+        address: formData.adresse,
+        postal_code: formData.codePostal,
+        birthdate: formData.dateNaissance,
         no_adults: travelers.adults,
         no_childs: travelers.children || 0,
         status: 1,
@@ -281,7 +315,7 @@ export default function Booking() {
 
       console.log(
         "Booking data date :",
-        bookingData.arrival_date + " to " + bookingData.departure_date
+        bookingData.arrival_date + " to " + bookingData.departure_date,
       );
 
       const response = await fetch("/api/bookings", {
@@ -294,7 +328,15 @@ export default function Booking() {
         const booking = await response.json();
         mutate("/api/bookings/occupied-dates");
         router.push(`/confirmation/${booking.id}`);
-        setFormData({ nom: "", prenom: "", email: "", telephone: "" });
+        setFormData({
+          nom: "",
+          prenom: "",
+          email: "",
+          telephone: "",
+          adresse: "",
+          codePostal: "",
+          dateNaissance: "",
+        });
         setRange(undefined);
         setTravelers({ adults: 1, children: 0 });
         setConditionsAccepted(false);
@@ -303,7 +345,7 @@ export default function Booking() {
       } else {
         const errorData = await response.json();
         setSubmitMessage(
-          errorData.message || "Erreur lors de la création de la réservation"
+          errorData.message || "Erreur lors de la création de la réservation",
         );
       }
     } catch (error) {
@@ -441,6 +483,81 @@ export default function Booking() {
                 )}
               </div>
 
+              {/* Champs adresse et code postal */}
+              <div className="flex flex-col lg:flex-row gap-2">
+                <label
+                  className={`input validator input-primary lg:flex-[2] ${
+                    showValidation && formErrors.adresse ? "input-error" : ""
+                  }`}
+                >
+                  <IoLocationOutline className="text-xl text-base-content/70" />
+                  <input
+                    type="text"
+                    placeholder="Adresse"
+                    value={formData.adresse}
+                    onChange={(e) =>
+                      handleInputChange("adresse", e.target.value)
+                    }
+                    required
+                  />
+                </label>
+                <label
+                  className={`input validator input-primary lg:flex-1 ${
+                    showValidation && formErrors.codePostal ? "input-error" : ""
+                  }`}
+                >
+                  <IoLocationOutline className="text-xl text-base-content/70" />
+                  <input
+                    type="text"
+                    placeholder="Code postal"
+                    value={formData.codePostal}
+                    onChange={(e) =>
+                      handleInputChange("codePostal", e.target.value)
+                    }
+                    className="tabular-nums"
+                    required
+                  />
+                </label>
+              </div>
+              <div className="flex flex-col lg:flex-row gap-2">
+                {showValidation && formErrors.adresse && (
+                  <div className="text-error text-sm lg:flex-[2]">
+                    {formErrors.adresse}
+                  </div>
+                )}
+                {showValidation && formErrors.codePostal && (
+                  <div className="text-error text-sm lg:flex-1">
+                    {formErrors.codePostal}
+                  </div>
+                )}
+              </div>
+
+              {/* Champ date de naissance */}
+              <label
+                className={`input validator input-primary w-full mb-2 ${
+                  showValidation && formErrors.dateNaissance
+                    ? "input-error"
+                    : ""
+                }`}
+              >
+                <IoCalendarOutline className="text-xl text-base-content/70" />
+                <input
+                  type="date"
+                  placeholder="Date de naissance"
+                  value={formData.dateNaissance}
+                  onChange={(e) =>
+                    handleInputChange("dateNaissance", e.target.value)
+                  }
+                  className="w-full"
+                  required
+                />
+              </label>
+              {showValidation && formErrors.dateNaissance && (
+                <div className="text-error text-sm">
+                  {formErrors.dateNaissance}
+                </div>
+              )}
+
               <TravelersSelector
                 travelers={travelers}
                 setTravelers={setTravelers}
@@ -487,12 +604,8 @@ export default function Booking() {
               ) : range?.from && range?.to && travelers.adults > 0 ? (
                 <>
                   <p>
-                    <span className="font-semibold">Saison :</span>{" "}
-                    {isHighSeason(range.from, range.to) ? "Haute" : "Basse"}
-                  </p>
-                  <p>
                     <span className="font-semibold">Tarif :</span>{" "}
-                    {getCategory(travelers.adults, range.from, range.to)}
+                    {getCategory(travelers.adults)}
                   </p>
                   <p>
                     <span className="font-semibold">Nuits :</span>{" "}

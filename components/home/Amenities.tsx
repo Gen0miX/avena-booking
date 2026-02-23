@@ -6,6 +6,7 @@ import {
   PiShower,
   PiCoffee,
   PiForkKnife,
+  PiHairDryer,
 } from "react-icons/pi";
 import { RiFridgeLine } from "react-icons/ri";
 import { MdBalcony } from "react-icons/md";
@@ -33,13 +34,14 @@ export default function Amenities() {
     { icon: <PiOven />, name: "Four" },
     { icon: <RiFridgeLine className="text-base-content/80" />, name: "Frigo" },
     { icon: <PiCookingPot />, name: "Plaques" },
-    { icon: <PiCoffee />, name: "Machine à café" },
+    { icon: <PiCoffee />, name: "Machine Nespresso" },
     { icon: <PiForkKnife />, name: "Lave-vaisselle" },
     { icon: <PiShower />, name: "Salle de bain (douche)" },
     {
       icon: <BiCabinet className="text-base-content/80" />,
       name: "Rangements",
     },
+    { icon: <PiHairDryer />, name: "Sèche-cheveux" },
     { icon: <MdBalcony className="text-base-content/80" />, name: "Balcon" },
     {
       icon: <TbSmokingNo className="text-base-content/80" />,

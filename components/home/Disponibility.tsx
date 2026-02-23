@@ -5,12 +5,14 @@ import CustomDayPicker from "@/components/CustomDayPicker";
 import TravelersSelector from "@/components/TravelersSelector";
 import { getPriceResult } from "@/utils/priceCalculator";
 import { useBooking } from "@/context/BookingContext";
+import { usePricingPeriods } from "@/hooks/usePricingPeriods";
 import { FaArrowRight } from "react-icons/fa";
 import PopoverDatePicker from "@/components/PopoverDatePicker";
 
 export default function Disponibility() {
   const router = useRouter();
   const { range, setRange, travelers, setTravelers } = useBooking();
+  const { periods } = usePricingPeriods();
   const [price, setPrice] = useState<number | null>(null);
   const [dateError, setDateError] = useState<string | null>(null);
 
@@ -27,6 +29,7 @@ export default function Disponibility() {
       start: range?.from,
       end: range?.to,
       adults: travelers.adults,
+      customPeriods: periods,
     });
 
     if (error) {
@@ -36,7 +39,7 @@ export default function Disponibility() {
       setDateError(null);
       setPrice(price);
     }
-  }, [range, travelers]);
+  }, [range, travelers, periods]);
 
   return (
     <>

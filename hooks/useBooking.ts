@@ -15,6 +15,9 @@ export default function useBooking(id: number) {
     no_childs?: number | null;
     mail?: string | null;
     phone?: string | null;
+    address?: string | null;
+    postal_code?: string | null;
+    birthdate?: string | null;
     price?: number;
     is_paid?: boolean;
     is_cleaning?: boolean;
