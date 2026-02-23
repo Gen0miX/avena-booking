@@ -23,7 +23,7 @@ export default function Home() {
       ([entry]) => {
         setShowNavBar(!entry.isIntersecting);
       },
-      { threshold: 0.1 }
+      { threshold: 0.1 },
     );
     if (heroRef.current) {
       observer.observe(heroRef.current);
@@ -146,7 +146,7 @@ export default function Home() {
                   height={300}
                   width="100%"
                   mode="place"
-                  q="Untere Dorfstrasse 39, 3906 Saas-Fee, Suisse"
+                  q="Avena, 3906 Saas-Fee, Suisse"
                 />
               </div>
             </div>
