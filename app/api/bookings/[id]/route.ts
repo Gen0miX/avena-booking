@@ -22,6 +22,7 @@ export async function GET(
       phone,
       address,
       postal_code,
+      city,
       birthdate,
       no_adults,
       no_childs,

@@ -6,7 +6,9 @@ import {
   IoArrowForwardOutline,
   IoLocationOutline,
   IoCalendarOutline,
+  IoBusinessOutline,
 } from "react-icons/io5";
+import { BsMailboxFlag } from "react-icons/bs";
 import { useRouter } from "next/navigation";
 import { HiOutlinePhone } from "react-icons/hi";
 import { useBooking } from "@/context/BookingContext";
@@ -34,6 +36,7 @@ interface FormData {
   telephone: string;
   adresse: string;
   codePostal: string;
+  localite: string;
   dateNaissance: string;
 }
 
@@ -44,6 +47,7 @@ interface FormErrors {
   telephone?: string;
   adresse?: string;
   codePostal?: string;
+  localite?: string;
   dateNaissance?: string;
 }
 
@@ -74,6 +78,7 @@ export default function Booking() {
     telephone: "",
     adresse: "",
     codePostal: "",
+    localite: "",
     dateNaissance: "",
   });
 
@@ -115,6 +120,11 @@ export default function Booking() {
         if (!value.trim()) return "Le code postal est requis";
         if (!/^[0-9]{4,6}$/.test(value.trim()))
           return "Code postal invalide (4-6 chiffres)";
+        break;
+      case "localite":
+        if (!value.trim()) return "La localité est requise";
+        if (value.trim().length < 2)
+          return "La localité doit contenir au moins 2 caractères";
         break;
       case "dateNaissance":
         if (!value.trim()) return "La date de naissance est requise";
@@ -303,6 +313,7 @@ export default function Booking() {
         phone: formData.telephone,
         address: formData.adresse,
         postal_code: formData.codePostal,
+        city: formData.localite,
         birthdate: formData.dateNaissance,
         no_adults: travelers.adults,
         no_childs: travelers.children || 0,
@@ -335,6 +346,7 @@ export default function Booking() {
           telephone: "",
           adresse: "",
           codePostal: "",
+          localite: "",
           dateNaissance: "",
         });
         setRange(undefined);
@@ -483,30 +495,33 @@ export default function Booking() {
                 )}
               </div>
 
-              {/* Champs adresse et code postal */}
+              {/* Champ adresse */}
+              <label
+                className={`input validator input-primary w-full ${
+                  showValidation && formErrors.adresse ? "input-error" : ""
+                }`}
+              >
+                <IoLocationOutline className="text-xl text-base-content/70" />
+                <input
+                  type="text"
+                  placeholder="Adresse"
+                  value={formData.adresse}
+                  onChange={(e) => handleInputChange("adresse", e.target.value)}
+                  required
+                />
+              </label>
+              {showValidation && formErrors.adresse && (
+                <div className="text-error text-sm">{formErrors.adresse}</div>
+              )}
+
+              {/* Champs code postal et localité */}
               <div className="flex flex-col lg:flex-row gap-2">
-                <label
-                  className={`input validator input-primary lg:flex-[2] ${
-                    showValidation && formErrors.adresse ? "input-error" : ""
-                  }`}
-                >
-                  <IoLocationOutline className="text-xl text-base-content/70" />
-                  <input
-                    type="text"
-                    placeholder="Adresse"
-                    value={formData.adresse}
-                    onChange={(e) =>
-                      handleInputChange("adresse", e.target.value)
-                    }
-                    required
-                  />
-                </label>
                 <label
                   className={`input validator input-primary lg:flex-1 ${
                     showValidation && formErrors.codePostal ? "input-error" : ""
                   }`}
                 >
-                  <IoLocationOutline className="text-xl text-base-content/70" />
+                  <BsMailboxFlag className="text-xl text-base-content/70" />
                   <input
                     type="text"
                     placeholder="Code postal"
@@ -518,23 +533,43 @@ export default function Booking() {
                     required
                   />
                 </label>
+                <label
+                  className={`input validator input-primary lg:flex-[2] ${
+                    showValidation && formErrors.localite ? "input-error" : ""
+                  }`}
+                >
+                  <IoBusinessOutline className="text-xl text-base-content/70" />
+                  <input
+                    type="text"
+                    placeholder="Ville"
+                    value={formData.localite}
+                    onChange={(e) =>
+                      handleInputChange("localite", e.target.value)
+                    }
+                    required
+                  />
+                </label>
               </div>
               <div className="flex flex-col lg:flex-row gap-2">
-                {showValidation && formErrors.adresse && (
-                  <div className="text-error text-sm lg:flex-[2]">
-                    {formErrors.adresse}
-                  </div>
-                )}
                 {showValidation && formErrors.codePostal && (
                   <div className="text-error text-sm lg:flex-1">
                     {formErrors.codePostal}
                   </div>
                 )}
+                {showValidation && formErrors.localite && (
+                  <div className="text-error text-sm lg:flex-[2]">
+                    {formErrors.localite}
+                  </div>
+                )}
               </div>
 
               {/* Champ date de naissance */}
+              <label className="label">
+                <span className="label-text">Date de naissance</span>
+              </label>
+
               <label
-                className={`input validator input-primary w-full mb-2 ${
+                className={`input validator input-primary w-full ${
                   showValidation && formErrors.dateNaissance
                     ? "input-error"
                     : ""
@@ -557,6 +592,10 @@ export default function Booking() {
                   {formErrors.dateNaissance}
                 </div>
               )}
+
+              <div className="divider divider-start text-lg font-medium">
+                Données réservations
+              </div>
 
               <TravelersSelector
                 travelers={travelers}

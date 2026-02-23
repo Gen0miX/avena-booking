@@ -55,6 +55,7 @@ export default function BookingDetails({
     phone: "",
     address: "",
     postal_code: "",
+    city: "",
     birthdate: "",
     price: 0,
     is_paid: false,
@@ -87,6 +88,7 @@ export default function BookingDetails({
       phone: b.phone ?? "",
       address: b.address ?? "",
       postal_code: b.postal_code ?? "",
+      city: b.city ?? "",
       birthdate: b.birthdate ? formatDateForInput(b.birthdate) : "",
       price: b.price,
       is_paid: !!b.is_paid,
@@ -211,6 +213,7 @@ export default function BookingDetails({
         phone: formValues.phone || null,
         address: formValues.address || null,
         postal_code: formValues.postal_code || null,
+        city: formValues.city || null,
         birthdate: formValues.birthdate || null,
         price: formValues.price,
         is_paid: formValues.is_paid,
@@ -550,6 +553,22 @@ export default function BookingDetails({
                   name="postal_code"
                   className="input input-bordered w-full"
                   value={formValues.postal_code}
+                  onChange={handleInputChange}
+                />
+              )}
+            </div>
+            <div>
+              <label className="font-semibold text-sm">Localité</label>
+              {!isEditing ? (
+                <div className="text-lg">
+                  {booking.city || "Non renseigné"}
+                </div>
+              ) : (
+                <input
+                  type="text"
+                  name="city"
+                  className="input input-bordered w-full"
+                  value={formValues.city}
                   onChange={handleInputChange}
                 />
               )}

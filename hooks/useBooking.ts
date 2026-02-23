@@ -17,6 +17,7 @@ export default function useBooking(id: number) {
     phone?: string | null;
     address?: string | null;
     postal_code?: string | null;
+    city?: string | null;
     birthdate?: string | null;
     price?: number;
     is_paid?: boolean;
