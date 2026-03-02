@@ -27,7 +27,7 @@ export function getNights(start: Date, end: Date): number {
   const msPerNight = 1000 * 60 * 60 * 24;
   const startDay = stripTime(start);
   const endDay = stripTime(end);
-  return Math.max(1, (endDay.getTime() - startDay.getTime()) / msPerNight);
+  return Math.max(1, Math.round((endDay.getTime() - startDay.getTime()) / msPerNight));
 }
 
 /**

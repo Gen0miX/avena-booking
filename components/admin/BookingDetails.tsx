@@ -11,7 +11,7 @@ import { DateRange } from "react-day-picker";
 import PopoverDatePicker from "@/components/PopoverDatePicker";
 import TravelersSelector from "@/components/TravelersSelector";
 import { Travelers } from "@/lib/bookings";
-import { getPriceResult } from "@/utils/priceCalculator";
+import { getPriceResult, getNights } from "@/utils/priceCalculator";
 import { usePricingPeriods } from "@/hooks/usePricingPeriods";
 import {
   FaUser,
@@ -428,11 +428,7 @@ export default function BookingDetails({
               <div>
                 <label className="font-semibold text-sm">Durée</label>
                 <div className="text-lg">
-                  {Math.ceil(
-                    (new Date(booking.departure_date).getTime() -
-                      new Date(booking.arrival_date).getTime()) /
-                      (1000 * 60 * 60 * 24)
-                  )}{" "}
+                  {getNights(new Date(booking.arrival_date), new Date(booking.departure_date))}{" "}
                   nuits
                 </div>
               </div>
