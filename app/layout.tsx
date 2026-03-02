@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "next-themes";
 import { BookingProvider } from "@/context/BookingContext";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 const playfairDisplay = Playfair({
   variable: "--font-playfair-display",
@@ -39,6 +40,7 @@ export default function RootLayout({
           <BookingProvider> {children}</BookingProvider>
         </ThemeProvider>
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
