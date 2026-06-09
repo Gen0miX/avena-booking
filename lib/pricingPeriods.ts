@@ -21,6 +21,7 @@ export interface PricingPeriodInput {
 // Tarifs par défaut récurrents (s'appliquent chaque année)
 export interface DefaultRate {
   name: string;
+  price_couple?: number; // Prix pour 1-2 adultes (optionnel)
   price_standard: number;
   price_five: number;
 }
@@ -29,6 +30,7 @@ export interface DefaultRate {
 export const DEFAULT_RATES: Record<string, DefaultRate> = {
   basseSaison: {
     name: "Basse saison",
+    price_couple: 150,
     price_standard: 200,
     price_five: 250,
   },

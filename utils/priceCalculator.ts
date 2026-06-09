@@ -7,7 +7,7 @@ type PriceParams = {
   customPeriods?: PricingPeriod[]; // Périodes personnalisées (Carnaval, etc.)
 };
 
-export type Category = "Famille" | "Plein (5 adultes)";
+export type Category = "1-2 adultes" | "Famille" | "Plein (5 adultes)";
 
 function stripTime(date: Date): Date {
   return new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -65,7 +65,9 @@ function getPriceForDate(
 
   // 2. Sinon, utiliser le tarif par défaut selon la saison
   const defaultRate = getDefaultRateForDate(date);
-  return adults === 5 ? defaultRate.price_five : defaultRate.price_standard;
+  if (adults === 5) return defaultRate.price_five;
+  if (adults <= 2 && defaultRate.price_couple !== undefined) return defaultRate.price_couple;
+  return defaultRate.price_standard;
 }
 
 /**
@@ -94,6 +96,7 @@ function calculatePrice(
  * Détermine la catégorie pour l'affichage
  */
 export function getCategory(adults: number): Category {
+  if (adults <= 2) return "1-2 adultes";
   if (adults <= 4) return "Famille";
   return "Plein (5 adultes)";
 }
