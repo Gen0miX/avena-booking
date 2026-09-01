@@ -146,7 +146,7 @@ export default function Home() {
                   height={300}
                   width="100%"
                   mode="place"
-                  q="Avena, 3906 Saas-Fee, Suisse"
+                  q="Avena, Untere Dorfstrasse 39, 3906 Saas-Fee, Suisse"
                 />
               </div>
             </div>
