@@ -1,17 +1,5 @@
-import {
-  PiWifiHigh,
-  PiTelevisionSimple,
-  PiOven,
-  PiCookingPot,
-  PiShower,
-  PiCoffee,
-  PiForkKnife,
-  PiHairDryer,
-} from "react-icons/pi";
-import { RiFridgeLine } from "react-icons/ri";
-import { MdBalcony } from "react-icons/md";
-import { BiCabinet } from "react-icons/bi";
-import { TbSmokingNo } from "react-icons/tb";
+import { PiCheckCircle } from "react-icons/pi";
+import { ApartmentConfig } from "@/config/apartments";
 
 interface AmenitieProps {
   icon: React.ReactNode;
@@ -27,32 +15,25 @@ function Amenitie({ icon, name }: AmenitieProps) {
   );
 }
 
-export default function Amenities() {
-  const amenitiesList = [
-    { icon: <PiWifiHigh />, name: "Wi-Fi" },
-    { icon: <PiTelevisionSimple />, name: "Écran" },
-    { icon: <PiOven />, name: "Four" },
-    { icon: <RiFridgeLine className="text-base-content/80" />, name: "Frigo" },
-    { icon: <PiCookingPot />, name: "Plaques" },
-    { icon: <PiCoffee />, name: "Machine Nespresso" },
-    { icon: <PiForkKnife />, name: "Lave-vaisselle" },
-    { icon: <PiShower />, name: "Salle de bain (douche)" },
-    {
-      icon: <BiCabinet className="text-base-content/80" />,
-      name: "Rangements",
-    },
-    { icon: <PiHairDryer />, name: "Sèche-cheveux" },
-    { icon: <MdBalcony className="text-base-content/80" />, name: "Balcon" },
-    {
-      icon: <TbSmokingNo className="text-base-content/80" />,
-      name: "Non-fumeur",
-    },
-  ];
+export default function Amenities({
+  apartment,
+}: {
+  apartment: ApartmentConfig;
+}) {
+  const amenitiesList = apartment.amenities;
+
+  if (amenitiesList.length === 0) {
+    return (
+      <div className="mb-10 max-w-xl text-base-content/60">
+        Équipements à venir
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-2 gap-4 mb-10 max-w-xl">
-      {amenitiesList.map((item, index) => (
-        <Amenitie key={index} icon={item.icon} name={item.name} />
+      {amenitiesList.map((name, index) => (
+        <Amenitie key={index} icon={<PiCheckCircle />} name={name} />
       ))}
     </div>
   );

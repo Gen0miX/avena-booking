@@ -15,10 +15,12 @@ function isDateInList(date: Date, list: Date[]) {
 type CustomDayPickerProps =
   | {
       mode: "readOnly";
+      apartmentId: string;
       initialMonth?: Date;
     }
   | {
       mode: "selectable";
+      apartmentId: string;
       selectedRange: DateRange | undefined;
       onSelect: (range: DateRange | undefined) => void;
       excludeRange?: DateRange; // plage à ignorer (réservation en cours)
@@ -26,8 +28,12 @@ type CustomDayPickerProps =
     };
 
 export default function CustomDayPicker(props: CustomDayPickerProps) {
-  const { dates: occupiedDates, loading } = useOccupiedDates();
-  const { settings, isLoading: settingsLoading } = useSettings();
+  const { dates: occupiedDates, loading } = useOccupiedDates(
+    props.apartmentId,
+  );
+  const { settings, isLoading: settingsLoading } = useSettings(
+    props.apartmentId,
+  );
 
   const today = normalizeDate(new Date());
 

@@ -1,16 +1,14 @@
 "use client";
 import Image from "next/image";
 import { useState } from "react";
+import { ApartmentConfig } from "@/config/apartments";
 
-const images = [
-  { src: "/images/appartements/salon.webp", alt: "Salon" },
-  { src: "/images/appartements/cuisine.webp", alt: "Cuisine" },
-  { src: "/images/appartements/chambre1.webp", alt: "Chambre 1" },
-  { src: "/images/appartements/chambre2.webp", alt: "Chambre 2" },
-  { src: "/images/appartements/balcony.webp", alt: "Balcon" },
-];
-
-export default function Gallery() {
+export default function Gallery({
+  apartment,
+}: {
+  apartment: ApartmentConfig;
+}) {
+  const images = apartment.gallery;
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
   const [imageLoading, setImageLoading] = useState<string[]>(
     images.map((img) => img.src),
@@ -52,6 +50,14 @@ export default function Gallery() {
     img.onload = () => setModalLoading(false);
     img.src = images[nextIndex].src;
   };
+
+  if (images.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-[300px] md:h-[400px] pb-5 rounded-xl border-2 border-primary/40 bg-base-200 text-base-content/60">
+        Galerie à venir
+      </div>
+    );
+  }
 
   return (
     <>

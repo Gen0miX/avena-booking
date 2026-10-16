@@ -8,17 +8,22 @@ import { useBooking } from "@/context/BookingContext";
 import { usePricingPeriods } from "@/hooks/usePricingPeriods";
 import { FaArrowRight } from "react-icons/fa";
 import PopoverDatePicker from "@/components/PopoverDatePicker";
+import { ApartmentConfig } from "@/config/apartments";
 
-export default function Disponibility() {
+export default function Disponibility({
+  apartment,
+}: {
+  apartment: ApartmentConfig;
+}) {
   const router = useRouter();
   const { range, setRange, travelers, setTravelers } = useBooking();
-  const { periods } = usePricingPeriods();
+  const { periods } = usePricingPeriods(apartment.slug);
   const [price, setPrice] = useState<number | null>(null);
   const [dateError, setDateError] = useState<string | null>(null);
 
   const handleBookingClick = () => {
     if (range?.from && range?.to && travelers.adults > 0) {
-      router.push("/booking");
+      router.push(`/booking?apartment=${apartment.slug}`);
     } else {
       setDateError("Veuillez sélectionner une période et au moins un adulte.");
     }
@@ -30,6 +35,7 @@ export default function Disponibility() {
       end: range?.to,
       adults: travelers.adults,
       customPeriods: periods,
+      apartment,
     });
 
     if (error) {
@@ -39,24 +45,26 @@ export default function Disponibility() {
       setDateError(null);
       setPrice(price);
     }
-  }, [range, travelers, periods]);
+  }, [range, travelers, periods, apartment]);
 
   return (
     <>
       <section className="flex flex-col w-full lg:max-w-[310px] sm:sticky sm:top-20 mb-auto mr-auto mt-5 p-5 pt-2 bg-base-200 drop-shadow-xl rounded-xl border-2 border-primary/40">
         <SectionTitle className="sm:text-4xl!">Disponibilité</SectionTitle>
         <div className="flex flex-col gap-4 mt-3">
-          <CustomDayPicker mode="readOnly" />
+          <CustomDayPicker mode="readOnly" apartmentId={apartment.slug} />
           <div className="flex flex-col gap-4 pb-2 mt-2">
             <h3 className="font-heading text-3xl font-semibold">Réserver</h3>
             <div className="flex flex-grow w-full">
               <TravelersSelector
                 travelers={travelers}
                 setTravelers={setTravelers}
+                maxCapacity={apartment.capacity}
               />
             </div>
             <div className="flex gap-2 w-full items-center">
               <PopoverDatePicker
+                apartmentId={apartment.slug}
                 selectedRange={range}
                 onSelect={setRange}
                 className="flex-grow"
