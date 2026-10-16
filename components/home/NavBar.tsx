@@ -31,7 +31,7 @@ export default function NavBar() {
             quality={100}
           ></Image>
         </Link>
-        <Link href="/#home" className="btn btn-ghost font-normal">
+        <Link href="/#appartements" className="btn btn-ghost font-normal">
           Home
         </Link>
 

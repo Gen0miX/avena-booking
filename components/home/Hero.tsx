@@ -46,7 +46,7 @@ export default function Hero() {
       <div className="absolute top-0 left-0 w-full">
         <div className="flex justify-between items-center m-3 mt-5 sm:mx-5 sm:mt-7">
           <div className="flex text-neutral-content gap-3 sm:gap-5">
-            <Link href="#home" className="link link-hover ">
+            <Link href="#appartements" className="link link-hover ">
               Home
             </Link>
             <Link href="/booking" className="link link-hover">
