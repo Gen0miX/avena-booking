@@ -1,30 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { AppSettingsInput, DEFAULT_BOOKING_BLOCKED_AFTER } from "@/lib/settings";
+import { getApartmentBySlug } from "@/config/apartments";
 
 export const dynamic = "force-dynamic";
 
-// GET: Récupérer les paramètres (public pour le calendrier)
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const apartmentParam = request.nextUrl.searchParams.get("apartment");
+  if (!apartmentParam || !getApartmentBySlug(apartmentParam)) {
+    return NextResponse.json({ error: "Appartement inconnu" }, { status: 400 });
+  }
+
   const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("settings")
     .select("*")
-    .single();
+    .eq("apartment_id", apartmentParam)
+    .maybeSingle();
 
   if (error) {
-    // Si la table n'existe pas ou pas de données, retourner les valeurs par défaut
-    if (error.code === "PGRST116") {
-      return NextResponse.json({
-        id: 1,
-        booking_blocked_after: DEFAULT_BOOKING_BLOCKED_AFTER,
-      });
-    }
     return NextResponse.json(
       { error: "Failed to fetch settings", details: error },
       { status: 500 }
     );
+  }
+
+  if (!data) {
+    return NextResponse.json({
+      id: null,
+      apartment_id: apartmentParam,
+      booking_blocked_after: DEFAULT_BOOKING_BLOCKED_AFTER,
+    });
   }
 
   return NextResponse.json(data);
@@ -34,7 +41,6 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   const supabase = await createClient();
 
-  // Vérifier l'authentification
   const {
     data: { user },
     error: authError,
@@ -44,9 +50,12 @@ export async function PUT(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body: AppSettingsInput = await request.json();
+  const body: AppSettingsInput & { apartment_id: string } = await request.json();
 
-  // Valider le format de la date si fournie
+  if (!getApartmentBySlug(body.apartment_id)) {
+    return NextResponse.json({ error: "Appartement inconnu" }, { status: 400 });
+  }
+
   if (body.booking_blocked_after) {
     const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
     if (!dateRegex.test(body.booking_blocked_after)) {
@@ -55,22 +64,17 @@ export async function PUT(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    // Vérifier que la date est valide
     const date = new Date(body.booking_blocked_after);
     if (isNaN(date.getTime())) {
-      return NextResponse.json(
-        { error: "Date invalide" },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Date invalide" }, { status: 400 });
     }
   }
 
-  // Essayer de mettre à jour, sinon insérer
   const { data: existing } = await supabase
     .from("settings")
     .select("id")
-    .single();
+    .eq("apartment_id", body.apartment_id)
+    .maybeSingle();
 
   let result;
   if (existing) {
@@ -88,6 +92,7 @@ export async function PUT(request: NextRequest) {
       .from("settings")
       .insert([
         {
+          apartment_id: body.apartment_id,
           booking_blocked_after: body.booking_blocked_after,
         },
       ])

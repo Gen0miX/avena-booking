@@ -1,12 +1,14 @@
 // Paramètres généraux de l'application
 export interface AppSettings {
   id: number;
+  apartment_id: string;
   booking_blocked_after: string | null; // ISO date string "YYYY-MM-DD" ou null si pas de blocage
   created_at?: string;
   updated_at?: string;
 }
 
 export interface AppSettingsInput {
+  apartment_id: string;
   booking_blocked_after: string | null;
 }
 
