@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { useBookings } from "@/hooks/usebookings";
+import { ApartmentSlug } from "@/config/apartments";
 import {
   Period,
   getChartData,
@@ -17,8 +18,8 @@ import { FaCoins, FaCalendarCheck, FaBed, FaClock, FaChevronLeft, FaChevronRight
 import { addMonths, addYears, addQuarters, subMonths, subYears, subQuarters, format } from "date-fns";
 import { fr } from "date-fns/locale";
 
-export default function StatisticsDashboard() {
-  const { bookings, isLoading, isError } = useBookings();
+export default function StatisticsDashboard({ apartment }: { apartment: ApartmentSlug | "all" }) {
+  const { bookings, isLoading, isError } = useBookings(apartment);
   const [period, setPeriod] = useState<Period>("year");
   const [date, setDate] = useState(new Date());
 
@@ -76,7 +77,12 @@ export default function StatisticsDashboard() {
     <div className="py-4 sm:p-4 space-y-6">
       {/* Controls */}
       <div className="flex flex-col md:flex-row justify-between items-center bg-base-200 p-4 rounded-box shadow-sm gap-4 border border-primary/20">
-        <h2 className="text-xl font-bold">Statistiques</h2>
+        <div className="flex items-center gap-2">
+          <h2 className="text-xl font-bold">Statistiques</h2>
+          {apartment === "all" && (
+            <span className="badge badge-outline">Vue globale — tous les appartements</span>
+          )}
+        </div>
         
         <div className="flex flex-col sm:flex-row items-center gap-4">
             <div className="join">

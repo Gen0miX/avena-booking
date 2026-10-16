@@ -123,7 +123,7 @@ export default function DashboardLayout({
           />
         );
       case "statistics":
-        return <StatisticsDashboard />;
+        return <StatisticsDashboard apartment={selectedApartment} />;
       case "settings":
         return selectedApartment === "all" ? (
           <div className="alert alert-info">
