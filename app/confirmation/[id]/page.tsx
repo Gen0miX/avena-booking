@@ -51,6 +51,9 @@ export default function ConfirmationPage() {
           <div>
             <ul className="list-disc list-inside space-y-1">
               <li>
+                🏠 Appartement : <b>{apartment?.name ?? booking.apartment_id}</b>
+              </li>
+              <li>
                 📅 Arrivée :{" "}
                 {new Date(booking.arrival_date).toLocaleDateString("fr-CH")}
               </li>
@@ -101,9 +104,6 @@ export default function ConfirmationPage() {
                 <p>
                   Votre réservation est actuellement <b>en attente</b> et sera
                   confirmée après réception de votre paiement.
-                </p>
-                <p className="mt-2">
-                  Appartement : <b>{apartment?.name ?? booking.apartment_id}</b>
                 </p>
                 <p className="mt-2">
                   IBAN : <b>CH64 0076 8125 0290 8410 3</b>
