@@ -604,10 +604,11 @@ git commit -m "feat(pricing): make capacity, min-nights and seasonal rates apart
 
 **Files:**
 - Modify: `app/api/bookings/route.ts`
+- Modify: `app/api/bookings/[id]/route.ts` (one-line select fix only — see Step 3)
 
 **Interfaces:**
 - Consumes: `getApartmentBySlug` (`config/apartments.ts`), `getPriceResult`/`getNights` (`utils/priceCalculator.ts`), `PricingPeriod` (`lib/pricingPeriods.ts`).
-- Produces: `GET /api/bookings?apartment=<slug|all>` (defaults to `all` when the param is absent, for admin-dashboard backward compatibility), `POST /api/bookings` (body now requires `apartment_id`, optional `promo_code`).
+- Produces: `GET /api/bookings?apartment=<slug|all>` (defaults to `all` when the param is absent, for admin-dashboard backward compatibility), `POST /api/bookings` (body now requires `apartment_id`, optional `promo_code`), `GET /api/bookings/:id` now also returns `apartment_id`.
 
 - [ ] **Step 1: `GET` — add optional apartment filter**
 
@@ -843,15 +844,54 @@ import { getPriceResult, getNights } from "@/utils/priceCalculator";
 import { PricingPeriod } from "@/lib/pricingPeriods";
 ```
 
-- [ ] **Step 3: Verify manually**
+- [ ] **Step 3: `app/api/bookings/[id]/route.ts` GET — add `apartment_id` to the select**
+
+`Booking` (as of Task 3) now has a required `apartment_id: string` field, but this single-booking `GET` (used by `hooks/useBooking.ts`, which backs the confirmation page and the admin booking-detail view) never selects that column — add it to the existing `select(...)` template literal (lines 15-38), right after `id,`:
+
+```ts
+  const { data, error } = await supabase
+    .from("bookings")
+    .select(
+      `
+      id,
+      apartment_id,
+      created_at,
+      fname,
+      lname,
+      mail,
+      phone,
+      address,
+      postal_code,
+      city,
+      birthdate,
+      no_adults,
+      no_childs,
+      arrival_date,
+      departure_date,
+      price,
+      is_cleaning,
+      is_paid,
+      status (
+        id,
+        name
+      )
+    `
+    )
+    .eq("id", parsedId)
+    .single();
+```
+
+No other change to this file — `PUT`/`DELETE` already operate generically on `updates`/`id` and need nothing added.
+
+- [ ] **Step 4: Verify manually**
 
 Run: `npm run build`
 Then manually (dev server, dev Supabase project): submit one booking for `avena-1` with real dates/adults and confirm the price returned matches what the UI showed before this task (byte-identical CHF amount) — this is the regression check for "no behavior change for the existing apartment."
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 5: Commit**
 
 ```bash
-git add app/api/bookings/route.ts
+git add app/api/bookings/route.ts "app/api/bookings/[id]/route.ts"
 git commit -m "feat(bookings-api): scope bookings by apartment and validate capacity/min-nights/availability/price server-side"
 ```
 
