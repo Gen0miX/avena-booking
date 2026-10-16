@@ -5,12 +5,14 @@ import useBooking from "@/hooks/useBooking";
 import NavBar from "@/components/home/NavBar";
 import Footer from "@/components/home/Footer";
 import Link from "next/link";
+import { getApartmentBySlug } from "@/config/apartments";
 
 export default function ConfirmationPage() {
   const { id } = useParams(); // récupère l'id depuis l'URL
   const bookingId = Number(id);
 
   const { booking, loading, error } = useBooking(bookingId);
+  const apartment = booking ? getApartmentBySlug(booking.apartment_id) : undefined;
 
   if (loading) {
     return <p className="text-center mt-20">Chargement de la réservation...</p>;
@@ -99,6 +101,9 @@ export default function ConfirmationPage() {
                 <p>
                   Votre réservation est actuellement <b>en attente</b> et sera
                   confirmée après réception de votre paiement.
+                </p>
+                <p className="mt-2">
+                  Appartement : <b>{apartment?.name ?? booking.apartment_id}</b>
                 </p>
                 <p className="mt-2">
                   IBAN : <b>CH64 0076 8125 0290 8410 3</b>

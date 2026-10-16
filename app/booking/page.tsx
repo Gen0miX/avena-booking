@@ -9,11 +9,11 @@ import {
   IoBusinessOutline,
 } from "react-icons/io5";
 import { BsMailboxFlag } from "react-icons/bs";
-import { useRouter } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import { HiOutlinePhone } from "react-icons/hi";
 import { useBooking } from "@/context/BookingContext";
 import ReCAPTCHA from "react-google-recaptcha";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, Suspense } from "react";
 import CustomDayPicker from "@/components/CustomDayPicker";
 import TravelersSelector from "@/components/TravelersSelector";
 import NavBar from "@/components/home/NavBar";
@@ -27,6 +27,7 @@ import {
 import { usePricingPeriods } from "@/hooks/usePricingPeriods";
 import { mutate } from "swr";
 import { type BookingInput } from "@/lib/bookings";
+import { APARTMENT_LIST, getApartmentBySlug, isApartmentSlug } from "@/config/apartments";
 import Link from "next/link";
 
 interface FormData {
@@ -52,8 +53,50 @@ interface FormErrors {
 }
 
 export default function Booking() {
-  const { range, setRange, travelers, setTravelers } = useBooking();
-  const { periods } = usePricingPeriods();
+  // useSearchParams() below requires a Suspense boundary to avoid a
+  // CSR-bailout build error; BookingForm carries all the real logic.
+  return (
+    <Suspense fallback={null}>
+      <BookingForm />
+    </Suspense>
+  );
+}
+
+function BookingForm() {
+  const searchParams = useSearchParams();
+  const {
+    range,
+    setRange,
+    travelers,
+    setTravelers,
+    apartmentSlug,
+    setApartmentSlug,
+  } = useBooking();
+
+  // Resolve the initial apartment once: URL param if valid, else the
+  // first known apartment. Runs once on mount — afterwards the selector
+  // below is the only thing that changes apartmentSlug.
+  useEffect(() => {
+    if (apartmentSlug) return;
+    const fromUrl = searchParams.get("apartment");
+    setApartmentSlug(
+      isApartmentSlug(fromUrl ?? "")
+        ? (fromUrl as typeof apartmentSlug)
+        : APARTMENT_LIST[0].slug,
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const apartment = apartmentSlug ? getApartmentBySlug(apartmentSlug) : undefined;
+
+  const handleApartmentChange = (slug: string) => {
+    if (!isApartmentSlug(slug)) return;
+    setApartmentSlug(slug);
+    setRange(undefined); // dates picked for the previous apartment don't carry meaning here (different occupancy, possibly different capacity)
+    router.replace(`/booking?apartment=${slug}`, { scroll: false });
+  };
+
+  const { periods } = usePricingPeriods(apartment?.slug ?? null);
   const [price, setPrice] = useState<number | null>(null);
   const [priceError, setPriceError] = useState<string | null>(null);
   const [promoCode, setPromoCode] = useState("");
@@ -186,12 +229,14 @@ export default function Booking() {
   // Calcul du prix
   useEffect(() => {
     setIsClient(true);
+    if (!apartment) return;
     if (range?.from && range?.to && travelers.adults > 0) {
       const { price: calculatedPrice, error } = getPriceResult({
         start: range.from,
         end: range.to,
         adults: travelers.adults,
         customPeriods: periods,
+        apartment,
       });
 
       if (error) {
@@ -219,7 +264,7 @@ export default function Booking() {
       setPromoPercent(null);
       setDiscountedPrice(null);
     }
-  }, [range, travelers, periods]);
+  }, [range, travelers, periods, apartment]);
 
   // Invalider la promo si on modifie le code saisi
   useEffect(() => {
@@ -229,6 +274,7 @@ export default function Booking() {
   }, [promoCode]);
 
   const handleCheckPromo = async () => {
+    if (!apartment) return;
     if (!range?.from || !range?.to || !price) {
       setPromoError("Sélectionnez d'abord vos dates et voyageurs");
       return;
@@ -249,6 +295,7 @@ export default function Booking() {
           code: promoCode.trim(),
           arrival_date: arrivalDateString,
           departure_date: departureDateString,
+          apartment_id: apartment.slug,
         }),
       });
       const data = await res.json();
@@ -292,6 +339,11 @@ export default function Booking() {
       return;
     }
 
+    if (!apartment) {
+      setSubmitMessage("Veuillez sélectionner un appartement");
+      return;
+    }
+
     setIsSubmitting(true);
     setSubmitMessage(null);
 
@@ -307,6 +359,7 @@ export default function Booking() {
       const departureDateString = range!.to!.toLocaleDateString("en-CA");
 
       const bookingData: BookingInput = {
+        apartment_id: apartment.slug,
         fname: formData.prenom,
         lname: formData.nom,
         mail: formData.email,
@@ -322,6 +375,7 @@ export default function Booking() {
         departure_date: departureDateString,
         price: discountedPrice ?? price!,
         is_cleaning: true, // toujours inclus
+        ...(promoPercent !== null ? { promo_code: promoCode.trim() } : {}),
       };
 
       console.log(
@@ -368,6 +422,10 @@ export default function Booking() {
       setIsSubmitting(false);
     }
   };
+
+  if (!apartment) {
+    return null; // one render tick while the mount effect above resolves the initial apartment
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -594,15 +652,32 @@ export default function Booking() {
               )}
 
               <div className="divider divider-start text-lg font-medium">
+                Appartement
+              </div>
+              <select
+                className="select select-primary w-full"
+                value={apartment.slug}
+                onChange={(e) => handleApartmentChange(e.target.value)}
+              >
+                {APARTMENT_LIST.map((a) => (
+                  <option key={a.slug} value={a.slug}>
+                    {a.name} — jusqu'à {a.capacity} personnes
+                  </option>
+                ))}
+              </select>
+
+              <div className="divider divider-start text-lg font-medium">
                 Données réservations
               </div>
 
               <TravelersSelector
                 travelers={travelers}
                 setTravelers={setTravelers}
+                maxCapacity={apartment.capacity}
               />
 
               <PopoverDatePicker
+                apartmentId={apartment.slug}
                 selectedRange={range}
                 onSelect={setRange}
                 className="w-full"
@@ -644,7 +719,7 @@ export default function Booking() {
                 <>
                   <p>
                     <span className="font-semibold">Tarif :</span>{" "}
-                    {getCategory(travelers.adults)}
+                    {getCategory(travelers.adults, apartment.capacity)}
                   </p>
                   <p>
                     <span className="font-semibold">Nuits :</span>{" "}
@@ -745,6 +820,7 @@ export default function Booking() {
       >
         <CustomDayPicker
           mode="selectable"
+          apartmentId={apartment.slug}
           selectedRange={range}
           onSelect={setRange}
         />
