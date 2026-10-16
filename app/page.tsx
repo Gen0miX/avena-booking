@@ -2,17 +2,13 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import Link from "next/link";
 import NavBar from "@/components/home/NavBar";
 import Footer from "@/components/home/Footer";
 import Hero from "@/components/home/Hero";
-import Disponibility from "@/components/home/Disponibility";
-import Gallery from "@/components/home/Gallery";
-import ServiceBadges from "@/components/home/ServiceBadges";
 import SectionTitle from "@/components/home/SectionTitle";
-import Amenities from "@/components/home/Amenities";
-import { GoogleMapsEmbed } from "@next/third-parties/google";
-import { FaInfoCircle } from "react-icons/fa";
-import Tooltip from "@/components/Tooltip";
+import { APARTMENT_LIST } from "@/config/apartments";
 
 export default function Home() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -56,102 +52,42 @@ export default function Home() {
       </div>
       <div className="bg-base-100 pt-16 sm:pt-20 pb-5">
         <section
-          id="home"
-          className="xl:max-w-6xl xl:mx-auto bg-base-200 rounded-box mx-1 p-2 border-2 border-primary/40 sm:p-5 sm:mx-5 self-center z-50 scroll-mt-[72px]"
+          id="appartements"
+          className="xl:max-w-6xl xl:mx-auto mx-1 sm:mx-5 scroll-mt-[72px] py-10"
         >
-          <Gallery></Gallery>
-
-          <div className="relative flex flex-col lg:max-w-1/2 pt-3">
-            <SectionTitle>Appartement Avena</SectionTitle>
-            <p className="text-lg sm:text-xl font-light">
-              Untere Dorfstrasse 39, 3906 Saas-Fee
-            </p>
-          </div>
-          <div className="flex flex-col lg:flex-row justify-between">
-            <div className="flex flex-col lg:max-w-1/2 pt-5 mr-auto">
-              <ServiceBadges />
-              <h3 className="text-lg sm:text-xl font-semibold mb-5">
-                Un séjour comme à la maison, à Saas-Fee
-              </h3>
-              <p className="text-justify text-sm sm:text-base mb-2 text-base-content/70">
-                Vous cherchez une location d’appartement à Saas-Fee pour vos
-                prochaines vacances en montagne ? Découvrez notre hébergement
-                tout confort situé à Untere Dorfstrasse 39, en plein cœur de la
-                station piétonne de Saas-Fee, dans les Alpes valaisannes.
-              </p>
-              <p className="mb-2 text-sm sm:text-base text-base-content/70">
-                Cet appartement lumineux peut accueillir jusqu’à 5 personnes et
-                dispose de :
-              </p>
-              <ul className="list-disc list-inside text-sm sm:text-base pl-5 sm:pl-10 text-base-content/70 mb-10">
-                <li>
-                  Deux chambres spacieuses avec literie de qualité{" "}
-                  <Tooltip
-                    content="Possibilité d'ajouter un matelas et un duvet pour une 5ᵉ personne"
-                    placement="top"
-                    className="inline-block align-middle"
-                  >
-                    <FaInfoCircle className="text-info -mt-0.5" size={18} />
-                  </Tooltip>
-                </li>
-                <li>Un salon chaleureux avec coin repas</li>
-                <li>
-                  Une cuisine équipée (four, plaques, lave-vaisselle, machine à
-                  café)
-                </li>
-                <li>Une salle de bain</li>
-                <li>Wi-Fi gratuit, Écran, linge de lit et serviettes inclus</li>
-              </ul>
-              <h3 className="text-lg sm:text-xl font-semibold mb-5">
-                Équipements
-              </h3>
-              <Amenities />
-              <h3 className="text-lg sm:text-xl font-semibold mb-5">
-                Localisation
-              </h3>
-              <p className="text-justify text-sm sm:text-base mb-2 text-base-content/70">
-                Située à 1800 mètres d’altitude, Saas-Fee est une destination de
-                choix pour un séjour en montagne en toute saison.
-              </p>
-              <p className="mb-2 text-sm sm:text-base text-base-content/70">
-                En hiver, profitez de :
-              </p>
-              <ul className="list-disc list-inside text-sm sm:text-base pl-5 sm:pl-10 text-base-content/70 mb-3">
-                <li>Plus de 100 km de pistes de ski</li>
-                <li>Snowpark, ski de fond, randonnées en raquettes</li>
-                <li>
-                  Patinoire, pistes de luge, paysages enneigés à couper le
-                  souffle
-                </li>
-              </ul>
-              <p className="mb-2 text-sm sm:text-base text-base-content/70">
-                En été :
-              </p>
-              <ul className="list-disc list-inside text-sm sm:text-base pl-5 sm:pl-10 text-base-content/70 mb-3">
-                <li>Randonnées panoramiques dans les Alpes suisses</li>
-                <li>Activités en plein air : VTT, via ferrata, tyrolienne</li>
-                <li>
-                  Découverte du patrimoine local et gastronomie valaisanne
-                </li>
-              </ul>
-              <p className="text-justify mb-5 text-sm sm:text-base text-base-content/70">
-                Notre appartement bénéficie d’un emplacement central idéal, à
-                seulement 5 minutes à pied de l’arrêt de bus et 10 minutes du
-                parking principal. Vous pouvez ainsi profiter pleinement de tout
-                ce que Saas-Fee a à offrir, sans contrainte de transport.
-              </p>
-              <div className="border-2 border-primary/40 rounded-box overflow-hidden">
-                <GoogleMapsEmbed
-                  apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY!}
-                  height={300}
-                  width="100%"
-                  mode="place"
-                  q="Avena, Untere Dorfstrasse 39, 3906 Saas-Fee, Suisse"
-                />
-              </div>
-            </div>
-
-            <Disponibility />
+          <SectionTitle>Nos appartements</SectionTitle>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+            {APARTMENT_LIST.map((apartment) => (
+              <Link
+                key={apartment.slug}
+                href={`/appartements/${apartment.slug}`}
+                className="card bg-base-200 border-2 border-primary/40 rounded-box overflow-hidden hover:shadow-xl transition-shadow"
+              >
+                <div className="relative h-56 w-full bg-base-300">
+                  {apartment.gallery[0] ? (
+                    <Image
+                      src={apartment.gallery[0].src}
+                      alt={apartment.gallery[0].alt}
+                      fill
+                      className="object-cover"
+                    />
+                  ) : (
+                    <div className="flex items-center justify-center h-full text-base-content/50">
+                      Photos à venir
+                    </div>
+                  )}
+                </div>
+                <div className="card-body">
+                  <h3 className="card-title">{apartment.name}</h3>
+                  <p className="text-sm text-base-content/70">
+                    {apartment.address}
+                  </p>
+                  <p className="text-sm text-base-content/70">
+                    Jusqu&apos;à {apartment.capacity} personnes
+                  </p>
+                </div>
+              </Link>
+            ))}
           </div>
         </section>
       </div>

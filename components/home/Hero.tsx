@@ -74,7 +74,7 @@ export default function Hero() {
           </p>
           <div>
             <Link
-              href="/booking"
+              href="#appartements"
               className="btn btn-secondary font-p text-lg mt-5"
             >
               Réserver
