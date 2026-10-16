@@ -287,6 +287,7 @@ export async function POST(request: NextRequest) {
         departure_date: booking.departure_date,
         price: booking.price,
         bookingId: booking.id,
+        apartmentName: apartment.name,
       });
       console.log("✅ Email envoyé");
     } catch (emailError) {
@@ -299,6 +300,7 @@ export async function POST(request: NextRequest) {
         name: `${booking.fname} ${booking.lname}`,
         arrival: booking.arrival_date,
         departure: booking.departure_date,
+        apartmentName: apartment.name,
       });
       console.log("✅ Notification Telegram envoyée");
     } catch (tgError) {

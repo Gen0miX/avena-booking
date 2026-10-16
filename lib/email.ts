@@ -15,6 +15,7 @@ export async function sendBookingEmail({
   departure_date,
   price,
   bookingId,
+  apartmentName,
 }: {
   to: string;
   fname: string;
@@ -23,6 +24,7 @@ export async function sendBookingEmail({
   departure_date: string;
   price: number;
   bookingId: number;
+  apartmentName: string;
 }) {
   try {
     const emailHtml = await render(
@@ -33,11 +35,12 @@ export async function sendBookingEmail({
         departure_date,
         price,
         bookingId,
+        apartmentName,
       })
     );
 
     let qrBillPdf: Buffer | null = null;
-    let emailSubject = "Votre réservation";
+    let emailSubject = `Votre réservation — ${apartmentName}`;
 
     // Essayer de générer la QR-Facture
     try {
@@ -46,8 +49,9 @@ export async function sendBookingEmail({
         lname,
         price,
         bookingId,
+        apartmentName,
       });
-      emailSubject = "Votre réservation";
+      emailSubject = `Votre réservation — ${apartmentName}`;
       console.log(
         "QR-Facture générée avec succès pour la réservation #",
         bookingId
@@ -101,6 +105,7 @@ export async function sendBookingConfirmationEmail({
   departure_date,
   price,
   bookingId,
+  apartmentName,
 }: {
   to: string;
   fname: string;
@@ -109,6 +114,7 @@ export async function sendBookingConfirmationEmail({
   departure_date: string;
   price: number;
   bookingId: number;
+  apartmentName: string;
 }) {
   try {
     const emailHtml = await render(
@@ -119,12 +125,13 @@ export async function sendBookingConfirmationEmail({
         departure_date,
         price,
         bookingId,
+        apartmentName,
       })
     );
     const result = await resend.emails.send({
       from: "noreply@avena39.ch",
       to,
-      subject: "Confirmation de votre réservation",
+      subject: `Confirmation de votre réservation — ${apartmentName}`,
       html: emailHtml,
     });
 
@@ -145,6 +152,7 @@ export async function sendBookingCancellationEmail({
   arrival_date,
   departure_date,
   bookingId,
+  apartmentName,
 }: {
   to: string;
   fname: string;
@@ -152,6 +160,7 @@ export async function sendBookingCancellationEmail({
   arrival_date: string;
   departure_date: string;
   bookingId: number;
+  apartmentName: string;
 }) {
   try {
     const emailHtml = await render(
@@ -161,12 +170,13 @@ export async function sendBookingCancellationEmail({
         bookingId,
         arrival_date,
         departure_date,
+        apartmentName,
       })
     );
     const result = await resend.emails.send({
       from: "noreply@avena39.ch",
       to,
-      subject: "Annulation de votre réservation",
+      subject: `Annulation de votre réservation — ${apartmentName}`,
       html: emailHtml,
     });
 

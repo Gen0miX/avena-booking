@@ -18,6 +18,7 @@ type BookingEmailProps = {
   departure_date: string;
   price: number;
   bookingId: number;
+  apartmentName: string;
 };
 
 export default function BookingEmail({
@@ -27,6 +28,7 @@ export default function BookingEmail({
   departure_date,
   price,
   bookingId,
+  apartmentName,
 }: BookingEmailProps) {
   return (
     <Html>
@@ -60,6 +62,9 @@ export default function BookingEmail({
 
           {/* Contenu texte */}
           <Section>
+            <Text style={{ ...text, textAlign: "center" as const }}>
+              Réservation — <b>{apartmentName}</b>
+            </Text>
             <Text style={text}>
               Merci pour votre réservation du{" "}
               {new Date(arrival_date).toLocaleDateString("fr-FR")} au{" "}
@@ -87,7 +92,7 @@ export default function BookingEmail({
               Merci d’indiquer comme communication de paiement :
               <br />
               <b>
-                Réservation #{bookingId} - {fname} {lname}
+                Réservation #{bookingId} - {apartmentName} - {fname} {lname}
               </b>
             </Text>
 

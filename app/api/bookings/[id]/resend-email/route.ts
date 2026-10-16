@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { sendBookingEmail } from "@/lib/email";
+import { getApartmentBySlug } from "@/config/apartments";
 
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
@@ -34,7 +35,9 @@ export async function POST(
     // Récupérer les infos de la réservation
     const { data: bookingData, error: fetchError } = await supabase
       .from("bookings")
-      .select(`id,fname,lname,mail,arrival_date,departure_date,price`)
+      .select(
+        `id,fname,lname,mail,arrival_date,departure_date,price,apartment_id`
+      )
       .eq("id", parsedId)
       .single();
 
@@ -53,6 +56,10 @@ export async function POST(
     }
 
     // Envoyer l'email de réservation
+    const apartmentName =
+      getApartmentBySlug(bookingData.apartment_id)?.name ??
+      bookingData.apartment_id;
+
     await sendBookingEmail({
       to: bookingData.mail,
       fname: bookingData.fname,
@@ -61,6 +68,7 @@ export async function POST(
       departure_date: bookingData.departure_date,
       price: bookingData.price,
       bookingId: bookingData.id,
+      apartmentName,
     });
 
     return NextResponse.json(

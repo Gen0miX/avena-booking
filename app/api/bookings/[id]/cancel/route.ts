@@ -2,6 +2,7 @@ import { NextRequest, NextResponse, after } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { sendBookingCancellationEmail } from "@/lib/email";
 import { sendTelegramNotification } from "@/utils/telegram";
+import { getApartmentBySlug } from "@/config/apartments";
 
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
@@ -68,6 +69,10 @@ export async function PATCH(
       );
     }
 
+    const apartmentName =
+      getApartmentBySlug(bookingData.apartment_id)?.name ??
+      bookingData.apartment_id;
+
     after(() => {
       sendBookingCancellationEmail({
         to: bookingData.mail,
@@ -76,6 +81,7 @@ export async function PATCH(
         arrival_date: bookingData.arrival_date,
         departure_date: bookingData.departure_date,
         bookingId: bookingData.id,
+        apartmentName,
       }).catch((emailError) => {
         console.error("Erreur d'envoi de l'email d'annulation :", emailError);
       });
@@ -84,6 +90,7 @@ export async function PATCH(
         name: `${bookingData.fname} ${bookingData.lname}`,
         arrival: bookingData.arrival_date,
         departure: bookingData.departure_date,
+        apartmentName,
       }).catch((tgError) => {
         console.error("Erreur d'envoi Telegram annulation :", tgError);
       });
