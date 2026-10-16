@@ -251,7 +251,12 @@ export async function POST(request: NextRequest) {
       promo_code?: string;
     };
 
-    // Insertion directe avec les strings formatés
+    // Insertion directe avec les strings formatés.
+    // Le prix inséré est TOUJOURS celui calculé côté serveur (expectedPrice),
+    // jamais la valeur brute envoyée par le client : celle-ci n'a été utilisée
+    // que pour la vérification ci-dessus, et un client pourrait sinon envoyer
+    // un prix "arrondi correctement" (ex. 122.51 au lieu de 123) qui passerait
+    // le contrôle Math.round() tout en étant légèrement différent du prix réel.
     const { data: booking, error } = await supabase
       .from("bookings")
       .insert([
@@ -259,6 +264,7 @@ export async function POST(request: NextRequest) {
           ...bookingDataForInsert,
           arrival_date: arrivalDate,
           departure_date: departureDate,
+          price: expectedPrice,
         },
       ])
       .select()
