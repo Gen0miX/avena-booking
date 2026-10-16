@@ -1847,10 +1847,20 @@ git commit -m "feat(admin): add apartment selector to DashboardLayout and scope 
 
 **Files:**
 - Modify: `components/admin/statistics/StatisticsDashboard.tsx`
+- Modify: `components/admin/DashboardLayout.tsx` (one-line call-site fix — see Step 0)
 
 **Interfaces:**
 - Consumes: `apartment: ApartmentSlug | "all"` prop (new).
 - No change needed in `lib/statistics.ts` — every function there already operates on whatever `Booking[]` array it's handed; scoping is achieved purely by which array `useBookings` returns.
+
+- [ ] **Step 0: `DashboardLayout.tsx` — pass the selector's value down**
+
+Task 13 left the `"statistics"` case in `renderContent()` rendering `<StatisticsDashboard />` with no prop (deliberately — `StatisticsDashboard` took no apartment-related prop yet). Now that Step 1 below makes `apartment` a required prop, update that one call site:
+
+```tsx
+case "statistics":
+  return <StatisticsDashboard apartment={selectedApartment} />;
+```
 
 - [ ] **Step 1: Accept and use the `apartment` prop**
 
@@ -1879,7 +1889,7 @@ Confirm occupancy/revenue/reservations/avg-stay numbers for a single apartment m
 - [ ] **Step 4: Commit**
 
 ```bash
-git add components/admin/statistics/StatisticsDashboard.tsx
+git add components/admin/statistics/StatisticsDashboard.tsx components/admin/DashboardLayout.tsx
 git commit -m "feat(statistics): support per-apartment and global aggregate views"
 ```
 
