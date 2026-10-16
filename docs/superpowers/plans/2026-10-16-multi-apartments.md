@@ -1968,7 +1968,7 @@ In `app/api/bookings/route.ts`'s `POST` (after the insert succeeds), resolve `ap
 
 In `app/api/bookings/[id]/confirm/route.ts` and `cancel/route.ts`, after fetching `bookingData` (which now includes `apartment_id` since it's `select("*")`), resolve the name via `getApartmentBySlug(bookingData.apartment_id)?.name ?? bookingData.apartment_id` and pass it through to `sendBookingConfirmationEmail`/`sendBookingCancellationEmail`/`sendTelegramNotification`.
 
-In `app/api/bookings/[id]/resend-email/route.ts`, same pattern for whichever email function it calls.
+In `app/api/bookings/[id]/resend-email/route.ts`: unlike `confirm`/`cancel`, this route's `select(...)` is an explicit column list (`id,fname,lname,mail,arrival_date,departure_date,price`) that does NOT include `apartment_id` — add `apartment_id` to that list first, then resolve the name the same way (`getApartmentBySlug(bookingData.apartment_id)?.name ?? bookingData.apartment_id`) and pass it to `sendBookingEmail`.
 
 - [ ] **Step 6: Verify manually**
 
