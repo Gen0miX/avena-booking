@@ -7,6 +7,7 @@ import { DEFAULT_BOOKING_BLOCKED_AFTER } from "@/lib/settings";
 import { getApartmentBySlug } from "@/config/apartments";
 import { getPriceResult, getNights } from "@/utils/priceCalculator";
 import { PricingPeriod } from "@/lib/pricingPeriods";
+import { isPromoApplicable } from "@/lib/promo";
 
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
@@ -173,6 +174,13 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
+    const totalTravelers = bookingData.no_adults + (bookingData.no_childs ?? 0);
+    if (totalTravelers > apartment.capacity) {
+      return NextResponse.json(
+        { message: `Le nombre maximum de voyageurs est ${apartment.capacity}.` },
+        { status: 400 }
+      );
+    }
     if (nights < apartment.minNights) {
       return NextResponse.json(
         { message: `Le minimum de séjour est de ${apartment.minNights} nuits.` },
@@ -235,7 +243,10 @@ export async function POST(request: NextRequest) {
         .ilike("name", normalized)
         .maybeSingle();
 
-      if (promo?.active) {
+      if (
+        promo?.active &&
+        isPromoApplicable(normalized, arrivalDate, departureDate)
+      ) {
         expectedPrice = Math.max(0, Math.round(basePrice * (1 - Number(promo.percentage) / 100)));
       }
     }
@@ -261,10 +272,23 @@ export async function POST(request: NextRequest) {
       .from("bookings")
       .insert([
         {
-          ...bookingDataForInsert,
+          apartment_id: bookingDataForInsert.apartment_id,
+          fname: bookingDataForInsert.fname,
+          lname: bookingDataForInsert.lname,
+          mail: bookingDataForInsert.mail,
+          phone: bookingDataForInsert.phone,
+          address: bookingDataForInsert.address,
+          postal_code: bookingDataForInsert.postal_code,
+          city: bookingDataForInsert.city,
+          birthdate: bookingDataForInsert.birthdate,
+          no_adults: bookingDataForInsert.no_adults,
+          no_childs: bookingDataForInsert.no_childs,
+          is_cleaning: bookingDataForInsert.is_cleaning,
           arrival_date: arrivalDate,
           departure_date: departureDate,
           price: expectedPrice,
+          status: 1,
+          is_paid: false,
         },
       ])
       .select()

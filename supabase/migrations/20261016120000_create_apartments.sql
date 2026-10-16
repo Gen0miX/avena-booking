@@ -6,6 +6,7 @@ create table if not exists public.apartments (
 
 alter table public.apartments enable row level security;
 
+drop policy if exists "Public can read apartments" on public.apartments;
 create policy "Public can read apartments" on public.apartments
   for select using (true);
 

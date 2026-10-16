@@ -73,19 +73,23 @@ function BookingForm() {
     setApartmentSlug,
   } = useBooking();
 
-  // Resolve the initial apartment once: URL param if valid, else the
-  // first known apartment. Runs once on mount — afterwards the selector
-  // below is the only thing that changes apartmentSlug.
+  // Resolve the apartment from the URL param on every change (not just on
+  // mount): BookingProvider survives client-side navigation, so a visitor
+  // who already picked an apartment in this session and then clicks
+  // "Réserver" on a different apartment's page must still land on that new
+  // apartment here, not keep whatever was resolved first.
   useEffect(() => {
-    if (apartmentSlug) return;
     const fromUrl = searchParams.get("apartment");
-    setApartmentSlug(
-      isApartmentSlug(fromUrl ?? "")
-        ? (fromUrl as typeof apartmentSlug)
-        : APARTMENT_LIST[0].slug,
-    );
+    if (isApartmentSlug(fromUrl ?? "")) {
+      if (fromUrl !== apartmentSlug) {
+        setApartmentSlug(fromUrl as typeof apartmentSlug);
+        setRange(undefined); // dates picked for the previous apartment don't carry meaning here (different occupancy, possibly different capacity)
+      }
+    } else if (!apartmentSlug) {
+      setApartmentSlug(APARTMENT_LIST[0].slug);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [searchParams]);
 
   const apartment = apartmentSlug ? getApartmentBySlug(apartmentSlug) : undefined;
 
@@ -266,12 +270,14 @@ function BookingForm() {
     }
   }, [range, travelers, periods, apartment]);
 
-  // Invalider la promo si on modifie le code saisi
+  // Invalider la promo si on modifie le code saisi ou les dates : un code
+  // vérifié pour une période n'est pas forcément valide pour une autre
+  // (règle de mois), donc on force une nouvelle vérification explicite.
   useEffect(() => {
     setPromoError(null);
     setPromoPercent(null);
     setDiscountedPrice(null);
-  }, [promoCode]);
+  }, [promoCode, range]);
 
   const handleCheckPromo = async () => {
     if (!apartment) return;
@@ -391,7 +397,7 @@ function BookingForm() {
 
       if (response.ok) {
         const booking = await response.json();
-        mutate("/api/bookings/occupied-dates");
+        mutate(`/api/bookings/occupied-dates?apartment=${apartment.slug}`);
         router.push(`/confirmation/${booking.id}`);
         setFormData({
           nom: "",

@@ -1,10 +1,11 @@
 import { useState, useMemo } from "react";
 import { useBookings } from "@/hooks/usebookings";
-import { ApartmentSlug } from "@/config/apartments";
+import { ApartmentSlug, APARTMENT_LIST } from "@/config/apartments";
 import {
   Period,
   getChartData,
   calculateOccupancyRate,
+  calculateAggregateOccupancyRate,
   calculateTotalRevenue,
   calculateAverageStayDuration,
   filterBookingsByStartDate,
@@ -53,22 +54,31 @@ export default function StatisticsDashboard({ apartment }: { apartment: Apartmen
   const stats = useMemo(() => {
     if (!bookings) return { occupancy: 0, revenue: 0, reservations: 0, avgStay: 0 };
     return {
-      occupancy: calculateOccupancyRate(bookings, period, date),
+      occupancy:
+        apartment === "all"
+          ? calculateAggregateOccupancyRate(bookings, APARTMENT_LIST.map((a) => a.slug), period, date)
+          : calculateOccupancyRate(bookings, period, date),
       revenue: calculateTotalRevenue(filteredBookings),
       reservations: filteredBookings.length,
       avgStay: calculateAverageStayDuration(filteredBookings),
     };
-  }, [bookings, filteredBookings, period, date]);
+  }, [bookings, filteredBookings, period, date, apartment]);
 
   const chartsData = useMemo(() => {
     if (!bookings) return null;
     return {
       revenue: getChartData(bookings, period, "revenue", date),
       reservations: getChartData(bookings, period, "reservations", date),
-      occupancy: getChartData(bookings, period, "occupancy", date),
+      occupancy: getChartData(
+        bookings,
+        period,
+        "occupancy",
+        date,
+        apartment === "all" ? APARTMENT_LIST.map((a) => a.slug) : undefined
+      ),
       avgStay: getChartData(bookings, period, "avgStay", date),
     };
-  }, [bookings, period, date]);
+  }, [bookings, period, date, apartment]);
 
   if (isLoading) return <div className="flex justify-center p-10"><span className="loading loading-spinner loading-lg"></span></div>;
   if (isError) return <div className="alert alert-error">Erreur lors du chargement des données</div>;

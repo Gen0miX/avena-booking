@@ -206,6 +206,7 @@ export default function PricingPeriodsManager({
           periods={periods}
           onEdit={handleEdit}
           onDelete={handleDelete}
+          apartmentSlug={apartmentSlug}
         />
       </div>
     </div>

@@ -138,3 +138,7 @@ La route `POST /api/bookings` effectue la vérification de chevauchement de date
 3. Adapter `app/api/bookings/route.ts` pour intercepter l'erreur de violation de contrainte renvoyée par Postgres dans ce cas et répondre `409 Conflict` au lieu de laisser remonter une erreur 500 générique.
 
 Cette évolution n'a pas été réalisée dans le cadre du présent chantier et reste à planifier séparément.
+
+### Périodes tarifaires personnalisées : modèle à 2 paliers fixe
+
+Les périodes tarifaires *personnalisées* (créées par l'admin via `PricingPeriodsManager`, à ne pas confondre avec les tarifs saisonniers par défaut d'`avena-1`/`avena-2`) conservent un modèle à deux paliers — `price_standard` / `price_five` — quelle que soit la capacité réelle de l'appartement. Le palier supérieur s'applique dès que le nombre de voyageurs atteint la capacité maximale de l'appartement (ex. 6 pour `avena-2`), pas à un seuil fixe de « 5 voyageurs » ; les libellés du formulaire et de la liste reflètent désormais cette capacité (ex. « Prix standard (1-5 adultes) » / « Prix 6 adultes » pour `avena-2`, calculés depuis `apartment.capacity`). Il s'agit d'une simplification délibérée : le schéma de la table `pricing_periods` n'a pas été redessiné pour ce chantier. Si des paliers plus fins par période personnalisée s'avèrent nécessaires à l'avenir, cela reste à planifier séparément avec le client.

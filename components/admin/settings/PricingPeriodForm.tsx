@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { PricingPeriod, PricingPeriodInput } from "@/lib/pricingPeriods";
-import { ApartmentSlug } from "@/config/apartments";
+import { ApartmentSlug, getApartmentBySlug } from "@/config/apartments";
 
 interface PricingPeriodFormProps {
   apartmentSlug: ApartmentSlug;
@@ -32,6 +32,7 @@ export default function PricingPeriodForm({
     price_five: 250,
   });
   const [localError, setLocalError] = useState<string | null>(null);
+  const capacity = getApartmentBySlug(apartmentSlug)?.capacity ?? 5;
 
   useEffect(() => {
     if (initialData) {
@@ -163,7 +164,7 @@ export default function PricingPeriodForm({
         <div className="form-control">
           <label className="label">
             <span className="label-text font-semibold">
-              Prix standard (1-4 adultes) CHF
+              {`Prix standard (1-${capacity - 1} adultes) CHF`}
             </span>
           </label>
           <input
@@ -179,7 +180,7 @@ export default function PricingPeriodForm({
 
         <div className="form-control">
           <label className="label">
-            <span className="label-text font-semibold">Prix 5 adultes CHF</span>
+            <span className="label-text font-semibold">{`Prix ${capacity} adultes CHF`}</span>
           </label>
           <input
             type="number"

@@ -1,9 +1,35 @@
-import { PiCheckCircle } from "react-icons/pi";
+import { PiCheckCircle, PiWifiHigh, PiTelevisionSimple, PiOven, PiCookingPot, PiCoffee, PiForkKnife, PiShower, PiHairDryer } from "react-icons/pi";
+import { RiFridgeLine } from "react-icons/ri";
+import { MdBalcony } from "react-icons/md";
+import { TbSmokingNo } from "react-icons/tb";
+import { BiCabinet } from "react-icons/bi";
 import { ApartmentConfig } from "@/config/apartments";
 
 interface AmenitieProps {
   icon: React.ReactNode;
   name: string;
+}
+
+// Keyed by the exact amenity label strings from config/apartments.ts
+// (AVENA_1.amenities). Any label not listed here (e.g. avena-2's
+// placeholder/future list) falls back to the generic PiCheckCircle.
+const iconByLabel: Record<string, React.ReactNode> = {
+  "Wi-Fi": <PiWifiHigh />,
+  "Écran": <PiTelevisionSimple />,
+  "Four": <PiOven />,
+  "Frigo": <RiFridgeLine className="text-base-content/80" />,
+  "Plaques": <PiCookingPot />,
+  "Machine Nespresso": <PiCoffee />,
+  "Lave-vaisselle": <PiForkKnife />,
+  "Salle de bain (douche)": <PiShower />,
+  "Rangements": <BiCabinet className="text-base-content/80" />,
+  "Sèche-cheveux": <PiHairDryer />,
+  "Balcon": <MdBalcony className="text-base-content/80" />,
+  "Non-fumeur": <TbSmokingNo className="text-base-content/80" />,
+};
+
+function getIconForAmenity(label: string): React.ReactNode {
+  return iconByLabel[label] ?? <PiCheckCircle />;
 }
 
 function Amenitie({ icon, name }: AmenitieProps) {
@@ -33,7 +59,7 @@ export default function Amenities({
   return (
     <div className="grid grid-cols-2 gap-4 mb-10 max-w-xl">
       {amenitiesList.map((name, index) => (
-        <Amenitie key={index} icon={<PiCheckCircle />} name={name} />
+        <Amenitie key={index} icon={getIconForAmenity(name)} name={name} />
       ))}
     </div>
   );

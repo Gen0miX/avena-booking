@@ -77,6 +77,25 @@ export const calculateOccupancyRate = (bookings: Booking[], period: Period, date
   return totalDays > 0 ? (occupiedDays / totalDays) * 100 : 0;
 };
 
+// For a multi-apartment ("Tous les appartements") view, averaging each
+// apartment's own occupancy rate avoids the saturation that comes from
+// marking a day "occupied" the moment ANY apartment in the set has a
+// booking that day (what calculateOccupancyRate does, correctly, for a
+// single apartment's bookings).
+export const calculateAggregateOccupancyRate = (
+  bookings: Booking[],
+  apartmentIds: string[],
+  period: Period,
+  date: Date = new Date()
+): number => {
+  if (apartmentIds.length === 0) return 0;
+  const rates = apartmentIds.map((id) => {
+    const apartmentBookings = bookings.filter((b) => b.apartment_id === id);
+    return calculateOccupancyRate(apartmentBookings, period, date);
+  });
+  return rates.reduce((sum, r) => sum + r, 0) / rates.length;
+};
+
 export const calculateTotalRevenue = (bookings: Booking[]) => {
   return bookings.reduce((total, booking) => total + booking.price, 0);
 };
@@ -91,8 +110,9 @@ export const calculateAverageStayDuration = (bookings: Booking[]) => {
   return totalDuration / bookings.length;
 };
 
-export const getChartData = (bookings: Booking[], period: Period, metric: "revenue" | "reservations" | "occupancy" | "avgStay", date: Date = new Date()): ChartData => {
+export const getChartData = (bookings: Booking[], period: Period, metric: "revenue" | "reservations" | "occupancy" | "avgStay", date: Date = new Date(), apartmentIds?: string[]): ChartData => {
   const { start, end } = getPeriodDates(period, date);
+  const useAggregateOccupancy = !!apartmentIds && apartmentIds.length > 1;
   // Logic to group data by day/month depending on the period
   // For simplicity in this first pass, let's group by Month for Year view, and by Day for Month view.
   
@@ -106,7 +126,11 @@ export const getChartData = (bookings: Booking[], period: Period, metric: "reven
         labels.push(format(monthDate, "MMMM", { locale: fr }));
 
         if (metric === "occupancy") {
-            data.push(calculateOccupancyRate(bookings, "month", monthDate));
+            data.push(
+              useAggregateOccupancy
+                ? calculateAggregateOccupancyRate(bookings, apartmentIds!, "month", monthDate)
+                : calculateOccupancyRate(bookings, "month", monthDate)
+            );
         } else {
             // Pour revenue, reservations, avgStay: filtrer par date de début
             const monthBookings = filterBookingsByStartDate(bookings, "month", monthDate);
@@ -133,7 +157,11 @@ export const getChartData = (bookings: Booking[], period: Period, metric: "reven
                const monthDate = new Date(date.getFullYear(), startMonth + i, 1);
                labels.push(format(monthDate, "MMMM", { locale: fr }));
                if (metric === "occupancy") {
-                   data.push(calculateOccupancyRate(bookings, "month", monthDate));
+                   data.push(
+                     useAggregateOccupancy
+                       ? calculateAggregateOccupancyRate(bookings, apartmentIds!, "month", monthDate)
+                       : calculateOccupancyRate(bookings, "month", monthDate)
+                   );
                } else {
                    // Pour revenue, reservations, avgStay: filtrer par date de début
                    const monthBookings = filterBookingsByStartDate(bookings, "month", monthDate);

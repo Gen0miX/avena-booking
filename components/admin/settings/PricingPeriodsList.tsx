@@ -1,6 +1,7 @@
 "use client";
 
 import { PricingPeriod } from "@/lib/pricingPeriods";
+import { ApartmentSlug, getApartmentBySlug } from "@/config/apartments";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { FaEdit, FaTrash } from "react-icons/fa";
@@ -9,13 +10,16 @@ interface PricingPeriodsListProps {
   periods: PricingPeriod[];
   onEdit: (period: PricingPeriod) => void;
   onDelete: (id: number) => void;
+  apartmentSlug: ApartmentSlug;
 }
 
 export default function PricingPeriodsList({
   periods,
   onEdit,
   onDelete,
+  apartmentSlug,
 }: PricingPeriodsListProps) {
+  const capacity = getApartmentBySlug(apartmentSlug)?.capacity ?? 5;
   if (periods.length === 0) {
     return (
       <div className="card bg-base-200 border border-primary/20">
@@ -60,7 +64,7 @@ export default function PricingPeriodsList({
                     <th>Début</th>
                     <th>Fin</th>
                     <th className="text-right">Standard</th>
-                    <th className="text-right">5 adultes</th>
+                    <th className="text-right">{capacity} adultes</th>
                     <th className="text-center">Actions</th>
                   </tr>
                 </thead>
