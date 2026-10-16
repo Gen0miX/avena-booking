@@ -60,6 +60,7 @@ export async function PUT(
   const { data: overlaps, error: overlapError } = await supabase
     .from("pricing_periods")
     .select("id, name")
+    .eq("apartment_id", body.apartment_id)
     .neq("id", parsedId)
     .lt("start_date", body.end_date)
     .gt("end_date", body.start_date);

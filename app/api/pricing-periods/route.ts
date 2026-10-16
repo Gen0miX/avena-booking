@@ -1,16 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { PricingPeriodInput } from "@/lib/pricingPeriods";
+import { getApartmentBySlug } from "@/config/apartments";
 
 export const dynamic = "force-dynamic";
 
-// GET: Récupérer toutes les périodes tarifaires (public)
-export async function GET() {
+// GET: Récupérer toutes les périodes tarifaires d'un appartement (public)
+export async function GET(request: NextRequest) {
+  const apartmentParam = request.nextUrl.searchParams.get("apartment");
+  if (!apartmentParam || !getApartmentBySlug(apartmentParam)) {
+    return NextResponse.json({ error: "Appartement inconnu" }, { status: 400 });
+  }
+
   const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("pricing_periods")
     .select("*")
+    .eq("apartment_id", apartmentParam)
     .order("start_date", { ascending: true });
 
   if (error) {
@@ -61,10 +68,15 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  if (!getApartmentBySlug(body.apartment_id)) {
+    return NextResponse.json({ error: "Appartement inconnu" }, { status: 400 });
+  }
+
   // Vérifier les chevauchements
   const { data: overlaps, error: overlapError } = await supabase
     .from("pricing_periods")
     .select("id, name")
+    .eq("apartment_id", body.apartment_id)
     .lt("start_date", body.end_date)
     .gt("end_date", body.start_date);
 

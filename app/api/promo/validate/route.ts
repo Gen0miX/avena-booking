@@ -1,8 +1,10 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { getApartmentBySlug } from "@/config/apartments";
 
 type ValidateRequestBody = {
   code: string;
+  apartment_id: string;
   arrival_date: string; // YYYY-MM-DD
   departure_date: string; // YYYY-MM-DD
 };
@@ -46,11 +48,17 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as ValidateRequestBody;
     const code = (body.code || "").trim();
     const normalized = code.toUpperCase();
-    const { arrival_date, departure_date } = body;
+    const { arrival_date, departure_date, apartment_id } = body;
 
-    if (!code || !arrival_date || !departure_date) {
+    if (!code || !arrival_date || !departure_date || !apartment_id) {
       return NextResponse.json(
         { active: false, reason: "Requête invalide" },
+        { status: 400 }
+      );
+    }
+    if (!getApartmentBySlug(apartment_id)) {
+      return NextResponse.json(
+        { active: false, reason: "Appartement inconnu" },
         { status: 400 }
       );
     }
@@ -84,6 +92,7 @@ export async function POST(request: NextRequest) {
     const { data, error } = await supabase
       .from("promo_code")
       .select("id, name, percentage, active")
+      .eq("apartment_id", apartment_id)
       .ilike("name", normalized)
       .maybeSingle();
 
