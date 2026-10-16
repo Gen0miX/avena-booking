@@ -10,9 +10,9 @@ const fetcher = async (url: string) => {
   return res.json();
 };
 
-export function useSettings() {
+export function useSettings(apartmentId: string | null) {
   const { data, error, isLoading, mutate } = useSWR<AppSettings>(
-    "/api/settings",
+    apartmentId ? `/api/settings?apartment=${apartmentId}` : null,
     fetcher,
     {
       revalidateOnFocus: false,
@@ -23,10 +23,11 @@ export function useSettings() {
   const updateSettings = async (
     settings: AppSettingsInput
   ): Promise<AppSettings> => {
+    const body = { ...settings, apartment_id: apartmentId };
     const response = await fetch("/api/settings", {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(settings),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
