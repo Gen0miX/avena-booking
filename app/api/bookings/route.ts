@@ -4,11 +4,14 @@ import { BookingInput, Booking } from "@/lib/bookings";
 import { sendBookingEmail } from "@/lib/email";
 import { sendTelegramNotification } from "@/utils/telegram";
 import { DEFAULT_BOOKING_BLOCKED_AFTER } from "@/lib/settings";
+import { getApartmentBySlug } from "@/config/apartments";
+import { getPriceResult, getNights } from "@/utils/priceCalculator";
+import { PricingPeriod } from "@/lib/pricingPeriods";
 
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
   const supabase = await createClient();
 
   const {
@@ -20,11 +23,17 @@ export async function GET() {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const { data, error } = await supabase
+  const apartmentParam = request.nextUrl.searchParams.get("apartment");
+  if (apartmentParam && apartmentParam !== "all" && !getApartmentBySlug(apartmentParam)) {
+    return NextResponse.json({ error: "Appartement inconnu" }, { status: 400 });
+  }
+
+  let query = supabase
     .from("bookings")
     .select(
       `
       id,
+      apartment_id,
       created_at,
       fname,
       lname,
@@ -48,6 +57,12 @@ export async function GET() {
     `
     )
     .order("arrival_date", { ascending: true });
+
+  if (apartmentParam && apartmentParam !== "all") {
+    query = query.eq("apartment_id", apartmentParam);
+  }
+
+  const { data, error } = await query;
 
   if (error || !data) {
     return NextResponse.json(
@@ -114,11 +129,20 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient();
 
-    // Vérifier la date limite des réservations
+    const apartment = getApartmentBySlug(bookingData.apartment_id);
+    if (!apartment) {
+      return NextResponse.json(
+        { message: "Appartement inconnu" },
+        { status: 400 }
+      );
+    }
+
+    // Vérifier la date limite des réservations (par appartement)
     const { data: settingsData } = await supabase
       .from("settings")
       .select("booking_blocked_after")
-      .single();
+      .eq("apartment_id", apartment.slug)
+      .maybeSingle();
 
     const blockedAfter =
       settingsData?.booking_blocked_after || DEFAULT_BOOKING_BLOCKED_AFTER;
@@ -138,12 +162,101 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Règles de capacité / minimum de nuits, côté serveur (jusqu'ici non vérifiées)
+    const arrivalDateObj2 = new Date(arrivalDate + "T00:00:00");
+    const departureDateObj2 = new Date(departureDate + "T00:00:00");
+    const nights = getNights(arrivalDateObj2, departureDateObj2);
+
+    if (bookingData.no_adults > apartment.capacity) {
+      return NextResponse.json(
+        { message: `Le nombre maximum d'adultes est ${apartment.capacity}.` },
+        { status: 400 }
+      );
+    }
+    if (nights < apartment.minNights) {
+      return NextResponse.json(
+        { message: `Le minimum de séjour est de ${apartment.minNights} nuits.` },
+        { status: 400 }
+      );
+    }
+
+    // Disponibilité : aucune réservation active ne doit chevaucher ces dates,
+    // et seulement pour ce même appartement (une résa sur avena-2 ne doit
+    // jamais bloquer avena-1 et vice-versa).
+    const { data: overlapping, error: overlapError } = await supabase
+      .from("bookings")
+      .select("id")
+      .eq("apartment_id", apartment.slug)
+      .neq("status", 4)
+      .lt("arrival_date", departureDate)
+      .gt("departure_date", arrivalDate);
+
+    if (overlapError) {
+      return NextResponse.json(
+        { message: "Erreur lors de la vérification de disponibilité" },
+        { status: 500 }
+      );
+    }
+    if (overlapping && overlapping.length > 0) {
+      return NextResponse.json(
+        { message: "Ces dates ne sont plus disponibles pour cet appartement" },
+        { status: 409 }
+      );
+    }
+
+    // Prix : recalculé côté serveur à partir des règles de l'appartement,
+    // puis (si un code promo est fourni) re-vérifié et réduit de la même
+    // façon que côté client, pour ne jamais faire confiance au prix envoyé.
+    const { data: customPeriods } = await supabase
+      .from("pricing_periods")
+      .select("*")
+      .eq("apartment_id", apartment.slug);
+
+    const { price: basePrice, error: priceError } = getPriceResult({
+      start: arrivalDateObj2,
+      end: departureDateObj2,
+      adults: bookingData.no_adults,
+      customPeriods: (customPeriods ?? []) as PricingPeriod[],
+      apartment,
+    });
+
+    if (priceError || basePrice === null) {
+      return NextResponse.json({ message: priceError ?? "Prix invalide" }, { status: 400 });
+    }
+
+    let expectedPrice = basePrice;
+    const promoCodeInput = (bookingData as unknown as { promo_code?: string }).promo_code;
+    if (promoCodeInput) {
+      const normalized = promoCodeInput.trim().toUpperCase();
+      const { data: promo } = await supabase
+        .from("promo_code")
+        .select("percentage, active")
+        .eq("apartment_id", apartment.slug)
+        .ilike("name", normalized)
+        .maybeSingle();
+
+      if (promo?.active) {
+        expectedPrice = Math.max(0, Math.round(basePrice * (1 - Number(promo.percentage) / 100)));
+      }
+    }
+
+    if (Math.round(bookingData.price) !== expectedPrice) {
+      return NextResponse.json(
+        { message: "Le prix de la réservation ne correspond pas au tarif attendu" },
+        { status: 400 }
+      );
+    }
+
+    const { promo_code: _promoCode, ...bookingDataForInsert } = bookingData as BookingInput & {
+      promo_code?: string;
+    };
+
     // Insertion directe avec les strings formatés
     const { data: booking, error } = await supabase
       .from("bookings")
       .insert([
         {
-          ...bookingData,
+          ...bookingDataForInsert,
           arrival_date: arrivalDate,
           departure_date: departureDate,
         },
