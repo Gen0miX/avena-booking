@@ -5,25 +5,21 @@ import useBooking from "@/hooks/useBooking";
 import { useBookings } from "@/hooks/usebookings";
 import { Booking } from "@/lib/bookings";
 import StatusBadge from "@/components/admin/StatusBadge";
-import { format } from "date-fns";
+import { differenceInCalendarDays, format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 import PopoverDatePicker from "@/components/PopoverDatePicker";
 import TravelersSelector from "@/components/TravelersSelector";
 import { Travelers } from "@/lib/bookings";
-import { getPriceResult, getNights } from "@/utils/priceCalculator";
+import { getPriceResult, getNights, getCategory } from "@/utils/priceCalculator";
 import { usePricingPeriods } from "@/hooks/usePricingPeriods";
 import { getApartmentBySlug } from "@/config/apartments";
 import {
-  FaUser,
-  FaCalendarAlt,
-  FaUsers,
-  FaDollarSign,
-  FaEnvelope,
-  FaCheck,
-  FaTimes,
-  FaEdit,
-} from "react-icons/fa";
+  IoArrowBackOutline,
+  IoCreateOutline,
+  IoMailOutline,
+  IoTimeOutline,
+} from "react-icons/io5";
 
 interface BookingDetailsProps {
   bookingId: number;
@@ -259,7 +255,7 @@ export default function BookingDetails({
   if (loading || !booking) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="loading loading-dots loading-lg text-primary"></div>
+        <div className="loading loading-dots loading-lg text-cta"></div>
       </div>
     );
   }
@@ -269,161 +265,211 @@ export default function BookingDetails({
   const showCancelBtn = status === 1 || status === 2;
   const showPaymentBtn = !booking.is_paid && status === 2;
 
+  const stayNights = getNights(
+    new Date(booking.arrival_date),
+    new Date(booking.departure_date),
+  );
+  const daysToArrival = differenceInCalendarDays(
+    new Date(booking.arrival_date),
+    new Date(),
+  );
+  const chf = (n: number) => `CHF ${n.toLocaleString("fr-CH")}`;
+  const notice =
+    status === 1
+      ? "Demande en attente de votre confirmation."
+      : status === 2 && !booking.is_paid
+        ? `${
+            daysToArrival === 1
+              ? "Arrivée demain — "
+              : daysToArrival >= 0 && daysToArrival <= 7
+                ? `Arrivée dans ${daysToArrival} jours — `
+                : ""
+          }le paiement de ${chf(booking.price)} n'a pas encore été reçu.`
+        : null;
+
+  const card = "bg-surface rounded-2xl p-5 sm:p-6";
+  const label = "text-[13px] text-base-content/65 mb-1";
+  const input = "input w-full h-11 rounded-xl";
+  const btnOutline = "btn h-11 rounded-xl btn-outline border-base-300";
+
   return (
-    <div className="max-w-4xl mx-auto space-y-6 pb-12">
+    <div className="flex flex-col gap-5 pb-12">
+      <button
+        type="button"
+        onClick={onBack}
+        className="self-start inline-flex items-center gap-1.5 text-sm text-base-content/70 hover:text-base-content py-2"
+      >
+        <IoArrowBackOutline size={16} aria-hidden="true" />
+        Réservations
+      </button>
+
       {/* En-tête avec actions */}
-      <div className="card bg-base-200 border border-primary/40 shadow-lg">
-        <div className="card-body">
-          <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
-            <div>
-              <h1 className="text-2xl font-bold flex items-center gap-2">
-                <FaUser />
-                {booking.fname} {booking.lname}
-              </h1>
-              <p className="text-sm text-base-content/70">
-                {apartment?.name ?? booking.apartment_id}
-              </p>
-              <div className="flex items-center gap-3 mt-2">
-                <StatusBadge
-                  status={booking.status.name}
-                  loading={isUpdating}
-                />
-                {booking.is_paid ? (
-                  <span className="badge badge-success">Payée</span>
-                ) : (
-                  <span className="badge badge-warning">Non payée</span>
-                )}
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-3xl font-bold text-primary">
-                {booking.price} CHF
-              </div>
-              <div className="text-sm text-base-content/70">Prix total</div>
-              <div className="mt-3 flex justify-end gap-2">
-                {!isEditing ? (
-                  <>
-                    <button
-                      className="btn btn-outline"
-                      onClick={handleEditToggle}
-                    >
-                      <FaEdit className="w-4 h-4" />
-                      Modifier
-                    </button>
-                    <button
-                      className="btn btn-secondary"
-                      onClick={handleResendEmail}
-                      disabled={isResending}
-                      title="Renvoyer l'email de réservation"
-                    >
-                      {isResending ? (
-                        <span className="loading loading-spinner loading-sm"></span>
-                      ) : (
-                        "Renvoyer l'email"
-                      )}
-                    </button>
-                  </>
-                ) : (
-                  <div className="flex gap-2">
-                    <button
-                      className="btn btn-secondary"
-                      onClick={handleEditToggle}
-                      disabled={isSaving}
-                    >
-                      Annuler
-                    </button>
-                    <button
-                      className="btn btn-primary"
-                      onClick={handleSave}
-                      disabled={isSaving}
-                    >
-                      {isSaving ? (
-                        <span className="loading loading-spinner loading-sm"></span>
-                      ) : (
-                        "Enregistrer"
-                      )}
-                    </button>
-                  </div>
-                )}
-              </div>
+      <header className={`${card} flex flex-wrap gap-5 items-center justify-between`}>
+        <div className="flex items-center gap-4 min-w-0">
+          <span
+            aria-hidden="true"
+            className="size-14 rounded-full bg-cta/15 text-cta font-semibold text-lg flex items-center justify-center shrink-0"
+          >
+            {`${booking.fname?.[0] ?? ""}${booking.lname?.[0] ?? ""}`.toUpperCase()}
+          </span>
+          <div className="min-w-0">
+            <h1 className="font-heading font-semibold text-[26px] sm:text-[30px] leading-tight mb-1.5">
+              {booking.fname} {booking.lname}
+            </h1>
+            <div className="flex flex-wrap items-center gap-2 text-sm text-base-content/70">
+              <StatusBadge status={booking.status.name} loading={isUpdating} />
+              {status !== 1 && status !== 4 && (
+                <span
+                  className={`badge badge-soft rounded-full font-semibold text-[13px] ${
+                    booking.is_paid ? "badge-success" : "badge-warning"
+                  }`}
+                >
+                  {booking.is_paid ? "Payée" : "Non payée"}
+                </span>
+              )}
+              <span>
+                {apartment?.name ?? booking.apartment_id} · Réservation n°{" "}
+                {booking.id}
+              </span>
             </div>
           </div>
-
-          {/* Actions */}
-          <div className="flex flex-wrap gap-2 mt-4">
-            <button
-              className="btn btn-success"
-              onClick={() =>
-                handleAction(status === 1 ? "confirm" : "terminate")
-              }
-              disabled={!showConfirmBtn || isUpdating}
-            >
-              <FaCheck className="w-4 h-4" />
-              {status === 1 ? "Confirmer" : "Terminer"}
-            </button>
-
-            <button
-              className="btn btn-error"
-              onClick={() => handleAction("cancel")}
-              disabled={!showCancelBtn || isUpdating}
-            >
-              <FaTimes className="w-4 h-4" />
-              Annuler
-            </button>
-
-            <button
-              className="btn btn-warning"
-              onClick={() => handleAction("payment")}
-              disabled={!showPaymentBtn || isUpdating}
-            >
-              <FaDollarSign className="w-4 h-4" />
-              Marquer comme payée
-            </button>
-          </div>
-          {errorMessage && (
-            <div className="alert alert-error mt-4">
-              <span>{errorMessage}</span>
-            </div>
-          )}
-          {resendError && (
-            <div className="alert alert-error mt-2">
-              <span>{resendError}</span>
-            </div>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          {!isEditing ? (
+            <>
+              <button
+                type="button"
+                className={btnOutline}
+                onClick={handleResendEmail}
+                disabled={isResending}
+              >
+                {isResending ? (
+                  <span className="loading loading-spinner loading-sm" />
+                ) : (
+                  <IoMailOutline size={17} aria-hidden="true" />
+                )}
+                Renvoyer l&apos;e-mail
+              </button>
+              <button type="button" className={btnOutline} onClick={handleEditToggle}>
+                <IoCreateOutline size={17} aria-hidden="true" />
+                Modifier
+              </button>
+              {status === 1 && (
+                <button
+                  type="button"
+                  className="btn h-11 rounded-xl border-0 bg-cta text-cta-content hover:bg-cta/90"
+                  onClick={() => handleAction("confirm")}
+                  disabled={!showConfirmBtn || isUpdating}
+                >
+                  Confirmer
+                </button>
+              )}
+              {showPaymentBtn && (
+                <button
+                  type="button"
+                  className="btn h-11 rounded-xl border-0 bg-cta text-cta-content hover:bg-cta/90"
+                  onClick={() => handleAction("payment")}
+                  disabled={isUpdating}
+                >
+                  Marquer payée
+                </button>
+              )}
+              {status === 2 && booking.is_paid && (
+                <button
+                  type="button"
+                  className="btn h-11 rounded-xl border-0 bg-cta text-cta-content hover:bg-cta/90"
+                  onClick={() => handleAction("terminate")}
+                  disabled={isUpdating}
+                >
+                  Terminer
+                </button>
+              )}
+            </>
+          ) : (
+            <>
+              <button
+                type="button"
+                className={btnOutline}
+                onClick={handleEditToggle}
+                disabled={isSaving}
+              >
+                Annuler
+              </button>
+              <button
+                type="button"
+                className="btn h-11 rounded-xl border-0 bg-cta text-cta-content hover:bg-cta/90"
+                onClick={handleSave}
+                disabled={isSaving}
+              >
+                {isSaving ? (
+                  <span className="loading loading-spinner loading-sm" />
+                ) : (
+                  "Enregistrer"
+                )}
+              </button>
+            </>
           )}
         </div>
-      </div>
+      </header>
 
-      {/* Informations de séjour */}
-      <div className="grid md:grid-cols-2 gap-6 ">
-        <div className="card shadow-lg bg-base-200 border border-primary/40">
-          <div className="card-body">
-            <h2 className="card-title">
-              <FaCalendarAlt />
-              Informations de séjour
-            </h2>
-            <div className="space-y-3">
-              <div>
-                <label className="font-semibold text-sm">Arrivée</label>
-                {!isEditing ? (
-                  <div className="text-lg">
-                    {format(booking.arrival_date, "EEEE dd MMMM yyyy", {
-                      locale: fr,
-                    })}
-                  </div>
-                ) : null}
-              </div>
-              <div>
-                <label className="font-semibold text-sm">Départ</label>
-                {!isEditing ? (
-                  <div className="text-lg">
-                    {format(booking.departure_date, "EEEE dd MMMM yyyy", {
-                      locale: fr,
-                    })}
-                  </div>
-                ) : null}
-              </div>
-              {isEditing && (
+      {notice && !isEditing && (
+        <div
+          role="status"
+          className="flex items-center gap-3 rounded-2xl border border-warning/40 bg-warning/10 px-4 sm:px-5 py-3.5 text-sm"
+        >
+          <IoTimeOutline size={18} className="shrink-0" aria-hidden="true" />
+          {notice}
+        </div>
+      )}
+      {errorMessage && (
+        <div role="alert" className="alert alert-error">
+          <span>{errorMessage}</span>
+        </div>
+      )}
+      {resendError && (
+        <div role="alert" className="alert alert-error">
+          <span>{resendError}</span>
+        </div>
+      )}
+
+      <div className="flex flex-col xl:flex-row gap-5 items-start">
+        <div className="flex-1 min-w-0 w-full flex flex-col gap-5">
+          {/* Séjour */}
+          <section className={card}>
+            <h2 className="text-[17px] font-semibold mb-4">Séjour</h2>
+            {!isEditing ? (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div>
+                  <p className={label}>Arrivée</p>
+                  <p className="font-semibold">
+                    {format(booking.arrival_date, "EEE d MMM yyyy", { locale: fr })}
+                  </p>
+                </div>
+                <div>
+                  <p className={label}>Départ</p>
+                  <p className="font-semibold">
+                    {format(booking.departure_date, "EEE d MMM yyyy", { locale: fr })}
+                  </p>
+                </div>
+                <div>
+                  <p className={label}>Durée</p>
+                  <p className="font-semibold">
+                    {stayNights} nuit{stayNights > 1 ? "s" : ""}
+                  </p>
+                </div>
+                <div>
+                  <p className={label}>Voyageurs</p>
+                  <p className="font-semibold">
+                    {booking.no_adults} adulte{booking.no_adults > 1 ? "s" : ""}
+                    {(booking.no_childs ?? 0) > 0 &&
+                      `, ${booking.no_childs} enfant${(booking.no_childs ?? 0) > 1 ? "s" : ""}`}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-sm font-medium">Dates</span>
                   <PopoverDatePicker
                     apartmentId={apartment?.slug ?? ""}
                     selectedRange={selectedRange}
@@ -433,281 +479,221 @@ export default function BookingDetails({
                       to: new Date(booking.departure_date),
                     }}
                     initialMonth={new Date(booking.arrival_date)}
-                    className="mt-2 w-full max-w-xs"
+                    className="w-full h-11 rounded-xl"
                   />
                 </div>
-              )}
-              <div>
-                <label className="font-semibold text-sm">Durée</label>
-                <div className="text-lg">
-                  {getNights(new Date(booking.arrival_date), new Date(booking.departure_date))}{" "}
-                  nuits
+                <div className="flex flex-col gap-1.5">
+                  <span className="text-sm font-medium">Voyageurs</span>
+                  <TravelersSelector
+                    travelers={travelers}
+                    setTravelers={(val) => {
+                      setTravelers(val);
+                      setFormValues((prev) => ({
+                        ...prev,
+                        no_adults: val.adults,
+                        no_childs: val.children,
+                      }));
+                    }}
+                    maxCapacity={apartment?.capacity ?? 1}
+                  />
                 </div>
               </div>
-            </div>
-          </div>
-        </div>
+            )}
+          </section>
 
-        <div className="card bg-base-200 border border-primary/40 shadow-lg">
-          <div className="card-body">
-            <h2 className="card-title">
-              <FaUsers />
-              Personnes
-            </h2>
-            <div className="space-y-3">
-              {!isEditing ? (
-                <>
-                  <div>
-                    <label className="font-semibold text-sm">Adultes</label>
-                    <div className="text-lg">{booking.no_adults}</div>
-                  </div>
-                  {(booking.no_childs ?? 0) > 0 && (
-                    <div>
-                      <label className="font-semibold text-sm">Enfants</label>
-                      <div className="text-lg">{booking.no_childs}</div>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <TravelersSelector
-                  travelers={travelers}
-                  setTravelers={(val) => {
-                    setTravelers(val);
-                    setFormValues((prev) => ({
-                      ...prev,
-                      no_adults: val.adults,
-                      no_childs: val.children,
-                    }));
-                  }}
-                  maxCapacity={apartment?.capacity ?? 1}
-                />
-              )}
-              <div>
-                <label className="font-semibold text-sm">Total</label>
-                <div className="text-lg font-semibold">
-                  {isEditing
-                    ? travelers.adults + travelers.children
-                    : booking.no_adults + (booking.no_childs ?? 0)}{" "}
-                  personnes
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Informations de contact */}
-      <div className="card bg-base-200 border border-primary/40 shadow-lg">
-        <div className="card-body">
-          <h2 className="card-title">
-            <FaEnvelope />
-            Informations de contact
-          </h2>
-          <div className="grid md:grid-cols-2 gap-4">
-            <div>
-              <label className="font-semibold text-sm">Email</label>
-              {!isEditing ? (
-                <div className="text-lg">{booking.mail || "Non renseigné"}</div>
-              ) : (
-                <input
-                  type="email"
-                  name="mail"
-                  className="input input-bordered w-full"
-                  value={formValues.mail}
-                  onChange={handleInputChange}
-                />
-              )}
-            </div>
-            <div>
-              <label className="font-semibold text-sm">Téléphone</label>
-              {!isEditing ? (
-                <div className="text-lg">
-                  {booking.phone || "Non renseigné"}
-                </div>
-              ) : (
-                <input
-                  type="tel"
-                  name="phone"
-                  className="input input-bordered w-full"
-                  value={formValues.phone}
-                  onChange={handleInputChange}
-                />
-              )}
-            </div>
-            <div>
-              <label className="font-semibold text-sm">Adresse</label>
-              {!isEditing ? (
-                <div className="text-lg">
-                  {booking.address || "Non renseigné"}
-                </div>
-              ) : (
-                <input
-                  type="text"
-                  name="address"
-                  className="input input-bordered w-full"
-                  value={formValues.address}
-                  onChange={handleInputChange}
-                />
-              )}
-            </div>
-            <div>
-              <label className="font-semibold text-sm">Code postal</label>
-              {!isEditing ? (
-                <div className="text-lg">
-                  {booking.postal_code || "Non renseigné"}
-                </div>
-              ) : (
-                <input
-                  type="text"
-                  name="postal_code"
-                  className="input input-bordered w-full"
-                  value={formValues.postal_code}
-                  onChange={handleInputChange}
-                />
-              )}
-            </div>
-            <div>
-              <label className="font-semibold text-sm">Localité</label>
-              {!isEditing ? (
-                <div className="text-lg">
-                  {booking.city || "Non renseigné"}
-                </div>
-              ) : (
-                <input
-                  type="text"
-                  name="city"
-                  className="input input-bordered w-full"
-                  value={formValues.city}
-                  onChange={handleInputChange}
-                />
-              )}
-            </div>
-            <div>
-              <label className="font-semibold text-sm">Date de naissance</label>
-              {!isEditing ? (
-                <div className="text-lg">
-                  {booking.birthdate
-                    ? format(new Date(booking.birthdate), "dd/MM/yyyy", {
-                        locale: fr,
-                      })
-                    : "Non renseigné"}
-                </div>
-              ) : (
-                <input
-                  type="date"
-                  name="birthdate"
-                  className="input input-bordered w-full"
-                  value={formValues.birthdate}
-                  onChange={handleInputChange}
-                />
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Informations système */}
-      <div className="card bg-base-200 border border-primary/40 shadow-lg">
-        <div className="card-body">
-          <h2 className="card-title">Informations système</h2>
-          <div className="grid md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <label className="font-semibold">ID de réservation</label>
-              <div>{booking.id}</div>
-            </div>
-            <div>
-              <label className="font-semibold">Date de création</label>
-              <div>
-                {booking.created_at
-                  ? format(new Date(booking.created_at), "dd/MM/yyyy à HH:mm", {
-                      locale: fr,
-                    })
-                  : "Non disponible"}
-              </div>
-            </div>
-            <div className="md:col-span-2 grid md:grid-cols-3 gap-4 items-center">
-              <div>
-                <label className="font-semibold">Prix</label>
-                {!isEditing ? (
-                  <div>{booking.price} CHF</div>
-                ) : (
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="checkbox"
-                        className="toggle toggle-accent"
-                        checked={autoPrice}
-                        onChange={(e) => setAutoPrice(e.target.checked)}
-                      />
-                      <span>Calcul automatique</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="number"
-                        name="price"
-                        className="input input-bordered w-full max-w-xs"
-                        value={formValues.price}
-                        onChange={(e) => {
-                          // toute saisie manuelle désactive l'auto si active
-                          if (autoPrice) setAutoPrice(false);
-                          handleInputChange(e);
-                        }}
-                      />
-                      {suggestedPrice !== null && (
-                        <>
-                          <span>Auto:</span>
-                          <span className="badge badge-accent">
-                            {suggestedPrice}
-                          </span>
-                        </>
-                      )}
-                    </div>
-                    {priceError && (
-                      <div className="text-sm text-error">{priceError}</div>
+          {/* Client */}
+          <section className={card}>
+            <h2 className="text-[17px] font-semibold mb-4">Client</h2>
+            {!isEditing ? (
+              <dl className="grid sm:grid-cols-2 gap-x-6 gap-y-4">
+                <div>
+                  <dt className={label}>E-mail</dt>
+                  <dd>
+                    {booking.mail ? (
+                      <a href={`mailto:${booking.mail}`} className="link link-hover break-all">
+                        {booking.mail}
+                      </a>
+                    ) : (
+                      "Non renseigné"
                     )}
-                  </div>
-                )}
+                  </dd>
+                </div>
+                <div>
+                  <dt className={label}>Téléphone</dt>
+                  <dd>
+                    {booking.phone ? (
+                      <a href={`tel:${booking.phone}`} className="link link-hover">
+                        {booking.phone}
+                      </a>
+                    ) : (
+                      "Non renseigné"
+                    )}
+                  </dd>
+                </div>
+                <div>
+                  <dt className={label}>Adresse</dt>
+                  <dd>
+                    {booking.address || booking.postal_code || booking.city ? (
+                      <>
+                        {booking.address}
+                        {booking.address && <br />}
+                        {[booking.postal_code, booking.city].filter(Boolean).join(" ")}
+                      </>
+                    ) : (
+                      "Non renseignée"
+                    )}
+                  </dd>
+                </div>
+                <div>
+                  <dt className={label}>Date de naissance</dt>
+                  <dd>
+                    {booking.birthdate
+                      ? format(new Date(booking.birthdate), "dd.MM.yyyy", { locale: fr })
+                      : "Non renseignée"}
+                  </dd>
+                </div>
+              </dl>
+            ) : (
+              <div className="grid sm:grid-cols-2 gap-4">
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-sm font-medium">E-mail</span>
+                  <input type="email" name="mail" className={input} value={formValues.mail} onChange={handleInputChange} />
+                </label>
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-sm font-medium">Téléphone</span>
+                  <input type="tel" name="phone" className={input} value={formValues.phone} onChange={handleInputChange} />
+                </label>
+                <label className="flex flex-col gap-1.5 sm:col-span-2">
+                  <span className="text-sm font-medium">Adresse</span>
+                  <input type="text" name="address" className={input} value={formValues.address} onChange={handleInputChange} />
+                </label>
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-sm font-medium">NPA</span>
+                  <input type="text" name="postal_code" className={input} value={formValues.postal_code} onChange={handleInputChange} />
+                </label>
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-sm font-medium">Localité</span>
+                  <input type="text" name="city" className={input} value={formValues.city} onChange={handleInputChange} />
+                </label>
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-sm font-medium">Date de naissance</span>
+                  <input type="date" name="birthdate" className={input} value={formValues.birthdate} onChange={handleInputChange} />
+                </label>
               </div>
-              <div className="flex items-center gap-2">
-                <label className="font-semibold">Payée</label>
-                {!isEditing ? (
+            )}
+          </section>
+        </div>
+
+        <div className="w-full xl:w-[360px] xl:shrink-0 flex flex-col gap-5">
+          {/* Paiement */}
+          <section className={`${card} flex flex-col gap-3.5`}>
+            <h2 className="text-[17px] font-semibold">Paiement</h2>
+            {!isEditing ? (
+              <>
+                <div className="flex justify-between text-sm">
+                  <span className="text-base-content/65">Tarif</span>
+                  <span>
+                    {getCategory(booking.no_adults, apartment?.capacity ?? booking.no_adults)} ·{" "}
+                    {stayNights} nuit{stayNights > 1 ? "s" : ""}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-base-content/65">Ménage</span>
+                  <span>{booking.is_cleaning ? "Inclus" : "Non inclus"}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-base-content/65">Statut</span>
+                  <span>{booking.is_paid ? "Payée" : "Non payée"}</span>
+                </div>
+                <div className="border-t border-base-200 pt-3.5 flex justify-between items-baseline">
+                  <span className="font-semibold">Total</span>
+                  <span className="font-heading text-[28px] font-semibold">{chf(booking.price)}</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <label className="flex items-center justify-between gap-3 text-sm cursor-pointer">
+                  <span>Calcul automatique</span>
                   <input
                     type="checkbox"
-                    className="toggle"
-                    checked={booking.is_paid}
-                    readOnly
+                    className="toggle toggle-sm checked:bg-cta checked:border-cta"
+                    checked={autoPrice}
+                    onChange={(e) => setAutoPrice(e.target.checked)}
                   />
-                ) : (
+                </label>
+                <label className="flex flex-col gap-1.5">
+                  <span className="text-sm font-medium">Montant (CHF)</span>
+                  <input
+                    type="number"
+                    name="price"
+                    className={input}
+                    value={formValues.price}
+                    onChange={(e) => {
+                      // toute saisie manuelle désactive l'auto si active
+                      if (autoPrice) setAutoPrice(false);
+                      handleInputChange(e);
+                    }}
+                  />
+                </label>
+                {suggestedPrice !== null && (
+                  <p className="text-[13px] text-base-content/65">
+                    Prix calculé : {chf(suggestedPrice)}
+                  </p>
+                )}
+                {priceError && <p className="text-sm text-error">{priceError}</p>}
+                <label className="flex items-center justify-between gap-3 text-sm cursor-pointer">
+                  <span>Payée</span>
                   <input
                     type="checkbox"
                     name="is_paid"
-                    className="toggle"
+                    className="toggle toggle-sm checked:bg-cta checked:border-cta"
                     checked={formValues.is_paid}
                     onChange={handleInputChange}
                   />
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <label className="font-semibold">Ménage</label>
-                {!isEditing ? (
-                  <input
-                    type="checkbox"
-                    className="toggle"
-                    checked={!!booking.is_cleaning}
-                    readOnly
-                  />
-                ) : (
+                </label>
+                <label className="flex items-center justify-between gap-3 text-sm cursor-pointer">
+                  <span>Ménage inclus</span>
                   <input
                     type="checkbox"
                     name="is_cleaning"
-                    className="toggle"
+                    className="toggle toggle-sm checked:bg-cta checked:border-cta"
                     checked={formValues.is_cleaning}
                     onChange={handleInputChange}
                   />
-                )}
+                </label>
+              </>
+            )}
+          </section>
+
+          {/* Informations */}
+          <section className={card}>
+            <h2 className="text-[17px] font-semibold mb-3">Informations</h2>
+            <dl className="flex flex-col gap-2.5 text-sm">
+              <div className="flex justify-between gap-4">
+                <dt className="text-base-content/65">N° de réservation</dt>
+                <dd>{booking.id}</dd>
               </div>
-            </div>
-          </div>
+              <div className="flex justify-between gap-4">
+                <dt className="text-base-content/65">Demande reçue le</dt>
+                <dd>
+                  {booking.created_at
+                    ? format(new Date(booking.created_at), "d MMM yyyy, HH:mm", { locale: fr })
+                    : "Non disponible"}
+                </dd>
+              </div>
+            </dl>
+          </section>
+
+          {showCancelBtn && !isEditing && (
+            <button
+              type="button"
+              className="btn h-11 rounded-xl btn-outline btn-error"
+              onClick={() => handleAction("cancel")}
+              disabled={isUpdating}
+            >
+              Annuler la réservation
+            </button>
+          )}
         </div>
       </div>
     </div>

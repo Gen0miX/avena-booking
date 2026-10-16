@@ -114,13 +114,13 @@ export default function PricingPeriodForm({
       )}
 
       <div className="form-control">
-        <label className="label">
-          <span className="label-text font-semibold">Nom de la période</span>
+        <label className="label pb-1.5">
+          <span className="text-sm font-medium">Nom de la période</span>
         </label>
         <input
           type="text"
           name="name"
-          className="input input-bordered w-full"
+          className="input w-full h-11 rounded-xl bg-surface"
           value={formData.name}
           onChange={handleChange}
           placeholder="Ex: Haute saison hiver 2025"
@@ -130,13 +130,13 @@ export default function PricingPeriodForm({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="form-control">
-          <label className="label">
-            <span className="label-text font-semibold">Date de début</span>
+          <label className="label pb-1.5">
+            <span className="text-sm font-medium">Date de début</span>
           </label>
           <input
             type="date"
             name="start_date"
-            className="input input-bordered w-full"
+            className="input w-full h-11 rounded-xl bg-surface"
             value={formData.start_date}
             onChange={handleChange}
             required
@@ -144,15 +144,15 @@ export default function PricingPeriodForm({
         </div>
 
         <div className="form-control">
-          <label className="label">
-            <span className="label-text font-semibold">
+          <label className="label pb-1.5">
+            <span className="text-sm font-medium">
               Date de fin (exclusive)
             </span>
           </label>
           <input
             type="date"
             name="end_date"
-            className="input input-bordered w-full"
+            className="input w-full h-11 rounded-xl bg-surface"
             value={formData.end_date}
             onChange={handleChange}
             required
@@ -162,15 +162,15 @@ export default function PricingPeriodForm({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div className="form-control">
-          <label className="label">
-            <span className="label-text font-semibold">
+          <label className="label pb-1.5">
+            <span className="text-sm font-medium">
               {`Prix standard (1-${capacity - 1} adultes) CHF`}
             </span>
           </label>
           <input
             type="number"
             name="price_standard"
-            className="input input-bordered w-full"
+            className="input w-full h-11 rounded-xl bg-surface"
             value={formData.price_standard}
             onChange={handleChange}
             min="0"
@@ -179,13 +179,13 @@ export default function PricingPeriodForm({
         </div>
 
         <div className="form-control">
-          <label className="label">
-            <span className="label-text font-semibold">{`Prix ${capacity} adultes CHF`}</span>
+          <label className="label pb-1.5">
+            <span className="text-sm font-medium">{`Prix ${capacity} adultes CHF`}</span>
           </label>
           <input
             type="number"
             name="price_five"
-            className="input input-bordered w-full"
+            className="input w-full h-11 rounded-xl bg-surface"
             value={formData.price_five}
             onChange={handleChange}
             min="0"
@@ -197,7 +197,7 @@ export default function PricingPeriodForm({
       <div className="flex justify-end gap-2 pt-4">
         <button
           type="button"
-          className="btn btn-ghost"
+          className="btn h-11 rounded-xl btn-outline border-base-300"
           onClick={onCancel}
           disabled={isSubmitting}
         >
@@ -205,7 +205,7 @@ export default function PricingPeriodForm({
         </button>
         <button
           type="submit"
-          className="btn btn-primary"
+          className="btn h-11 rounded-xl border-0 bg-cta text-cta-content hover:bg-cta/90"
           disabled={isSubmitting}
         >
           {isSubmitting ? (

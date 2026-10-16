@@ -51,7 +51,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="h-screen">
+    <div className="min-h-screen">
       <DashboardLayout logoSrc={logoSrc} onLogout={handleLogout} />
 
       {error && (

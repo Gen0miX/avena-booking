@@ -1,108 +1,106 @@
 "use client";
 import Image from "next/image";
-import { useState } from "react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { useTheme } from "next-themes";
+import { format } from "date-fns";
+import { fr } from "date-fns/locale";
 import {
-  FaCalendarAlt,
-  FaCalendarCheck,
-  FaRegChartBar,
-  FaCog,
-  FaArrowLeft,
-  FaBars,
-  FaPowerOff,
-} from "react-icons/fa";
+  IoCalendarOutline,
+  IoCalendarClearOutline,
+  IoBarChartOutline,
+  IoSettingsOutline,
+  IoOpenOutline,
+  IoMoonOutline,
+  IoSunnyOutline,
+  IoLogOutOutline,
+  IoPersonOutline,
+} from "react-icons/io5";
 import BookingTable from "@/components/admin/BookingTable";
 import BookingDetails from "@/components/admin/BookingDetails";
-import { BookingFilters } from "@/hooks/usebookings";
+import { BookingFilters, useBookings } from "@/hooks/usebookings";
+import { Booking } from "@/lib/bookings";
 import StatisticsDashboard from "@/components/admin/statistics/StatisticsDashboard";
 import SettingsPage from "@/components/admin/settings/SettingsPage";
 import { APARTMENT_LIST, ApartmentSlug } from "@/config/apartments";
 
 type SelectedApartment = ApartmentSlug | "all";
+type MenuKey = "bookings" | "terminated" | "statistics" | "settings";
 
-const menuItems = [
-  { key: "bookings", label: "Réservations", icon: <FaCalendarAlt /> },
-  { key: "terminated", label: "Terminées", icon: <FaCalendarCheck /> },
-  { key: "statistics", label: "Statistiques", icon: <FaRegChartBar /> },
-  { key: "settings", label: "Paramètres", icon: <FaCog /> },
+const menuItems: { key: MenuKey; label: string; icon: React.ReactNode }[] = [
+  { key: "bookings", label: "Réservations", icon: <IoCalendarOutline size={19} /> },
+  { key: "terminated", label: "Terminées", icon: <IoCalendarClearOutline size={19} /> },
+  { key: "statistics", label: "Statistiques", icon: <IoBarChartOutline size={19} /> },
+  { key: "settings", label: "Paramètres", icon: <IoSettingsOutline size={19} /> },
 ];
 
-interface MenuItem {
-  key: string;
-  label: string;
-  icon: React.ReactNode;
-}
-
 interface DashboardLayoutProps {
-  onMenuClick?: (key: string) => void;
   logoSrc: string;
   onLogout?: () => void;
 }
 
-export default function DashboardLayout({
-  onMenuClick,
-  logoSrc,
-  onLogout,
-}: DashboardLayoutProps) {
-  const [active, setActive] = useState("bookings");
+export default function DashboardLayout({ logoSrc, onLogout }: DashboardLayoutProps) {
+  const { resolvedTheme, setTheme } = useTheme();
+  const [active, setActive] = useState<MenuKey>("bookings");
   const [selectedApartment, setSelectedApartment] = useState<SelectedApartment>(
-    APARTMENT_LIST[0].slug
+    APARTMENT_LIST[0].slug,
   );
-  const [selectedBookingId, setSelectedBookingId] = useState<number | null>(
-    null
-  );
-  const [bookingsFilters, setBookingsFilters] = useState<BookingFilters | null>(
-    null
-  );
-  const [terminatedFilters, setTerminatedFilters] =
-    useState<BookingFilters | null>(null);
+  const [selectedBookingId, setSelectedBookingId] = useState<number | null>(null);
+  const [bookingsFilters, setBookingsFilters] = useState<BookingFilters | null>(null);
+  const [terminatedFilters, setTerminatedFilters] = useState<BookingFilters | null>(null);
 
-  const handleBookingSelect = (bookingId: number) => {
-    setSelectedBookingId(bookingId);
-  };
+  // Badge "à confirmer" dans la navigation (même cache SWR que la liste)
+  const { allBookings } = useBookings(selectedApartment, undefined, "nav");
+  const pendingCount = (allBookings as Booking[]).filter((b) => b.status.id === 1).length;
 
-  const handleBackToList = () => {
+  // Les paramètres sont propres à un appartement : pas de vue "Tous"
+  useEffect(() => {
+    if (active === "settings" && selectedApartment === "all") {
+      setSelectedApartment(APARTMENT_LIST[0].slug);
+    }
+  }, [active, selectedApartment]);
+
+  const apartmentOptions: { value: SelectedApartment; label: string }[] = [
+    ...APARTMENT_LIST.map((a) => ({ value: a.slug, label: a.name })),
+    ...(active === "settings" ? [] : [{ value: "all" as const, label: "Tous" }]),
+  ];
+
+  const currentItem = menuItems.find((item) => item.key === active)!;
+  const apartmentLabel =
+    selectedApartment === "all"
+      ? "Tous les appartements"
+      : APARTMENT_LIST.find((a) => a.slug === selectedApartment)?.name;
+  const today = format(new Date(), "EEEE d MMMM yyyy", { locale: fr });
+  const subtitle =
+    active === "bookings"
+      ? today.charAt(0).toUpperCase() + today.slice(1)
+      : active === "settings"
+        ? "Réglages propres à chaque appartement"
+        : apartmentLabel;
+
+  const handleMenuItemClick = (key: MenuKey) => {
+    setActive(key);
     setSelectedBookingId(null);
   };
 
-  const getPageTitle = () => {
-    if (selectedBookingId) return "Détails de la réservation";
-    const currentItem = menuItems.find((item) => item.key === active);
-    return currentItem ? currentItem.label : "Dashboard";
-  };
-
-  const handleMenuToggle = () => {
-    const drawerToggle = document.getElementById(
-      "dashboard-drawer"
-    ) as HTMLInputElement | null;
-    if (drawerToggle) drawerToggle.checked = !drawerToggle.checked;
-  };
+  const isDark = resolvedTheme === "avenad";
+  const toggleTheme = () => setTheme(isDark ? "avenal" : "avenad");
 
   const renderContent = () => {
     if (selectedBookingId) {
       return (
-        <div className="h-full">
-          <div className="flex items-center gap-4 mb-4">
-            <button
-              className="btn btn-sm btn-ghost btn-circle"
-              onClick={handleBackToList}
-            >
-              <FaArrowLeft />
-            </button>
-          </div>
-          <BookingDetails
-            bookingId={selectedBookingId}
-            onBack={handleBackToList}
-          />
-        </div>
+        <BookingDetails
+          bookingId={selectedBookingId}
+          onBack={() => setSelectedBookingId(null)}
+        />
       );
     }
-
     switch (active) {
       case "bookings":
         return (
           <BookingTable
             key="current"
-            onBookingSelect={handleBookingSelect}
+            onBookingSelect={setSelectedBookingId}
             statusGroup="current"
             apartment={selectedApartment}
             initialFilters={bookingsFilters ?? undefined}
@@ -113,183 +111,201 @@ export default function DashboardLayout({
         return (
           <BookingTable
             key="terminated"
-            onBookingSelect={handleBookingSelect}
+            onBookingSelect={setSelectedBookingId}
             statusGroup="terminated"
             apartment={selectedApartment}
             initialFilters={terminatedFilters ?? undefined}
-            onFiltersChange={
-              setTerminatedFilters as (f: BookingFilters) => void
-            }
+            onFiltersChange={setTerminatedFilters as (f: BookingFilters) => void}
           />
         );
       case "statistics":
         return <StatisticsDashboard apartment={selectedApartment} />;
       case "settings":
-        return selectedApartment === "all" ? (
-          <div className="alert alert-info">
-            Sélectionnez un appartement spécifique pour gérer ses paramètres.
-          </div>
-        ) : (
+        return selectedApartment === "all" ? null : (
           <SettingsPage apartmentSlug={selectedApartment} />
         );
-      default:
-        return null;
     }
   };
 
-  const handleMenuItemClick = (key: string): void => {
-    setActive(key);
-    setSelectedBookingId(null);
-    const drawerToggle = document.getElementById(
-      "dashboard-drawer"
-    ) as HTMLInputElement | null;
-    if (drawerToggle) drawerToggle.checked = false; // ferme drawer sur mobile
-  };
+  const ApartmentSwitch = ({ className = "" }: { className?: string }) => (
+    <div
+      role="radiogroup"
+      aria-label="Appartement"
+      className={`flex bg-base-300/60 rounded-xl p-1 gap-1 ${className}`}
+    >
+      {apartmentOptions.map((option) => {
+        const checked = selectedApartment === option.value;
+        return (
+          <button
+            key={option.value}
+            type="button"
+            role="radio"
+            aria-checked={checked}
+            onClick={() => setSelectedApartment(option.value)}
+            className={`flex-1 px-4 py-2 rounded-[9px] text-sm transition-colors ${
+              checked
+                ? "bg-surface font-semibold shadow-sm"
+                : "text-base-content/75 hover:text-base-content"
+            }`}
+          >
+            {option.label}
+          </button>
+        );
+      })}
+    </div>
+  );
+
+  const sideLink =
+    "flex items-center gap-3 px-3 py-2.5 rounded-xl text-[15px] text-base-content/80 hover:bg-base-200 w-full text-left";
 
   return (
-    <div className="drawer h-screen">
-      <input id="dashboard-drawer" type="checkbox" className="drawer-toggle" />
-
-      {/* Main content — on décale sur desktop avec lg:ml-64 */}
-      <div className="drawer-content flex flex-col h-screen lg:ml-64">
-        {/* Header sticky */}
-        <header className="flex justify-between items-center p-4 border-b border-primary/40 bg-base-100 z-10 flex-shrink-0 sticky top-0">
-          <div className="flex items-center gap-4">
-            <Image
-              src={logoSrc}
-              alt="logo Avena"
-              width={80}
-              height={0}
-              quality={100}
-              className="md:hidden"
-            />
-            {/* Bouton menu pour tablet seulement */}
-            <button
-              className="btn btn-square btn-ghost hidden md:inline-flex lg:hidden"
-              onClick={handleMenuToggle}
-            >
-              <FaBars size={20} />
-            </button>
-            <h1 className="text-2xl font-bold">{getPageTitle()}</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            <select
-              className="select select-sm select-primary"
-              value={selectedApartment}
-              onChange={(e) =>
-                setSelectedApartment(e.target.value as SelectedApartment)
-              }
-            >
-              {APARTMENT_LIST.map((apartment) => (
-                <option key={apartment.slug} value={apartment.slug}>
-                  {apartment.name}
-                </option>
-              ))}
-              <option value="all">Tous les appartements</option>
-            </select>
-            {onLogout && (
-              <button
-                className="btn btn-circle btn-secondary"
-                onClick={onLogout}
-              >
-                <FaPowerOff />
-              </button>
-            )}
-          </div>
-        </header>
-
-        {/* Contenu principal avec scroll */}
-        <div className="flex-1 overflow-hidden">
-          {/* Mobile dock */}
-          <div className="md:hidden h-full flex flex-col">
-            <div className="flex-1 overflow-y-auto p-4 pt-0 mb-10 sm:mb-12 md:mb-0">
-              {renderContent()}
-            </div>
-            <div className="dock dock-sm sm:dock-md flex-shrink-0">
-              {menuItems.map((item) => (
-                <button
-                  key={item.key}
-                  className={active === item.key ? "active text-primary" : ""}
-                  onClick={() => handleMenuItemClick(item.key)}
-                >
-                  {item.icon}
-                  <span className="dock-label">{item.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Desktop - container avec scroll interne */}
-          <div className="hidden md:block h-full overflow-y-auto">
-            <main className="p-4">{renderContent()}</main>
-          </div>
+    <div className="min-h-screen bg-base-100 text-base-content">
+      {/* Menu latéral (desktop) */}
+      <aside className="hidden lg:flex fixed inset-y-0 left-0 w-[248px] flex-col gap-7 bg-surface border-r border-base-300 px-4 py-6 z-30">
+        <div className="flex flex-col items-center gap-2">
+          <Image src={logoSrc} alt="Avena" width={96} height={50} className="h-11 w-auto" />
+          <span className="text-[11px] font-semibold tracking-[0.08em] uppercase text-base-content/70 border border-base-300 rounded-md px-1.5 py-0.5">
+            Admin
+          </span>
         </div>
-      </div>
+        <nav aria-label="Navigation admin" className="flex flex-col gap-1">
+          {menuItems.map((item) => {
+            const current = active === item.key && !selectedBookingId;
+            const highlighted = active === item.key;
+            return (
+              <button
+                key={item.key}
+                type="button"
+                aria-current={current ? "page" : undefined}
+                onClick={() => handleMenuItemClick(item.key)}
+                className={`${sideLink} ${
+                  highlighted ? "bg-cta/15 text-base-content font-semibold hover:bg-cta/20" : ""
+                }`}
+              >
+                <span className={highlighted ? "text-cta" : ""}>{item.icon}</span>
+                {item.label}
+                {item.key === "bookings" && pendingCount > 0 && (
+                  <span className="ml-auto bg-cta text-cta-content text-xs font-semibold rounded-full px-2 py-0.5">
+                    {pendingCount}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+        <div className="mt-auto flex flex-col gap-1 border-t border-base-300 pt-4">
+          <Link href="/" className={sideLink}>
+            <IoOpenOutline size={19} aria-hidden="true" />
+            Voir le site
+          </Link>
+          <button type="button" onClick={toggleTheme} className={sideLink}>
+            {isDark ? (
+              <IoSunnyOutline size={19} aria-hidden="true" />
+            ) : (
+              <IoMoonOutline size={19} aria-hidden="true" />
+            )}
+            {isDark ? "Thème clair" : "Thème sombre"}
+          </button>
+          {onLogout && (
+            <button type="button" onClick={onLogout} className={`${sideLink} text-error`}>
+              <IoLogOutOutline size={19} aria-hidden="true" />
+              Se déconnecter
+            </button>
+          )}
+        </div>
+      </aside>
 
-      {/* Drawer-side pour mobile/tablette (contrôlé par la checkbox). Caché sur lg */}
-      <div className="drawer-side lg:hidden">
-        <label
-          htmlFor="dashboard-drawer"
-          aria-label="close sidebar"
-          className="drawer-overlay"
-        ></label>
-        <aside className="w-64 h-full pt-28 bg-base-200 border-r border-primary/40 p-4 flex flex-col">
-          <div className="flex-shrink-0 mb-6">
-            <Image
-              src={logoSrc}
-              alt="logo Avena"
-              width={120}
-              height={0}
-              quality={100}
-              className="mx-auto mb-5"
-            />
+      {/* En-tête (mobile / tablette) */}
+      <header className="lg:hidden sticky top-0 z-30 bg-surface border-b border-base-300 px-4 py-3 flex flex-col gap-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <Image src={logoSrc} alt="Avena" width={80} height={42} className="h-10 w-auto" />
+            <span className="text-[11px] font-semibold tracking-[0.08em] uppercase text-base-content/70 border border-base-300 rounded-md px-1.5 py-0.5">
+              Admin
+            </span>
           </div>
-          <ul className="menu gap-2 flex-1 overflow-y-auto">
-            {menuItems.map((item) => (
-              <li key={item.key}>
-                <button
-                  className={`btn w-full justify-start ${
-                    active === item.key ? "btn-primary" : "btn-ghost"
-                  }`}
-                  onClick={() => handleMenuItemClick(item.key)}
-                >
-                  {item.icon}
-                  {item.label}
+          <div className="dropdown dropdown-end">
+            <button
+              type="button"
+              tabIndex={0}
+              aria-label="Menu du compte"
+              className="btn btn-circle btn-ghost border border-base-300"
+            >
+              <IoPersonOutline size={18} />
+            </button>
+            <ul tabIndex={0} className="dropdown-content menu bg-surface rounded-box shadow-lg z-40 w-56 p-2 mt-2">
+              <li>
+                <Link href="/">
+                  <IoOpenOutline aria-hidden="true" /> Voir le site
+                </Link>
+              </li>
+              <li>
+                <button type="button" onClick={toggleTheme}>
+                  {isDark ? <IoSunnyOutline aria-hidden="true" /> : <IoMoonOutline aria-hidden="true" />}
+                  {isDark ? "Thème clair" : "Thème sombre"}
                 </button>
               </li>
-            ))}
-          </ul>
-        </aside>
-      </div>
-
-      {/* Sidebar fixe pour desktop (visible uniquement >= lg) */}
-      <aside className="hidden lg:flex fixed top-0 left-0 h-screen w-64 pt-12 bg-base-200 border-r border-primary/40 p-4 flex-col">
-        <div className="flex-shrink-0 mb-6">
-          <Image
-            src={logoSrc}
-            alt="logo Avena"
-            width={120}
-            height={0}
-            quality={100}
-            className="mx-auto mb-5"
-          />
+              {onLogout && (
+                <li>
+                  <button type="button" onClick={onLogout} className="text-error">
+                    <IoLogOutOutline aria-hidden="true" /> Se déconnecter
+                  </button>
+                </li>
+              )}
+            </ul>
+          </div>
         </div>
-        <ul className="menu gap-2 flex-1 overflow-y-auto">
-          {menuItems.map((item) => (
-            <li key={item.key}>
-              <button
-                className={`btn w-full justify-start ${
-                  active === item.key ? "btn-primary" : "btn-ghost"
-                }`}
-                onClick={() => handleMenuItemClick(item.key)}
-              >
+        {!selectedBookingId && <ApartmentSwitch />}
+      </header>
+
+      {/* Contenu */}
+      <main className="lg:pl-[248px] pb-24 lg:pb-0">
+        <div className="w-full max-w-[1800px] mx-auto px-4 sm:px-6 lg:px-10 2xl:px-14 py-5 lg:py-7 flex flex-col gap-5 lg:gap-6">
+          {!selectedBookingId && (
+            <div className="flex flex-wrap items-end justify-between gap-4">
+              <div>
+                <p className="text-sm text-base-content/65 mb-1">{subtitle}</p>
+                <h1 className="font-heading font-semibold text-[28px] lg:text-4xl leading-tight">
+                  {currentItem.label}
+                </h1>
+              </div>
+              <ApartmentSwitch className="hidden lg:flex" />
+            </div>
+          )}
+          {renderContent()}
+        </div>
+      </main>
+
+      {/* Navigation basse (mobile / tablette) */}
+      <nav
+        aria-label="Navigation admin"
+        className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-surface border-t border-base-300 grid grid-cols-4 px-1 pt-1.5 pb-[max(10px,env(safe-area-inset-bottom))]"
+      >
+        {menuItems.map((item) => {
+          const highlighted = active === item.key;
+          return (
+            <button
+              key={item.key}
+              type="button"
+              aria-current={highlighted && !selectedBookingId ? "page" : undefined}
+              onClick={() => handleMenuItemClick(item.key)}
+              className={`relative flex flex-col items-center gap-1 py-1.5 text-[11px] ${
+                highlighted ? "font-semibold text-base-content" : "text-base-content/70"
+              }`}
+            >
+              <span className={`px-4 py-1 rounded-full ${highlighted ? "bg-cta/15 text-cta" : ""}`}>
                 {item.icon}
-                {item.label}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </aside>
+              </span>
+              {item.label}
+              {item.key === "bookings" && pendingCount > 0 && (
+                <span className="absolute top-0.5 right-[calc(50%-24px)] bg-cta text-cta-content text-[10px] font-semibold rounded-full min-w-4 h-4 px-1 flex items-center justify-center">
+                  {pendingCount}
+                </span>
+              )}
+            </button>
+          );
+        })}
+      </nav>
     </div>
   );
 }

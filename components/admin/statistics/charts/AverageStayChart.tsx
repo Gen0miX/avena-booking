@@ -30,13 +30,13 @@ interface AverageStayChartProps {
 }
 
 export default function AverageStayChart({ data }: AverageStayChartProps) {
-  const { textColor, gridColor } = useChartTheme();
+  const { textColor, gridColor, styleData } = useChartTheme();
 
   const options = {
     responsive: true,
     plugins: {
       legend: {
-        position: "top" as const,
+        display: false,
         labels: {
             color: textColor,
         }
@@ -64,11 +64,11 @@ export default function AverageStayChart({ data }: AverageStayChartProps) {
                 color: textColor,
             },
             grid: {
-                color: gridColor,
+                display: false,
             }
         }
     }
   };
 
-  return <Line options={options} data={data} />;
+  return <Line options={options} data={styleData(data, "avgStay")} />;
 }

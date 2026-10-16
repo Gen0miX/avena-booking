@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useSettings } from "@/hooks/useSettings";
 import { formatBlockedDate } from "@/lib/settings";
-import { FaCalendarTimes, FaSave, FaTimes, FaEdit } from "react-icons/fa";
 import { ApartmentSlug } from "@/config/apartments";
 
 interface GeneralSettingsProps {
@@ -101,106 +100,92 @@ export default function GeneralSettings({
   }
 
   return (
-    <div className="space-y-6">
-      {/* Limite des réservations */}
-      <div className="card bg-base-200 border border-primary/20">
-        <div className="card-body">
-          <h3 className="card-title text-lg">
-            <FaCalendarTimes className="text-warning" />
-            Limite des réservations
-          </h3>
-          <p className="text-sm text-base-content/70 mb-4">
-            Définissez une date limite pour les réservations. Les utilisateurs
-            ne pourront pas réserver de dates après cette limite.
+    <section className="bg-surface rounded-2xl p-5 sm:p-6 flex flex-col gap-4">
+      <div className="flex flex-wrap gap-5 items-center justify-between">
+        <div className="max-w-[520px]">
+          <h2 className="text-[17px] font-semibold mb-1.5">Ouverture des réservations</h2>
+          <p className="text-sm leading-relaxed text-base-content/70">
+            Les voyageurs ne peuvent pas réserver de dates après cette limite.
+            Pratique tant que les tarifs de la saison suivante ne sont pas fixés.
           </p>
-
-          {success && (
-            <div className="alert alert-success mb-4">
-              Paramètres enregistrés avec succès
-            </div>
-          )}
-
-          {error && (
-            <div className="alert alert-error mb-4">{error}</div>
-          )}
-
-          {!isEditing ? (
-            <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-              <div>
-                <p className="text-sm text-base-content/70">
-                  Réservations possibles jusqu'au :
-                </p>
-                <p className="text-lg font-semibold">
-                  {settings?.booking_blocked_after
-                    ? formatBlockedDate(settings.booking_blocked_after)
-                    : "Aucune limite"}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <button
-                  className="btn btn-primary btn-sm"
-                  onClick={() => setIsEditing(true)}
-                >
-                  <FaEdit className="mr-2" />
-                  Modifier
-                </button>
-                {settings?.booking_blocked_after && (
-                  <button
-                    className="btn btn-outline btn-error btn-sm"
-                    onClick={handleRemoveBlock}
-                    disabled={isSubmitting}
-                  >
-                    <FaTimes className="mr-2" />
-                    Supprimer
-                  </button>
-                )}
-              </div>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              <div className="form-control w-full max-w-xs">
-                <label className="label">
-                  <span className="label-text">Date limite de réservation</span>
-                </label>
-                <input
-                  type="date"
-                  className="input input-bordered w-full"
-                  value={blockDate}
-                  onChange={(e) => setBlockDate(e.target.value)}
-                  min={new Date().toISOString().split("T")[0]}
-                />
-                <label className="label">
-                  <span className="label-text-alt text-base-content/60">
-                    Les réservations après cette date seront bloquées
-                  </span>
-                </label>
-              </div>
-
-              <div className="flex gap-2">
-                <button
-                  className="btn btn-primary btn-sm"
-                  onClick={handleSave}
-                  disabled={isSubmitting}
-                >
-                  {isSubmitting ? (
-                    <span className="loading loading-spinner loading-sm"></span>
-                  ) : (
-                    <FaSave className="mr-2" />
-                  )}
-                  Enregistrer
-                </button>
-                <button
-                  className="btn btn-ghost btn-sm"
-                  onClick={handleCancel}
-                  disabled={isSubmitting}
-                >
-                  Annuler
-                </button>
-              </div>
-            </div>
-          )}
         </div>
+        {!isEditing && (
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="sm:text-right">
+              <p className="text-[13px] text-base-content/65">Ouvertes jusqu&apos;au</p>
+              <p className="font-semibold text-[17px]">
+                {settings?.booking_blocked_after
+                  ? formatBlockedDate(settings.booking_blocked_after)
+                  : "Aucune limite"}
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                className="btn h-11 rounded-xl btn-outline border-base-300"
+                onClick={() => setIsEditing(true)}
+              >
+                Modifier
+              </button>
+              {settings?.booking_blocked_after && (
+                <button
+                  type="button"
+                  className="btn h-11 rounded-xl btn-outline btn-error"
+                  onClick={handleRemoveBlock}
+                  disabled={isSubmitting}
+                >
+                  Retirer la limite
+                </button>
+              )}
+            </div>
+          </div>
+        )}
       </div>
-    </div>
+
+      {success && (
+        <div role="status" className="alert alert-success">
+          Paramètres enregistrés avec succès
+        </div>
+      )}
+      {error && (
+        <div role="alert" className="alert alert-error">
+          {error}
+        </div>
+      )}
+
+      {isEditing && (
+        <div className="flex flex-wrap items-end gap-3 border-t border-base-200 pt-4">
+          <label className="flex flex-col gap-1.5 w-full max-w-xs">
+            <span className="text-sm font-medium">Date limite de réservation</span>
+            <input
+              type="date"
+              className="input w-full h-11 rounded-xl"
+              value={blockDate}
+              onChange={(e) => setBlockDate(e.target.value)}
+              min={new Date().toISOString().split("T")[0]}
+            />
+          </label>
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className="btn h-11 rounded-xl btn-outline border-base-300"
+              onClick={handleCancel}
+              disabled={isSubmitting}
+            >
+              Annuler
+            </button>
+            <button
+              type="button"
+              className="btn h-11 rounded-xl border-0 bg-cta text-cta-content hover:bg-cta/90"
+              onClick={handleSave}
+              disabled={isSubmitting}
+            >
+              {isSubmitting && <span className="loading loading-spinner loading-sm" />}
+              Enregistrer
+            </button>
+          </div>
+        </div>
+      )}
+    </section>
   );
 }

@@ -28,13 +28,13 @@ interface ReservationsChartProps {
 }
 
 export default function ReservationsChart({ data }: ReservationsChartProps) {
-  const { textColor, gridColor } = useChartTheme();
+  const { textColor, gridColor, styleData } = useChartTheme();
 
   const options = {
     responsive: true,
     plugins: {
       legend: {
-        position: "top" as const,
+        display: false,
         labels: {
             color: textColor,
         }
@@ -60,11 +60,11 @@ export default function ReservationsChart({ data }: ReservationsChartProps) {
                 color: textColor,
             },
             grid: {
-                color: gridColor,
+                display: false,
             }
         }
     }
   };
 
-  return <Bar options={options} data={data} />;
+  return <Bar options={options} data={styleData(data, "reservations")} />;
 }

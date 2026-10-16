@@ -15,7 +15,7 @@ import OccupancyChart from "./charts/OccupancyChart";
 import RevenueChart from "./charts/RevenueChart";
 import ReservationsChart from "./charts/ReservationsChart";
 import AverageStayChart from "./charts/AverageStayChart";
-import { FaCoins, FaCalendarCheck, FaBed, FaClock, FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { addMonths, addYears, addQuarters, subMonths, subYears, subQuarters, format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -80,113 +80,98 @@ export default function StatisticsDashboard({ apartment }: { apartment: Apartmen
     };
   }, [bookings, period, date, apartment]);
 
-  if (isLoading) return <div className="flex justify-center p-10"><span className="loading loading-spinner loading-lg"></span></div>;
-  if (isError) return <div className="alert alert-error">Erreur lors du chargement des données</div>;
+  if (isLoading) return <div className="flex justify-center p-10"><span className="loading loading-spinner loading-lg text-cta"></span></div>;
+  if (isError) return <div role="alert" className="alert alert-error">Erreur lors du chargement des données</div>;
+
+  const periodOptions: { value: Period; label: string }[] = [
+    { value: "month", label: "Mois" },
+    { value: "quarter", label: "Trimestre" },
+    { value: "year", label: "Année" },
+  ];
+  const chartCard = (title: string, unit: string, chart: React.ReactNode) => (
+    <section className="bg-surface rounded-2xl p-5 sm:p-6">
+      <div className="flex justify-between items-baseline mb-4">
+        <h2 className="text-[17px] font-semibold">{title}</h2>
+        <span className="text-[13px] text-base-content/65">{unit}</span>
+      </div>
+      {chart}
+    </section>
+  );
 
   return (
-    <div className="py-4 sm:p-4 space-y-6">
-      {/* Controls */}
-      <div className="flex flex-col md:flex-row justify-between items-center bg-base-200 p-4 rounded-box shadow-sm gap-4 border border-primary/20">
-        <div className="flex items-center gap-2">
-          <h2 className="text-xl font-bold">Statistiques</h2>
-          {apartment === "all" && (
-            <span className="badge badge-outline">Vue globale — tous les appartements</span>
-          )}
-        </div>
-        
-        <div className="flex flex-col sm:flex-row items-center gap-4">
-            <div className="join">
-            <button
-                className={`join-item btn btn-xs sm:btn-sm ${period === "month" ? "btn-active btn-primary" : "bg-base-100"}`}
-                onClick={() => setPeriod("month")}
-            >
-                Mois
-            </button>
-            <button
-                className={`join-item btn btn-xs sm:btn-sm ${period === "quarter" ? "btn-active btn-primary" : "bg-base-100"}`}
-                onClick={() => setPeriod("quarter")}
-            >
-                Trimestre
-            </button>
-            <button
-                className={`join-item btn btn-xs  sm:btn-sm ${period === "year" ? "btn-active btn-primary" : "bg-base-100"}`}
-                onClick={() => setPeriod("year")}
-            >
-                Année
-            </button>
-            </div>
-
-            <div className="flex items-center gap-2 bg-base-100 rounded-lg p-1">
-                <button className="btn btn-sm btn-ghost btn-square" onClick={handlePrevious}>
-                    <FaChevronLeft />
+    <div className="flex flex-col gap-5 sm:gap-6">
+      {/* Période */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        {apartment === "all" ? (
+          <span className="badge badge-soft rounded-full">Vue globale — tous les appartements</span>
+        ) : (
+          <span />
+        )}
+        <div className="flex flex-wrap items-center gap-3">
+          <div role="radiogroup" aria-label="Période" className="flex bg-base-300/60 rounded-xl p-1 gap-1">
+            {periodOptions.map((option) => {
+              const checked = period === option.value;
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={checked}
+                  onClick={() => setPeriod(option.value)}
+                  className={`px-3.5 py-2 rounded-[9px] text-sm ${
+                    checked ? "bg-surface font-semibold shadow-sm" : "text-base-content/75 hover:text-base-content"
+                  }`}
+                >
+                  {option.label}
                 </button>
-                <span className="min-w-[120px] text-center font-medium capitalize">{periodLabel}</span>
-                <button className="btn btn-sm btn-ghost btn-square" onClick={handleNext}>
-                    <FaChevronRight />
-                </button>
-            </div>
+              );
+            })}
+          </div>
+          <div className="flex items-center bg-surface rounded-xl border border-base-300">
+            <button type="button" aria-label="Période précédente" className="btn btn-ghost btn-square h-11" onClick={handlePrevious}>
+              <FaChevronLeft aria-hidden="true" />
+            </button>
+            <span className="min-w-[120px] text-center font-semibold capitalize" aria-live="polite">
+              {periodLabel}
+            </span>
+            <button type="button" aria-label="Période suivante" className="btn btn-ghost btn-square h-11" onClick={handleNext}>
+              <FaChevronRight aria-hidden="true" />
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Indicateurs */}
+      <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
         <StatsCard
           title="Taux d'occupation"
-          value={`${stats.occupancy.toFixed(1)}%`}
-          icon={<FaBed className="text-2xl" />}
+          value={`${stats.occupancy.toFixed(0)} %`}
+          progress={stats.occupancy}
         />
         <StatsCard
           title="Revenus"
-          value={`${stats.revenue.toLocaleString("fr-FR", { style: "currency", currency: "CHF" })}`}
-          icon={<FaCoins  className="text-2xl" />}
+          value={`CHF ${Math.round(stats.revenue).toLocaleString("fr-CH")}`}
+          description="hors réservations annulées"
         />
         <StatsCard
           title="Réservations"
           value={stats.reservations}
-          icon={<FaCalendarCheck className="text-2xl" />}
+          description="séjours commençant sur la période"
         />
         <StatsCard
           title="Durée moyenne"
-          value={`${stats.avgStay.toFixed(1)} nuits`}
-          icon={<FaClock className="text-2xl" />}
+          value={`${stats.avgStay.toFixed(1).replace(".", ",")} nuits`}
+          description="par séjour"
         />
       </div>
 
-      {/* Charts */}
-      {period !== "month" && (
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {chartsData?.occupancy && (
-            <div className="card bg-base-200 shadow-sm border border-primary/20">
-              <div className="card-body p-4">
-                <h3 className="card-title text-base-content">Taux d'occupation</h3>
-                <OccupancyChart data={chartsData.occupancy} />
-              </div>
-            </div>
-          )}
-          {chartsData?.revenue && (
-            <div className="card bg-base-200 shadow-sm border border-primary/20">
-              <div className="card-body p-4">
-                <h3 className="card-title text-base-content">Revenus générés</h3>
-                <RevenueChart data={chartsData.revenue} />
-              </div>
-            </div>
-          )}
-          {chartsData?.reservations && (
-            <div className="card bg-base-200 shadow-sm border border-primary/20">
-              <div className="card-body p-4">
-                <h3 className="card-title text-base-content">Nombre de réservations</h3>
-                <ReservationsChart data={chartsData.reservations} />
-              </div>
-            </div>
-          )}
-          {chartsData?.avgStay && (
-            <div className="card bg-base-200 shadow-sm border border-primary/20">
-              <div className="card-body p-4">
-                <h3 className="card-title text-base-content">Durée moyenne des séjours</h3>
-                <AverageStayChart data={chartsData.avgStay} />
-              </div>
-            </div>
-          )}
+      {/* Graphiques */}
+      {period !== "month" && chartsData && (
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+          {chartCard("Occupation", "en % des nuits", <OccupancyChart data={chartsData.occupancy} />)}
+          {chartCard("Revenus", "CHF", <RevenueChart data={chartsData.revenue} />)}
+          {chartCard("Réservations", "nombre de séjours", <ReservationsChart data={chartsData.reservations} />)}
+          {chartCard("Durée moyenne des séjours", "nuits", <AverageStayChart data={chartsData.avgStay} />)}
         </div>
       )}
     </div>

@@ -5,32 +5,9 @@ import { usePricingPeriods } from "@/hooks/usePricingPeriods";
 import { PricingPeriod, PricingPeriodInput } from "@/lib/pricingPeriods";
 import PricingPeriodForm from "./PricingPeriodForm";
 import PricingPeriodsList from "./PricingPeriodsList";
-import { FaPlus, FaInfoCircle } from "react-icons/fa";
+import { IoAddOutline } from "react-icons/io5";
+import RateTable from "@/components/home/RateTable";
 import { ApartmentSlug, getApartmentBySlug } from "@/config/apartments";
-
-const SEASON_LABELS: Record<string, { name: string; dates: string }> = {
-  basseSaison: { name: "Basse saison", dates: "Mai - Octobre" },
-  novembre: { name: "Novembre", dates: "1 - 30 Novembre" },
-  hiver: { name: "Hiver", dates: "1-17 Déc, 11 Jan - 30 Avr" },
-  fetes: { name: "Fêtes", dates: "18 Déc - 10 Jan" },
-};
-
-const SEASON_ORDER = ["basseSaison", "novembre", "hiver", "fetes"] as const;
-
-function formatTierLabel(
-  tiers: { minAdults: number; price: number }[],
-  index: number,
-  capacity: number
-): string {
-  const tier = tiers[index];
-  const next = tiers[index + 1];
-  const rangeEnd = next ? next.minAdults - 1 : capacity;
-  const peopleLabel =
-    rangeEnd === tier.minAdults
-      ? `${tier.minAdults} pers.`
-      : `${tier.minAdults}-${rangeEnd} pers.`;
-  return `${peopleLabel} : ${tier.price} CHF`;
-}
 
 interface PricingPeriodsManagerProps {
   apartmentSlug: ApartmentSlug;
@@ -109,96 +86,67 @@ export default function PricingPeriodsManager({
   if (isLoading) {
     return (
       <div className="flex justify-center p-10">
-        <span className="loading loading-spinner loading-lg"></span>
+        <span className="loading loading-spinner loading-lg text-cta"></span>
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="alert alert-error">
+      <div role="alert" className="alert alert-error">
         Erreur lors du chargement des périodes tarifaires
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <>
       {/* Tarifs par défaut */}
-      <div className="card bg-base-200 border border-primary/20">
-        <div className="card-body">
-          <h3 className="card-title text-lg">
-            <FaInfoCircle className="text-info" />
-            Tarifs par défaut (automatiques)
-          </h3>
-          <p className="text-sm text-base-content/70 mb-4">
-            Ces tarifs s'appliquent automatiquement selon la période de l'année.
+      <section className="bg-surface rounded-2xl overflow-hidden">
+        <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-1">
+          <h2 className="text-[17px] font-semibold mb-1.5">Tarifs saisonniers</h2>
+          <p className="text-sm text-base-content/70">
+            Appliqués automatiquement selon la date. Prix par nuit, ménage et
+            taxes inclus.
           </p>
-          <div className="space-y-3">
-            {SEASON_ORDER.map((seasonKey) => {
-              const label = SEASON_LABELS[seasonKey];
-              const tiers = apartment.defaultRates[seasonKey];
-              return (
-                <div
-                  key={seasonKey}
-                  className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3 border-b border-base-300 pb-2 last:border-b-0 last:pb-0"
-                >
-                  <div className="sm:w-56 flex-shrink-0">
-                    <span className="font-medium">{label.name}</span>{" "}
-                    <span className="text-sm text-base-content/70">
-                      ({label.dates})
-                    </span>
-                  </div>
-                  <div className="text-sm text-base-content/80 flex flex-wrap gap-x-2">
-                    {tiers.map((tier, index) => (
-                      <span key={tier.minAdults}>
-                        {formatTierLabel(tiers, index, apartment.capacity)}
-                        {index < tiers.length - 1 && " /"}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-              );
-            })}
-          </div>
         </div>
-      </div>
+        {apartment && <RateTable apartment={apartment} />}
+      </section>
 
       {/* Périodes personnalisées */}
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
+      <section className="bg-surface rounded-2xl p-5 sm:p-6 flex flex-col gap-4">
+        <div className="flex flex-wrap justify-between items-start gap-3">
           <div>
-            <h3 className="text-lg font-semibold">Périodes personnalisées</h3>
+            <h2 className="text-[17px] font-semibold mb-1.5">Périodes spéciales</h2>
             <p className="text-sm text-base-content/70">
-              Ces périodes prennent priorité sur les tarifs par défaut.
+              Prioritaires sur les tarifs saisonniers (Carnaval, événements…).
             </p>
           </div>
           <button
-            className="btn btn-primary btn-sm"
+            type="button"
+            className="btn h-11 rounded-xl border-0 bg-cta text-cta-content hover:bg-cta/90"
             onClick={handleCreate}
             disabled={isFormOpen}
           >
-            <FaPlus className="mr-2" />
+            <IoAddOutline size={18} aria-hidden="true" />
             Ajouter une période
           </button>
         </div>
 
         {isFormOpen && (
-          <div className="card bg-base-200 border border-primary/40 shadow-lg">
-            <div className="card-body">
-              <h4 className="card-title">
-                {editingPeriod ? "Modifier la période" : "Nouvelle période"}
-              </h4>
-              <PricingPeriodForm
-                apartmentSlug={apartmentSlug}
-                initialData={editingPeriod}
-                onSubmit={handleSubmit}
-                onCancel={handleCancel}
-                isSubmitting={isSubmitting}
-                error={formError}
-                existingPeriods={periods}
-              />
-            </div>
+          <div className="rounded-xl border border-base-300 bg-base-100 p-4 sm:p-5">
+            <h3 className="font-semibold mb-3">
+              {editingPeriod ? "Modifier la période" : "Nouvelle période"}
+            </h3>
+            <PricingPeriodForm
+              apartmentSlug={apartmentSlug}
+              initialData={editingPeriod}
+              onSubmit={handleSubmit}
+              onCancel={handleCancel}
+              isSubmitting={isSubmitting}
+              error={formError}
+              existingPeriods={periods}
+            />
           </div>
         )}
 
@@ -208,7 +156,7 @@ export default function PricingPeriodsManager({
           onDelete={handleDelete}
           apartmentSlug={apartmentSlug}
         />
-      </div>
-    </div>
+      </section>
+    </>
   );
 }
