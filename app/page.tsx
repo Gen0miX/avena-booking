@@ -17,6 +17,7 @@ import NavBar from "@/components/home/NavBar";
 import Footer from "@/components/home/Footer";
 import Hero from "@/components/home/Hero";
 import HeroBookingBar from "@/components/home/HeroBookingBar";
+import saasFeeImage from "@/public/images/hero2.webp";
 import { useBooking } from "@/context/BookingContext";
 import {
   APARTMENT_LIST,
@@ -211,10 +212,14 @@ export default function Home() {
         >
           <div className="relative aspect-[4/3] lg:aspect-[4/5] rounded-2xl overflow-hidden">
             <Image
-              src="/images/hero2.webp"
-              alt="Vue sur Saas-Fee"
+              src={saasFeeImage}
+              alt="Vue du Glacier"
               fill
-              sizes="(min-width: 1024px) 600px, 100vw"
+              placeholder="blur"
+              // Photo paysage (16:9) recadrée en 4:3 / 4:5 avec object-cover :
+              // elle est rendue plus large que son cadre (≈ 1,33× en 4:3,
+              // ≈ 2,2× la largeur de colonne en 4:5), d'où ces tailles.
+              sizes="(min-width: 1024px) 1400px, 135vw"
               className="object-cover"
             />
           </div>
