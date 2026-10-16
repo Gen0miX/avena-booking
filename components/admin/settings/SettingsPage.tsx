@@ -4,10 +4,15 @@ import { useState } from "react";
 import PricingPeriodsManager from "./PricingPeriodsManager";
 import GeneralSettings from "./GeneralSettings";
 import { FaMoneyBillWave, FaCog } from "react-icons/fa";
+import { ApartmentSlug } from "@/config/apartments";
 
 type SettingsTab = "pricing" | "general";
 
-export default function SettingsPage() {
+interface SettingsPageProps {
+  apartmentSlug: ApartmentSlug;
+}
+
+export default function SettingsPage({ apartmentSlug }: SettingsPageProps) {
   const [activeTab, setActiveTab] = useState<SettingsTab>("pricing");
 
   return (
@@ -33,8 +38,12 @@ export default function SettingsPage() {
         </div>
       </div>
 
-      {activeTab === "pricing" && <PricingPeriodsManager />}
-      {activeTab === "general" && <GeneralSettings />}
+      {activeTab === "pricing" && (
+        <PricingPeriodsManager apartmentSlug={apartmentSlug} />
+      )}
+      {activeTab === "general" && (
+        <GeneralSettings apartmentSlug={apartmentSlug} />
+      )}
     </div>
   );
 }

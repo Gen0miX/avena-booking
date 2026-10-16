@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { PricingPeriodInput } from "@/lib/pricingPeriods";
+import { getApartmentBySlug } from "@/config/apartments";
 
 // GET: Récupérer une période tarifaire spécifique
 export async function GET(
@@ -54,6 +55,10 @@ export async function PUT(
       { error: "La date de fin doit être après la date de début" },
       { status: 400 }
     );
+  }
+
+  if (!getApartmentBySlug(body.apartment_id)) {
+    return NextResponse.json({ error: "Appartement inconnu" }, { status: 400 });
   }
 
   // Vérifier les chevauchements (en excluant la période actuelle)

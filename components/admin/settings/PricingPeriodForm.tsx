@@ -2,8 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { PricingPeriod, PricingPeriodInput } from "@/lib/pricingPeriods";
+import { ApartmentSlug } from "@/config/apartments";
 
 interface PricingPeriodFormProps {
+  apartmentSlug: ApartmentSlug;
   initialData?: PricingPeriod | null;
   onSubmit: (data: PricingPeriodInput) => Promise<void>;
   onCancel: () => void;
@@ -13,6 +15,7 @@ interface PricingPeriodFormProps {
 }
 
 export default function PricingPeriodForm({
+  apartmentSlug,
   initialData,
   onSubmit,
   onCancel,
@@ -21,6 +24,7 @@ export default function PricingPeriodForm({
   existingPeriods,
 }: PricingPeriodFormProps) {
   const [formData, setFormData] = useState<PricingPeriodInput>({
+    apartment_id: apartmentSlug,
     name: "",
     start_date: "",
     end_date: "",
@@ -32,6 +36,7 @@ export default function PricingPeriodForm({
   useEffect(() => {
     if (initialData) {
       setFormData({
+        apartment_id: apartmentSlug,
         name: initialData.name,
         start_date: initialData.start_date,
         end_date: initialData.end_date,
@@ -39,7 +44,7 @@ export default function PricingPeriodForm({
         price_five: initialData.price_five,
       });
     }
-  }, [initialData]);
+  }, [initialData, apartmentSlug]);
 
   const checkOverlap = (): boolean => {
     const periodsToCheck = existingPeriods.filter(

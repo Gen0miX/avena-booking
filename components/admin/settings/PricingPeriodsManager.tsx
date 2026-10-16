@@ -2,16 +2,43 @@
 
 import { useState } from "react";
 import { usePricingPeriods } from "@/hooks/usePricingPeriods";
-import {
-  PricingPeriod,
-  PricingPeriodInput,
-  DEFAULT_RATES,
-} from "@/lib/pricingPeriods";
+import { PricingPeriod, PricingPeriodInput } from "@/lib/pricingPeriods";
 import PricingPeriodForm from "./PricingPeriodForm";
 import PricingPeriodsList from "./PricingPeriodsList";
 import { FaPlus, FaInfoCircle } from "react-icons/fa";
+import { ApartmentSlug, getApartmentBySlug } from "@/config/apartments";
 
-export default function PricingPeriodsManager() {
+const SEASON_LABELS: Record<string, { name: string; dates: string }> = {
+  basseSaison: { name: "Basse saison", dates: "Mai - Octobre" },
+  novembre: { name: "Novembre", dates: "1 - 30 Novembre" },
+  hiver: { name: "Hiver", dates: "1-17 Déc, 11 Jan - 30 Avr" },
+  fetes: { name: "Fêtes", dates: "18 Déc - 10 Jan" },
+};
+
+const SEASON_ORDER = ["basseSaison", "novembre", "hiver", "fetes"] as const;
+
+function formatTierLabel(
+  tiers: { minAdults: number; price: number }[],
+  index: number,
+  capacity: number
+): string {
+  const tier = tiers[index];
+  const next = tiers[index + 1];
+  const rangeEnd = next ? next.minAdults - 1 : capacity;
+  const peopleLabel =
+    rangeEnd === tier.minAdults
+      ? `${tier.minAdults} pers.`
+      : `${tier.minAdults}-${rangeEnd} pers.`;
+  return `${peopleLabel} : ${tier.price} CHF`;
+}
+
+interface PricingPeriodsManagerProps {
+  apartmentSlug: ApartmentSlug;
+}
+
+export default function PricingPeriodsManager({
+  apartmentSlug,
+}: PricingPeriodsManagerProps) {
   const {
     periods,
     isLoading,
@@ -19,7 +46,8 @@ export default function PricingPeriodsManager() {
     createPeriod,
     updatePeriod,
     deletePeriod,
-  } = usePricingPeriods();
+  } = usePricingPeriods(apartmentSlug);
+  const apartment = getApartmentBySlug(apartmentSlug)!;
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPeriod, setEditingPeriod] = useState<PricingPeriod | null>(
     null
@@ -106,43 +134,32 @@ export default function PricingPeriodsManager() {
           <p className="text-sm text-base-content/70 mb-4">
             Ces tarifs s'appliquent automatiquement selon la période de l'année.
           </p>
-          <div className="overflow-x-auto">
-            <table className="table table-sm">
-              <thead>
-                <tr>
-                  <th>Période</th>
-                  <th>Dates</th>
-                  <th className="text-right">≤4 adultes</th>
-                  <th className="text-right">5 adultes</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td className="font-medium">{DEFAULT_RATES.basseSaison.name}</td>
-                  <td className="text-base-content/70">Mai - Octobre</td>
-                  <td className="text-right">{DEFAULT_RATES.basseSaison.price_standard} CHF</td>
-                  <td className="text-right">{DEFAULT_RATES.basseSaison.price_five} CHF</td>
-                </tr>
-                <tr>
-                  <td className="font-medium">{DEFAULT_RATES.novembre.name}</td>
-                  <td className="text-base-content/70">1 - 30 Novembre</td>
-                  <td className="text-right">{DEFAULT_RATES.novembre.price_standard} CHF</td>
-                  <td className="text-right">{DEFAULT_RATES.novembre.price_five} CHF</td>
-                </tr>
-                <tr>
-                  <td className="font-medium">{DEFAULT_RATES.hiver.name}</td>
-                  <td className="text-base-content/70">1-17 Déc, 11 Jan - 30 Avr</td>
-                  <td className="text-right">{DEFAULT_RATES.hiver.price_standard} CHF</td>
-                  <td className="text-right">{DEFAULT_RATES.hiver.price_five} CHF</td>
-                </tr>
-                <tr>
-                  <td className="font-medium">{DEFAULT_RATES.fetes.name}</td>
-                  <td className="text-base-content/70">18 Déc - 10 Jan</td>
-                  <td className="text-right">{DEFAULT_RATES.fetes.price_standard} CHF</td>
-                  <td className="text-right">{DEFAULT_RATES.fetes.price_five} CHF</td>
-                </tr>
-              </tbody>
-            </table>
+          <div className="space-y-3">
+            {SEASON_ORDER.map((seasonKey) => {
+              const label = SEASON_LABELS[seasonKey];
+              const tiers = apartment.defaultRates[seasonKey];
+              return (
+                <div
+                  key={seasonKey}
+                  className="flex flex-col sm:flex-row sm:items-baseline gap-1 sm:gap-3 border-b border-base-300 pb-2 last:border-b-0 last:pb-0"
+                >
+                  <div className="sm:w-56 flex-shrink-0">
+                    <span className="font-medium">{label.name}</span>{" "}
+                    <span className="text-sm text-base-content/70">
+                      ({label.dates})
+                    </span>
+                  </div>
+                  <div className="text-sm text-base-content/80 flex flex-wrap gap-x-2">
+                    {tiers.map((tier, index) => (
+                      <span key={tier.minAdults}>
+                        {formatTierLabel(tiers, index, apartment.capacity)}
+                        {index < tiers.length - 1 && " /"}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
@@ -173,6 +190,7 @@ export default function PricingPeriodsManager() {
                 {editingPeriod ? "Modifier la période" : "Nouvelle période"}
               </h4>
               <PricingPeriodForm
+                apartmentSlug={apartmentSlug}
                 initialData={editingPeriod}
                 onSubmit={handleSubmit}
                 onCancel={handleCancel}

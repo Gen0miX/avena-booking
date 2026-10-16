@@ -13,6 +13,7 @@ import TravelersSelector from "@/components/TravelersSelector";
 import { Travelers } from "@/lib/bookings";
 import { getPriceResult, getNights } from "@/utils/priceCalculator";
 import { usePricingPeriods } from "@/hooks/usePricingPeriods";
+import { getApartmentBySlug } from "@/config/apartments";
 import {
   FaUser,
   FaCalendarAlt,
@@ -35,7 +36,8 @@ export default function BookingDetails({
 }: BookingDetailsProps) {
   const { booking, loading, updateBooking, refresh } = useBooking(bookingId);
   const { updateBookingStatus } = useBookings();
-  const { periods } = usePricingPeriods();
+  const apartment = booking ? getApartmentBySlug(booking.apartment_id) : undefined;
+  const { periods } = usePricingPeriods(booking?.apartment_id ?? null);
   const [isUpdating, setIsUpdating] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
@@ -167,21 +169,27 @@ export default function BookingDetails({
 
   // Auto-calcul du prix pendant l'édition
   useEffect(() => {
-    if (!isEditing) return;
+    if (!isEditing || !apartment) return;
     const start = selectedRange?.from
       ? new Date(selectedRange.from)
       : undefined;
     const end = selectedRange?.to ? new Date(selectedRange.to) : undefined;
     const adults = travelers.adults;
 
-    const { price, error } = getPriceResult({ start, end, adults, customPeriods: periods });
+    const { price, error } = getPriceResult({
+      start,
+      end,
+      adults,
+      customPeriods: periods,
+      apartment,
+    });
     setPriceError(error);
     setSuggestedPrice(price);
 
     if (autoPrice && price !== null) {
       setFormValues((prev) => ({ ...prev, price }));
     }
-  }, [isEditing, selectedRange, travelers.adults, autoPrice, periods]);
+  }, [isEditing, selectedRange, travelers.adults, autoPrice, periods, apartment]);
 
   const handleSave = async () => {
     if (!booking) return;
@@ -272,6 +280,9 @@ export default function BookingDetails({
                 <FaUser />
                 {booking.fname} {booking.lname}
               </h1>
+              <p className="text-sm text-base-content/70">
+                {apartment?.name ?? booking.apartment_id}
+              </p>
               <div className="flex items-center gap-3 mt-2">
                 <StatusBadge
                   status={booking.status.name}
@@ -414,6 +425,7 @@ export default function BookingDetails({
               {isEditing && (
                 <div>
                   <PopoverDatePicker
+                    apartmentId={apartment?.slug ?? ""}
                     selectedRange={selectedRange}
                     onSelect={handleRangeSelect}
                     excludeRange={{
@@ -467,6 +479,7 @@ export default function BookingDetails({
                       no_childs: val.children,
                     }));
                   }}
+                  maxCapacity={apartment?.capacity ?? 1}
                 />
               )}
               <div>

@@ -15,6 +15,9 @@ import BookingDetails from "@/components/admin/BookingDetails";
 import { BookingFilters } from "@/hooks/usebookings";
 import StatisticsDashboard from "@/components/admin/statistics/StatisticsDashboard";
 import SettingsPage from "@/components/admin/settings/SettingsPage";
+import { APARTMENT_LIST, ApartmentSlug } from "@/config/apartments";
+
+type SelectedApartment = ApartmentSlug | "all";
 
 const menuItems = [
   { key: "bookings", label: "Réservations", icon: <FaCalendarAlt /> },
@@ -41,6 +44,9 @@ export default function DashboardLayout({
   onLogout,
 }: DashboardLayoutProps) {
   const [active, setActive] = useState("bookings");
+  const [selectedApartment, setSelectedApartment] = useState<SelectedApartment>(
+    APARTMENT_LIST[0].slug
+  );
   const [selectedBookingId, setSelectedBookingId] = useState<number | null>(
     null
   );
@@ -98,6 +104,7 @@ export default function DashboardLayout({
             key="current"
             onBookingSelect={handleBookingSelect}
             statusGroup="current"
+            apartment={selectedApartment}
             initialFilters={bookingsFilters ?? undefined}
             onFiltersChange={setBookingsFilters as (f: BookingFilters) => void}
           />
@@ -108,6 +115,7 @@ export default function DashboardLayout({
             key="terminated"
             onBookingSelect={handleBookingSelect}
             statusGroup="terminated"
+            apartment={selectedApartment}
             initialFilters={terminatedFilters ?? undefined}
             onFiltersChange={
               setTerminatedFilters as (f: BookingFilters) => void
@@ -117,7 +125,13 @@ export default function DashboardLayout({
       case "statistics":
         return <StatisticsDashboard />;
       case "settings":
-        return <SettingsPage />;
+        return selectedApartment === "all" ? (
+          <div className="alert alert-info">
+            Sélectionnez un appartement spécifique pour gérer ses paramètres.
+          </div>
+        ) : (
+          <SettingsPage apartmentSlug={selectedApartment} />
+        );
       default:
         return null;
     }
@@ -158,11 +172,30 @@ export default function DashboardLayout({
             </button>
             <h1 className="text-2xl font-bold">{getPageTitle()}</h1>
           </div>
-          {onLogout && (
-            <button className="btn btn-circle btn-secondary" onClick={onLogout}>
-              <FaPowerOff />
-            </button>
-          )}
+          <div className="flex items-center gap-4">
+            <select
+              className="select select-sm select-primary"
+              value={selectedApartment}
+              onChange={(e) =>
+                setSelectedApartment(e.target.value as SelectedApartment)
+              }
+            >
+              {APARTMENT_LIST.map((apartment) => (
+                <option key={apartment.slug} value={apartment.slug}>
+                  {apartment.name}
+                </option>
+              ))}
+              <option value="all">Tous les appartements</option>
+            </select>
+            {onLogout && (
+              <button
+                className="btn btn-circle btn-secondary"
+                onClick={onLogout}
+              >
+                <FaPowerOff />
+              </button>
+            )}
+          </div>
         </header>
 
         {/* Contenu principal avec scroll */}

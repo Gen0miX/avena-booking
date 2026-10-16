@@ -13,6 +13,7 @@ import StatusFilter from "@/components/admin/StatusFilter";
 import SortFilter from "@/components/admin/SortFilter";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { ApartmentSlug, getApartmentBySlug } from "@/config/apartments";
 import {
   FaCheck,
   FaTimes,
@@ -31,6 +32,7 @@ type ModalAction = {
 interface BookingTableProps {
   onBookingSelect: (bookingId: number) => void;
   statusGroup?: "current" | "terminated";
+  apartment: ApartmentSlug | "all";
   initialFilters?: Partial<BookingFilters>;
   onFiltersChange?: (filters: BookingFilters) => void;
 }
@@ -38,6 +40,7 @@ interface BookingTableProps {
 export default function BookingTable({
   onBookingSelect,
   statusGroup = "current",
+  apartment,
   initialFilters,
   onFiltersChange,
 }: BookingTableProps) {
@@ -49,7 +52,8 @@ export default function BookingTable({
     updateBookingStatus,
     filters,
     updateFilters,
-  } = useBookings(initialFilters, statusGroup);
+  } = useBookings(apartment, initialFilters, statusGroup);
+  const showApartmentColumn = apartment === "all";
 
   useEffect(() => {
     if (onFiltersChange) onFiltersChange(filters);
@@ -128,6 +132,16 @@ export default function BookingTable({
             </div>
             <span className="font-bold text-primary">{booking.price} CHF</span>
           </div>
+
+          {showApartmentColumn && (
+            <div className="text-sm mb-2">
+              <span className="font-medium">Appartement:</span>{" "}
+              <span className="text-base-content/70">
+                {getApartmentBySlug(booking.apartment_id)?.name ??
+                  booking.apartment_id}
+              </span>
+            </div>
+          )}
 
           <div className="grid grid-cols-2 gap-3 text-sm">
             <div>
@@ -260,6 +274,9 @@ export default function BookingTable({
                   </div>
                 </th>
                 <th className="min-w-[100px]">Personnes</th>
+                {showApartmentColumn && (
+                  <th className="min-w-[100px]">Appartement</th>
+                )}
                 <th
                   className="min-w-[80px] cursor-pointer hover:bg-base-300"
                   onClick={() => handleSort("status")}
@@ -323,6 +340,12 @@ export default function BookingTable({
                         )}
                       </div>
                     </td>
+                    {showApartmentColumn && (
+                      <td>
+                        {getApartmentBySlug(booking.apartment_id)?.name ??
+                          booking.apartment_id}
+                      </td>
+                    )}
                     <td>
                       {processingIds.has(booking.id) ? (
                         <StatusBadge

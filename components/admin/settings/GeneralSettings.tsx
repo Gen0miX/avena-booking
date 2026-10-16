@@ -4,9 +4,17 @@ import { useState, useEffect } from "react";
 import { useSettings } from "@/hooks/useSettings";
 import { formatBlockedDate } from "@/lib/settings";
 import { FaCalendarTimes, FaSave, FaTimes, FaEdit } from "react-icons/fa";
+import { ApartmentSlug } from "@/config/apartments";
 
-export default function GeneralSettings() {
-  const { settings, isLoading, isError, updateSettings } = useSettings();
+interface GeneralSettingsProps {
+  apartmentSlug: ApartmentSlug;
+}
+
+export default function GeneralSettings({
+  apartmentSlug,
+}: GeneralSettingsProps) {
+  const { settings, isLoading, isError, updateSettings } =
+    useSettings(apartmentSlug);
   const [isEditing, setIsEditing] = useState(false);
   const [blockDate, setBlockDate] = useState<string>("");
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,6 +36,7 @@ export default function GeneralSettings() {
 
     try {
       await updateSettings({
+        apartment_id: apartmentSlug,
         booking_blocked_after: blockDate || null,
       });
       setIsEditing(false);
@@ -60,6 +69,7 @@ export default function GeneralSettings() {
 
     try {
       await updateSettings({
+        apartment_id: apartmentSlug,
         booking_blocked_after: null,
       });
       setBlockDate("");
