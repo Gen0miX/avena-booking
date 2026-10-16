@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import { useState } from "react";
+import { IoGridOutline, IoImageOutline } from "react-icons/io5";
 import { ApartmentConfig } from "@/config/apartments";
 
 export default function Gallery({
@@ -53,35 +54,48 @@ export default function Gallery({
 
   if (images.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[300px] md:h-[400px] pb-5 rounded-xl border-2 border-primary/40 bg-base-200 text-base-content/60">
-        Galerie à venir
+      <div className="flex flex-col gap-3 items-center justify-center h-[260px] md:h-[400px] rounded-2xl bg-base-300 text-cta">
+        <IoImageOutline size={40} aria-hidden="true" />
+        <span className="font-medium">Photos à venir</span>
       </div>
     );
   }
 
   return (
     <>
-      <div className="grid grid-cols-3 h-[300px] md:grid-cols-[2fr_2fr_1fr_1fr] md:grid-rows-2 gap-2 md:h-[400px] pb-5">
-        {images.map((img, idx) => (
-          <div
+      <div className="relative grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr] md:grid-rows-2 gap-2 h-[280px] sm:h-[360px] md:h-[clamp(360px,42vw,540px)] rounded-2xl overflow-hidden">
+        {images.slice(0, 5).map((img, idx) => (
+          <button
+            type="button"
             key={img.src}
-            className={`relative rounded-xl shadow-md overflow-hidden ${
-              idx === 0 ? "col-span-2 md:row-span-2" : ""
+            aria-label={`Agrandir la photo : ${img.alt}`}
+            onClick={() => handleClickImage(idx)}
+            className={`relative overflow-hidden cursor-zoom-in ${
+              idx === 0 ? "md:row-span-2" : "hidden md:block"
             }`}
           >
             {imageLoading.includes(img.src) && (
-              <div className="skeleton w-full h-full absolute inset-0 z-10" />
+              <div className="skeleton w-full h-full absolute inset-0 z-10 rounded-none" />
             )}
             <Image
               src={img.src}
               alt={img.alt}
               fill
-              className="object-cover cursor-pointer hover:scale-110 transition-all duration-300"
-              onClick={() => handleClickImage(idx)}
+              sizes={idx === 0 ? "(min-width: 768px) 50vw, 100vw" : "25vw"}
+              priority={idx === 0}
+              className="object-cover hover:scale-105 transition-transform duration-300"
               onLoad={() => handleImageLoad(img.src)}
             />
-          </div>
+          </button>
         ))}
+        <button
+          type="button"
+          onClick={() => handleClickImage(0)}
+          className="btn btn-sm h-11 absolute right-3 bottom-3 sm:right-4 sm:bottom-4 bg-surface text-base-content border-0 rounded-xl shadow-md gap-2"
+        >
+          <IoGridOutline size={16} aria-hidden="true" />
+          Voir les {images.length} photos
+        </button>
       </div>
 
       {/* Modal */}
@@ -112,12 +126,16 @@ export default function Gallery({
 
             {/* Flèches */}
             <button
+              type="button"
+              aria-label="Photo précédente"
               onClick={handlePrev}
               className="absolute left-2 top-1/2 -translate-y-1/2 text-white text-3xl font-bold bg-black/30 rounded-full w-12 h-12 flex items-center justify-center"
             >
               ‹
             </button>
             <button
+              type="button"
+              aria-label="Photo suivante"
               onClick={handleNext}
               className="absolute right-2 top-1/2 -translate-y-1/2 text-white text-3xl font-bold bg-black/30 rounded-full w-12 h-12 flex items-center justify-center"
             >

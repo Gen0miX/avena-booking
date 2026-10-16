@@ -7,7 +7,7 @@ export default function ConditionsGenerales() {
   return (
     <>
       <NavBar />
-      <main className="min-h-screen mt-12 bg-base py-12 px-4 sm:px-6 lg:px-20">
+      <main className="min-h-screen bg-base py-12 px-4 sm:px-6 lg:px-20">
         <div className="max-w-3xl mx-auto bg-base-200 border border-primary/40 shadow-md rounded-lg p-8">
           <h1 className="text-3xl font-bold mb-6 text-center">
             Conditions Générales de Réservation

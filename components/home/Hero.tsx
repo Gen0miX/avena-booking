@@ -1,9 +1,8 @@
-import ThemeToggleButton from "@/components/ThemeToggleButton";
-import Link from "next/link";
 import Image from "next/image";
 import heroImage from "@/public/images/hero.webp";
 import heroImage2 from "@/public/images/hero2.webp";
 import { useEffect, useState } from "react";
+import NavBar from "@/components/home/NavBar";
 
 export default function Hero() {
   const images = [heroImage, heroImage2];
@@ -17,19 +16,19 @@ export default function Hero() {
   }, []);
 
   return (
-    <section className="hero min-h-svh relative overflow-hidden">
+    <header className="relative min-h-[640px] h-[88svh] max-h-[900px] flex flex-col text-white overflow-hidden">
       {/* Background slideshow */}
       {images.map((img, i) => (
         <div
           key={i}
-          className={`fixed inset-0 w-full h-full -z-10 transition-opacity duration-1000 ease-in-out ${
+          className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
             i === index ? "opacity-100" : "opacity-0"
           }`}
           aria-hidden="true"
         >
           <Image
             src={img}
-            alt={`Hero image ${i + 1}`}
+            alt=""
             placeholder="blur"
             fill
             priority={i === 0}
@@ -43,45 +42,30 @@ export default function Hero() {
           />
         </div>
       ))}
-      <div className="absolute top-0 left-0 w-full">
-        <div className="flex justify-between items-center m-3 mt-5 sm:mx-5 sm:mt-7">
-          <div className="flex text-neutral-content gap-3 sm:gap-5">
-            <Link href="#appartements" className="link link-hover ">
-              Home
-            </Link>
-            <Link href="/booking" className="link link-hover">
-              Réservation
-            </Link>
-          </div>
-          <div className="flex gap-3 sm:gap-5">
-            <ThemeToggleButton className="btn btn-ghost btn-circle"></ThemeToggleButton>
-          </div>
-        </div>
+      {/* Filtre : voile bleu nuit léger + dégradés haut/bas + halo derrière le texte */}
+      <div aria-hidden="true" className="absolute inset-0 bg-[#141a26]/25" />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,20,32,0.6)_0%,rgba(15,20,32,0.1)_30%,rgba(15,20,32,0.3)_58%,rgba(15,20,32,0.88)_100%)]"
+      />
+      <div
+        aria-hidden="true"
+        className="absolute inset-0 bg-[radial-gradient(ellipse_75%_60%_at_15%_85%,rgba(15,20,32,0.55)_0%,rgba(15,20,32,0)_70%)]"
+      />
+      <NavBar overlay />
+
+      <div className="relative flex-1 flex flex-col justify-end w-full max-w-[1328px] mx-auto px-5 sm:px-8 lg:px-14 pb-28 sm:pb-36">
+        <p className="mb-3 sm:mb-4 text-xs sm:text-[13px] tracking-[0.22em] uppercase font-medium">
+          Saas-Fee · 1800 m · Valais
+        </p>
+        <h1 className="[text-shadow:0_2px_24px_rgba(10,14,24,0.35)] font-heading font-semibold text-[42px] leading-[1.05] sm:text-6xl lg:text-[88px] lg:leading-[1.02] max-w-[820px]">
+          Deux appartements au cœur du village des glaciers
+        </h1>
+        <p className="mt-4 sm:mt-6 text-base sm:text-[19px] leading-relaxed max-w-[560px] text-white/90">
+          Au centre de la station piétonne, proches des pistes et des sentiers.
+          Tout le confort pour 2 à 6 personnes, été comme hiver.
+        </p>
       </div>
-      <div className="hero-overlay"></div>
-      <div className="hero-content text-neutral-content text-center">
-        <div className="max-w-xl">
-          <h1 className="font-heading text-8xl font-bold">Avena</h1>
-          <p className="text-2xl font-semibold mb-5">
-            Appartement cosy au cœur de Saas-Fee
-          </p>
-          <p className="text-xl">
-            Proche des pistes & du centre, tout confort pour deux à cinq
-            personnes.
-          </p>
-          <p className="italic textl-xl">
-            Deux chambres, salon chaleureux et cuisine équipée.
-          </p>
-          <div>
-            <Link
-              href="#appartements"
-              className="btn btn-secondary font-p text-lg mt-5"
-            >
-              Réserver
-            </Link>
-          </div>
-        </div>
-      </div>
-    </section>
+    </header>
   );
 }

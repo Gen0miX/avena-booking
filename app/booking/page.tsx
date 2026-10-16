@@ -1,20 +1,15 @@
 "use client";
 
 import {
-  IoPersonCircleOutline,
-  IoMailOutline,
-  IoArrowForwardOutline,
-  IoLocationOutline,
-  IoCalendarOutline,
-  IoBusinessOutline,
+  IoArrowBackOutline,
+  IoCheckmarkCircle,
+  IoImageOutline,
 } from "react-icons/io5";
-import { BsMailboxFlag } from "react-icons/bs";
+import Image from "next/image";
 import { useSearchParams, useRouter } from "next/navigation";
-import { HiOutlinePhone } from "react-icons/hi";
 import { useBooking } from "@/context/BookingContext";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useEffect, useState, useRef, Suspense } from "react";
-import CustomDayPicker from "@/components/CustomDayPicker";
 import TravelersSelector from "@/components/TravelersSelector";
 import NavBar from "@/components/home/NavBar";
 import Footer from "@/components/home/Footer";
@@ -433,405 +428,408 @@ function BookingForm() {
     return null; // one render tick while the mount effect above resolves the initial apartment
   }
 
+  const chf = (value: number) =>
+    value.toLocaleString("fr-CH", { style: "currency", currency: "CHF" });
+  const formatDay = (d: Date) =>
+    d.toLocaleDateString("fr-CH", {
+      weekday: "short",
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    });
+  const fieldProps = (name: keyof FormData) => ({
+    value: formData[name],
+    onChange: (e: React.ChangeEvent<HTMLInputElement>) =>
+      handleInputChange(name, e.target.value),
+    error: showValidation ? formErrors[name] : undefined,
+  });
+
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-base-100 text-base-content">
       <NavBar />
-      <form onSubmit={handleSubmit} className="flex-1">
-        <section className="flex flex-col items-center bg-base-200 lg:max-w-6xl mx-2 md:mx-5 lg:mx-10 xl:mx-auto mt-24 mb-12 rounded-box border border-primary/40">
-          <h1 className="font-heading text-4xl font-semibold mt-5">
-            Réservation
-          </h1>
+      <main className="flex-1 w-full max-w-[1328px] mx-auto px-4 sm:px-8 lg:px-14 pt-6 sm:pt-10 pb-16 sm:pb-24">
+        <Link
+          href={`/appartements/${apartment.slug}`}
+          className="inline-flex items-center gap-1.5 text-sm text-base-content/70 py-2.5 hover:text-base-content"
+        >
+          <IoArrowBackOutline size={16} aria-hidden="true" />
+          Retour à l&apos;appartement
+        </Link>
+        <h1 className="font-heading font-semibold text-[34px] sm:text-5xl lg:text-[56px] leading-[1.08] mt-2 mb-2">
+          Demande de réservation
+        </h1>
+        <p className="text-base sm:text-[17px] text-base-content/75 mb-8 sm:mb-10">
+          Vous recevrez une confirmation et une facture QR par e-mail.
+        </p>
 
-          {submitMessage && (
-            <div
-              className={`alert ${
-                submitMessage.includes("succès")
-                  ? "alert-success"
-                  : "alert-error"
-              } mt-4 mx-4`}
-            >
-              <span>{submitMessage}</span>
-            </div>
-          )}
+        {submitMessage && (
+          <div
+            role="alert"
+            className={`alert ${
+              submitMessage.includes("succès") ? "alert-success" : "alert-error"
+            } mb-6`}
+          >
+            <span>{submitMessage}</span>
+          </div>
+        )}
 
-          <div className="flex flex-col sm:flex-row gap-4 pb-5 pt-5 sm:pt-5 sm:pb-5 px-2">
-            <fieldset className="fieldset bg-base-300 border-primary/40 rounded-box border p-2 sm:p-4 shadow-lg">
-              <legend className="fieldset-legend text-xl font-medium">
-                Données personnelles
-              </legend>
-
-              {/* Champs prénom / nom */}
-              <div className="flex flex-col lg:flex-row gap-2">
-                <label
-                  className={`input validator input-primary lg:flex-1 ${
-                    showValidation && formErrors.prenom ? "input-error" : ""
-                  }`}
-                >
-                  <IoPersonCircleOutline className="text-xl text-base-content/70" />
-                  <input
-                    type="text"
-                    placeholder="Prénom"
-                    value={formData.prenom}
-                    onChange={(e) =>
-                      handleInputChange("prenom", e.target.value)
-                    }
-                    required
-                  />
-                </label>
-                <label
-                  className={`input validator input-primary lg:flex-1 ${
-                    showValidation && formErrors.nom ? "input-error" : ""
-                  }`}
-                >
-                  <IoPersonCircleOutline className="text-xl validator text-base-content/70" />
-                  <input
-                    type="text"
-                    placeholder="Nom"
-                    value={formData.nom}
-                    onChange={(e) => handleInputChange("nom", e.target.value)}
-                    required
-                  />
-                </label>
-              </div>
-
-              {/* Erreurs nom / prénom */}
-              <div className="flex flex-col lg:flex-row gap-2">
-                {showValidation && formErrors.nom && (
-                  <div className="text-error text-sm lg:flex-1">
-                    {formErrors.nom}
-                  </div>
-                )}
-                {showValidation && formErrors.prenom && (
-                  <div className="text-error text-sm lg:flex-1">
-                    {formErrors.prenom}
-                  </div>
-                )}
-              </div>
-
-              {/* Champs email / téléphone */}
-              <div className="flex flex-col lg:flex-row gap-2">
-                <label
-                  className={`input input-primary validator lg:flex-1 ${
-                    showValidation && formErrors.email ? "input-error" : ""
-                  }`}
-                >
-                  <IoMailOutline className="text-xl text-base-content/70" />
-                  <input
-                    type="email"
-                    placeholder="Email"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    required
-                  />
-                </label>
-
-                <label
-                  className={`input validator input-primary lg:flex-1 ${
-                    showValidation && formErrors.telephone ? "input-error" : ""
-                  }`}
-                >
-                  <HiOutlinePhone className="text-xl text-base-content/70" />
-                  <input
-                    type="tel"
-                    placeholder="Téléphone"
-                    value={formData.telephone}
-                    onChange={(e) =>
-                      handleInputChange("telephone", e.target.value)
-                    }
-                    pattern="[0-9+\-\s\(\)]+" // accepte seulement chiffres et symboles
-                    className="validator tabular-nums"
-                    required
-                  />
-                </label>
-              </div>
-
-              {/* Erreurs email / téléphone */}
-              <div className="flex flex-col lg:flex-row gap-2">
-                {showValidation && formErrors.email && (
-                  <div className="text-error text-sm lg:flex-1">
-                    {formErrors.email}
-                  </div>
-                )}
-                {showValidation && formErrors.telephone && (
-                  <div className="text-error text-sm lg:flex-1">
-                    {formErrors.telephone}
-                  </div>
-                )}
-              </div>
-
-              {/* Champ adresse */}
-              <label
-                className={`input validator input-primary w-full ${
-                  showValidation && formErrors.adresse ? "input-error" : ""
-                }`}
+        <form
+          onSubmit={handleSubmit}
+          className="flex flex-col lg:flex-row gap-5 lg:gap-10 items-start"
+        >
+          <div className="flex-1 min-w-0 w-full flex flex-col gap-5">
+            {/* 1. Séjour */}
+            <fieldset className={card}>
+              <Step n={1}>Votre séjour</Step>
+              <div
+                role="radiogroup"
+                aria-label="Appartement"
+                className="grid grid-cols-1 sm:grid-cols-2 gap-3"
               >
-                <IoLocationOutline className="text-xl text-base-content/70" />
-                <input
-                  type="text"
-                  placeholder="Adresse"
-                  value={formData.adresse}
-                  onChange={(e) => handleInputChange("adresse", e.target.value)}
-                  required
-                />
-              </label>
-              {showValidation && formErrors.adresse && (
-                <div className="text-error text-sm">{formErrors.adresse}</div>
-              )}
-
-              {/* Champs code postal et localité */}
-              <div className="flex flex-col lg:flex-row gap-2">
-                <label
-                  className={`input validator input-primary lg:flex-1 ${
-                    showValidation && formErrors.codePostal ? "input-error" : ""
-                  }`}
-                >
-                  <BsMailboxFlag className="text-xl text-base-content/70" />
-                  <input
-                    type="text"
-                    placeholder="Code postal"
-                    value={formData.codePostal}
-                    onChange={(e) =>
-                      handleInputChange("codePostal", e.target.value)
-                    }
-                    className="tabular-nums"
-                    required
-                  />
-                </label>
-                <label
-                  className={`input validator input-primary lg:flex-[2] ${
-                    showValidation && formErrors.localite ? "input-error" : ""
-                  }`}
-                >
-                  <IoBusinessOutline className="text-xl text-base-content/70" />
-                  <input
-                    type="text"
-                    placeholder="Ville"
-                    value={formData.localite}
-                    onChange={(e) =>
-                      handleInputChange("localite", e.target.value)
-                    }
-                    required
-                  />
-                </label>
+                {APARTMENT_LIST.map((a) => {
+                  const selected = a.slug === apartment.slug;
+                  return (
+                    <label
+                      key={a.slug}
+                      className={`flex items-center gap-3.5 p-3 rounded-2xl border-2 cursor-pointer transition-colors has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 ${
+                        selected
+                          ? "border-cta bg-cta/10"
+                          : "border-base-300 hover:border-base-content/30"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="appartement"
+                        value={a.slug}
+                        checked={selected}
+                        onChange={() => handleApartmentChange(a.slug)}
+                        className="sr-only"
+                      />
+                      <span className="relative size-16 sm:size-[72px] rounded-xl overflow-hidden bg-base-300 shrink-0 flex items-center justify-center text-cta">
+                        {a.gallery[0] ? (
+                          <Image
+                            src={a.gallery[0].src}
+                            alt=""
+                            fill
+                            sizes="72px"
+                            className="object-cover"
+                          />
+                        ) : (
+                          <IoImageOutline size={24} aria-hidden="true" />
+                        )}
+                      </span>
+                      <span className="flex flex-col flex-1">
+                        <span className="font-semibold">{a.name}</span>
+                        <span className="text-sm text-base-content/75">
+                          Jusqu&apos;à {a.capacity} personnes
+                        </span>
+                      </span>
+                      {selected && (
+                        <IoCheckmarkCircle
+                          size={24}
+                          className="text-cta shrink-0"
+                          aria-hidden="true"
+                        />
+                      )}
+                    </label>
+                  );
+                })}
               </div>
-              <div className="flex flex-col lg:flex-row gap-2">
-                {showValidation && formErrors.codePostal && (
-                  <div className="text-error text-sm lg:flex-1">
-                    {formErrors.codePostal}
-                  </div>
-                )}
-                {showValidation && formErrors.localite && (
-                  <div className="text-error text-sm lg:flex-[2]">
-                    {formErrors.localite}
-                  </div>
-                )}
-              </div>
-
-              {/* Champ date de naissance */}
-              <label className="label">
-                <span className="label-text">Date de naissance</span>
-              </label>
-
-              <label
-                className={`input validator input-primary w-full ${
-                  showValidation && formErrors.dateNaissance
-                    ? "input-error"
-                    : ""
-                }`}
-              >
-                <IoCalendarOutline className="text-xl text-base-content/70" />
-                <input
-                  type="date"
-                  placeholder="Date de naissance"
-                  value={formData.dateNaissance}
-                  onChange={(e) =>
-                    handleInputChange("dateNaissance", e.target.value)
-                  }
-                  className="w-full"
-                  required
-                />
-              </label>
-              {showValidation && formErrors.dateNaissance && (
-                <div className="text-error text-sm">
-                  {formErrors.dateNaissance}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5 min-w-0">
+                  <span className="text-sm font-medium">Dates</span>
+                  <PopoverDatePicker
+                    apartmentId={apartment.slug}
+                    selectedRange={range}
+                    onSelect={setRange}
+                    className="w-full h-12 rounded-xl"
+                  />
                 </div>
-              )}
-
-              <div className="divider divider-start text-lg font-medium">
-                Appartement
+                <div className="flex flex-col gap-1.5 min-w-0">
+                  <span className="text-sm font-medium">Voyageurs</span>
+                  <TravelersSelector
+                    travelers={travelers}
+                    setTravelers={setTravelers}
+                    maxCapacity={apartment.capacity}
+                  />
+                </div>
               </div>
-              <select
-                className="select select-primary w-full"
-                value={apartment.slug}
-                onChange={(e) => handleApartmentChange(e.target.value)}
-              >
-                {APARTMENT_LIST.map((a) => (
-                  <option key={a.slug} value={a.slug}>
-                    {a.name} — jusqu'à {a.capacity} personnes
-                  </option>
-                ))}
-              </select>
+            </fieldset>
 
-              <div className="divider divider-start text-lg font-medium">
-                Données réservations
+            {/* 2. Coordonnées */}
+            <fieldset className={card}>
+              <Step n={2}>Vos coordonnées</Step>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <TextField
+                  label="Prénom"
+                  autoComplete="given-name"
+                  {...fieldProps("prenom")}
+                />
+                <TextField
+                  label="Nom"
+                  autoComplete="family-name"
+                  {...fieldProps("nom")}
+                />
+                <TextField
+                  label="E-mail"
+                  type="email"
+                  autoComplete="email"
+                  {...fieldProps("email")}
+                />
+                <TextField
+                  label="Téléphone"
+                  type="tel"
+                  autoComplete="tel"
+                  pattern="[0-9+\-\s\(\)]+"
+                  inputClassName="tabular-nums"
+                  {...fieldProps("telephone")}
+                />
               </div>
-
-              <TravelersSelector
-                travelers={travelers}
-                setTravelers={setTravelers}
-                maxCapacity={apartment.capacity}
+              <TextField
+                label="Adresse"
+                autoComplete="street-address"
+                {...fieldProps("adresse")}
               />
+              <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,2fr)] sm:grid-cols-[minmax(0,1fr)_minmax(0,2fr)_minmax(0,1.5fr)] gap-4">
+                <TextField
+                  label="NPA"
+                  autoComplete="postal-code"
+                  inputMode="numeric"
+                  inputClassName="tabular-nums"
+                  {...fieldProps("codePostal")}
+                />
+                <TextField
+                  label="Localité"
+                  autoComplete="address-level2"
+                  {...fieldProps("localite")}
+                />
+                <TextField
+                  label="Date de naissance"
+                  type="date"
+                  autoComplete="bday"
+                  className="col-span-2 sm:col-span-1"
+                  {...fieldProps("dateNaissance")}
+                />
+              </div>
+            </fieldset>
 
-              <PopoverDatePicker
-                apartmentId={apartment.slug}
-                selectedRange={range}
-                onSelect={setRange}
-                className="w-full"
-              />
-
-              {/* Case conditions */}
-              <label className="label cursor-pointer mt-4">
+            {/* 3. Confirmation */}
+            <fieldset className={card}>
+              <Step n={3}>Confirmation</Step>
+              <label className="flex items-start gap-3 text-[15px] leading-normal cursor-pointer">
                 <input
                   type="checkbox"
-                  className="checkbox checkbox-primary"
+                  className="checkbox checkbox-sm mt-0.5 checked:bg-cta checked:border-cta checked:text-cta-content"
                   checked={conditionsAccepted}
                   onChange={(e) => setConditionsAccepted(e.target.checked)}
                   required
                 />
-                <span className="label-text">
-                  J’ai lu et j’accepte les{" "}
+                <span>
+                  J&apos;ai lu et j&apos;accepte les{" "}
                   <Link
                     href="/conditions-generales"
-                    className="link link-primary"
+                    className="link"
                     target="_blank"
                   >
-                    conditions d’utilisation
+                    conditions générales
                   </Link>
+                  .
                 </span>
               </label>
             </fieldset>
-
-            {/* Bloc prix */}
-            <fieldset className="fieldset bg-primary/40 border-primary/40 rounded-box border p-2 sm:p-4 shadow-lg w-full sm:w-52">
-              <legend className="fieldset-legend text-xl font-medium">
-                Prix
-              </legend>
-
-              {priceError ? (
-                <div className="alert alert-error">
-                  <span className="text-sm">{priceError}</span>
-                </div>
-              ) : range?.from && range?.to && travelers.adults > 0 ? (
-                <>
-                  <p>
-                    <span className="font-semibold">Tarif :</span>{" "}
-                    {getCategory(travelers.adults, apartment.capacity)}
-                  </p>
-                  <p>
-                    <span className="font-semibold">Nuits :</span>{" "}
-                    {getNights(range.from, range.to)}
-                  </p>
-                  <div className="divider my-0"></div>
-                  {discountedPrice && promoPercent ? (
-                    <div className="text-center">
-                      <p className="text-lg font-medium">
-                        <span className="font-semibold">Prix total</span>
-                      </p>
-                      <p className="text-sm line-through opacity-70">
-                        {price?.toLocaleString("fr-CH", {
-                          style: "currency",
-                          currency: "CHF",
-                        })}
-                      </p>
-                      <p className="text-xl font-semibold">
-                        {discountedPrice.toLocaleString("fr-CH", {
-                          style: "currency",
-                          currency: "CHF",
-                        })}
-                      </p>
-                      <p className="text-xs text-base-content/70 mt-1">
-                        -{promoPercent}% appliqué
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="text-center text-lg font-medium">
-                      <span className="font-semibold">
-                        Prix total <br />
-                      </span>
-                      {price?.toLocaleString("fr-CH", {
-                        style: "currency",
-                        currency: "CHF",
-                      })}
-                    </p>
-                  )}
-                  <p className="text-xs text-center mt-2 text-base-content/70">
-                    Ménage et taxes inclus
-                  </p>
-                  <div className="mt-3 flex gap-2">
-                    <input
-                      type="text"
-                      value={promoCode}
-                      onChange={(e) => setPromoCode(e.target.value)}
-                      placeholder="Code promo"
-                      className="input input-sm input-primary input-bordered flex-1"
-                    />
-                    <button
-                      type="button"
-                      className={`btn btn-sm btn-primary btn-circle ${promoChecking ? "loading" : ""}`}
-                      onClick={handleCheckPromo}
-                      disabled={promoChecking || !price}
-                      aria-label="Vérifier le code promo"
-                    >
-                      {promoChecking ? (
-                        <span className="loading loading-spinner loading-sm"></span>
-                      ) : (
-                        <IoArrowForwardOutline className="text-lg" />
-                      )}
-                    </button>
-                  </div>
-                  {promoError && (
-                    <p className="text-error text-xs mt-1">{promoError}</p>
-                  )}
-                </>
-              ) : (
-                <p className="text-base-content/50">
-                  Sélectionnez une période et le nombre de voyageurs.
-                </p>
-              )}
-            </fieldset>
           </div>
 
-          <button
-            type="submit"
-            className={`btn btn-primary mb-5 ${isSubmitting ? "loading" : ""}`}
-            disabled={isSubmitting}
+          {/* Récapitulatif */}
+          <aside
+            aria-label="Récapitulatif"
+            className="w-full lg:w-[400px] lg:shrink-0 lg:sticky lg:top-6 bg-surface rounded-2xl shadow-[0_16px_40px_rgba(43,50,64,0.12)] overflow-hidden"
           >
-            {isSubmitting ? "Envoi en cours..." : "Réserver"}
-          </button>
-        </section>
-        {isClient && process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
-          <ReCAPTCHA
-            sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
-            size="invisible"
-            ref={recaptchaRef}
-          />
-        )}
-      </form>
+            {apartment.gallery[0] && (
+              <div className="relative h-40 hidden lg:block">
+                <Image
+                  src={apartment.gallery[0].src}
+                  alt=""
+                  fill
+                  sizes="400px"
+                  className="object-cover"
+                />
+              </div>
+            )}
+            <div className="p-5 sm:p-7 flex flex-col gap-4">
+              <div>
+                <h2 className="font-heading text-[26px] font-semibold">
+                  {apartment.name}
+                </h2>
+                <p className="text-sm text-base-content/70">
+                  Saas-Fee · Jusqu&apos;à {apartment.capacity} personnes
+                </p>
+              </div>
 
-      <div
-        popover="auto"
-        id="rdp-popover"
-        className="dropdown"
-        style={{ positionAnchor: "--rdp" } as React.CSSProperties}
-      >
-        <CustomDayPicker
-          mode="selectable"
-          apartmentId={apartment.slug}
-          selectedRange={range}
-          onSelect={setRange}
-        />
-      </div>
+              {priceError && (
+                <div role="alert" className="alert alert-error py-2.5">
+                  <span className="text-sm">{priceError}</span>
+                </div>
+              )}
+
+              {range?.from && range?.to && travelers.adults > 0 && !priceError ? (
+                <>
+                  <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2.5 text-[15px]">
+                    <dt className="text-base-content/70">Arrivée</dt>
+                    <dd className="text-right">{formatDay(range.from)}</dd>
+                    <dt className="text-base-content/70">Départ</dt>
+                    <dd className="text-right">{formatDay(range.to)}</dd>
+                    <dt className="text-base-content/70">Voyageurs</dt>
+                    <dd className="text-right">
+                      {travelers.adults} adulte{travelers.adults > 1 ? "s" : ""}
+                      {travelers.children > 0 &&
+                        `, ${travelers.children} enfant${travelers.children > 1 ? "s" : ""}`}
+                    </dd>
+                    <dt className="text-base-content/70">Tarif</dt>
+                    <dd className="text-right">
+                      {getCategory(travelers.adults, apartment.capacity)} ·{" "}
+                      {getNights(range.from, range.to)} nuits
+                    </dd>
+                  </dl>
+
+                  <div>
+                    <div className="flex gap-2">
+                      <label className="flex-1 min-w-0">
+                        <span className="sr-only">Code promo</span>
+                        <input
+                          type="text"
+                          value={promoCode}
+                          onChange={(e) => setPromoCode(e.target.value)}
+                          placeholder="Code promo"
+                          className="input w-full h-11 rounded-xl"
+                        />
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleCheckPromo}
+                        disabled={promoChecking || !price}
+                        className="btn btn-outline h-11 rounded-xl border-base-300"
+                      >
+                        {promoChecking ? (
+                          <span className="loading loading-spinner loading-sm" />
+                        ) : (
+                          "Appliquer"
+                        )}
+                      </button>
+                    </div>
+                    {promoError && (
+                      <p className="text-error text-xs mt-1.5">{promoError}</p>
+                    )}
+                  </div>
+
+                  <div className="border-t border-base-200 pt-4">
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-[17px] font-semibold">Total</span>
+                      <span className="text-right">
+                        {discountedPrice && promoPercent ? (
+                          <>
+                            <span className="block text-sm line-through text-base-content/60">
+                              {price !== null && chf(price)}
+                            </span>
+                            <span className="font-heading text-[30px] font-semibold">
+                              {chf(discountedPrice)}
+                            </span>
+                          </>
+                        ) : (
+                          <span className="font-heading text-[30px] font-semibold">
+                            {price !== null && chf(price)}
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                    <p className="text-right text-[13px] text-base-content/65">
+                      {discountedPrice && promoPercent
+                        ? `-${promoPercent}% appliqué · `
+                        : ""}
+                      Ménage et taxes inclus
+                    </p>
+                  </div>
+                </>
+              ) : (
+                !priceError && (
+                  <p className="text-[15px] text-base-content/65">
+                    Sélectionnez une période et le nombre de voyageurs pour
+                    voir le prix.
+                  </p>
+                )
+              )}
+
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="btn h-auto min-h-12 rounded-xl border-0 bg-cta text-cta-content hover:bg-cta/90 text-base"
+              >
+                {isSubmitting ? (
+                  <>
+                    <span className="loading loading-spinner loading-sm" />
+                    Envoi en cours...
+                  </>
+                ) : (
+                  "Envoyer la demande"
+                )}
+              </button>
+            </div>
+          </aside>
+
+          {isClient && process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY && (
+            <ReCAPTCHA
+              sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY!}
+              size="invisible"
+              ref={recaptchaRef}
+            />
+          )}
+        </form>
+      </main>
       <Footer />
     </div>
+  );
+}
+
+const card = "bg-surface rounded-2xl p-5 sm:p-7 flex flex-col gap-5 min-w-0";
+
+function Step({ n, children }: { n: number; children: React.ReactNode }) {
+  return (
+    <legend className="float-left w-full flex items-center gap-3 text-lg sm:text-xl font-semibold">
+      <span
+        aria-hidden="true"
+        className="size-8 rounded-full bg-base-content text-base-100 text-[15px] flex items-center justify-center"
+      >
+        {n}
+      </span>
+      {children}
+    </legend>
+  );
+}
+
+function TextField({
+  label,
+  error,
+  className = "",
+  inputClassName = "",
+  ...inputProps
+}: {
+  label: string;
+  error?: string;
+  className?: string;
+  inputClassName?: string;
+} & React.InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <label className={`flex flex-col gap-1.5 min-w-0 ${className}`}>
+      <span className="text-sm font-medium">{label}</span>
+      <input
+        type="text"
+        required
+        aria-invalid={error ? true : undefined}
+        {...inputProps}
+        className={`input w-full h-12 rounded-xl ${
+          error ? "input-error" : ""
+        } ${inputClassName}`}
+      />
+      {error && <span className="text-error text-sm">{error}</span>}
+    </label>
   );
 }

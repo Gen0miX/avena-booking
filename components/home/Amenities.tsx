@@ -17,15 +17,15 @@ const iconByLabel: Record<string, React.ReactNode> = {
   "Wi-Fi": <PiWifiHigh />,
   "Écran": <PiTelevisionSimple />,
   "Four": <PiOven />,
-  "Frigo": <RiFridgeLine className="text-base-content/80" />,
+  "Frigo": <RiFridgeLine />,
   "Plaques": <PiCookingPot />,
   "Machine Nespresso": <PiCoffee />,
   "Lave-vaisselle": <PiForkKnife />,
   "Salle de bain (douche)": <PiShower />,
-  "Rangements": <BiCabinet className="text-base-content/80" />,
+  "Rangements": <BiCabinet />,
   "Sèche-cheveux": <PiHairDryer />,
-  "Balcon": <MdBalcony className="text-base-content/80" />,
-  "Non-fumeur": <TbSmokingNo className="text-base-content/80" />,
+  "Balcon": <MdBalcony />,
+  "Non-fumeur": <TbSmokingNo />,
 };
 
 function getIconForAmenity(label: string): React.ReactNode {
@@ -34,9 +34,11 @@ function getIconForAmenity(label: string): React.ReactNode {
 
 function Amenitie({ icon, name }: AmenitieProps) {
   return (
-    <div className="flex items-center gap-3 px-2">
-      <span className="text-2xl">{icon}</span>
-      <span className="text-sm text-base-content/70">{name}</span>
+    <div className="flex items-center gap-3 py-3.5 border-b border-base-300">
+      <span className="text-xl text-cta" aria-hidden="true">
+        {icon}
+      </span>
+      <span className="text-[15px]">{name}</span>
     </div>
   );
 }
@@ -50,14 +52,14 @@ export default function Amenities({
 
   if (amenitiesList.length === 0) {
     return (
-      <div className="mb-10 max-w-xl text-base-content/60">
+      <div className="text-base-content/60">
         Équipements à venir
       </div>
     );
   }
 
   return (
-    <div className="grid grid-cols-2 gap-4 mb-10 max-w-xl">
+    <div className="grid grid-cols-1 min-[420px]:grid-cols-2 sm:grid-cols-3 gap-x-6">
       {amenitiesList.map((name, index) => (
         <Amenitie key={index} icon={getIconForAmenity(name)} name={name} />
       ))}

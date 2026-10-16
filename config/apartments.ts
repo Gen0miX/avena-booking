@@ -162,6 +162,34 @@ export function isApartmentSlug(slug: string): slug is ApartmentSlug {
   return slug in APARTMENTS;
 }
 
+/** Lowest nightly rate across every season and tier ("Dès CHF …"). */
+export function getStartingPrice(apartment: ApartmentConfig): number {
+  return Math.min(
+    ...Object.values(apartment.defaultRates).flatMap((t) => t.map((r) => r.price)),
+  );
+}
+
+export interface RateTableColumn {
+  label: string;
+  minAdults: number;
+}
+
+/**
+ * Columns for the public rate table: one per distinct tier threshold across
+ * all seasons, e.g. [1, 3, 5] with capacity 5 → "1–2 adultes", "3–4 adultes",
+ * "5 adultes". Prices per cell come from getTierPrice(season, minAdults).
+ */
+export function getRateTableColumns(apartment: ApartmentConfig): RateTableColumn[] {
+  const thresholds = Array.from(
+    new Set(Object.values(apartment.defaultRates).flatMap((t) => t.map((r) => r.minAdults))),
+  ).sort((a, b) => a - b);
+  return thresholds.map((min, i) => {
+    const max = i < thresholds.length - 1 ? thresholds[i + 1] - 1 : apartment.capacity;
+    const range = max > min ? `${min}–${max}` : `${min}`;
+    return { minAdults: min, label: `${range} adulte${max > 1 ? "s" : ""}` };
+  });
+}
+
 /** Tier lookup helper shared by priceCalculator: picks the highest tier whose minAdults <= adults. */
 export function getTierPrice(tiersList: RateTier[], adults: number): number {
   let price = tiersList[0].price;

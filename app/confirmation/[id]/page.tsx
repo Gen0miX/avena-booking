@@ -34,7 +34,7 @@ export default function ConfirmationPage() {
   return (
     <>
       <NavBar />
-      <main className="max-w-5xl lg:mx-auto mx-1 mt-28 mb-14 p-6 bg-base-200 rounded-box border border-primary/40 shadow-md">
+      <main className="max-w-5xl lg:mx-auto mx-1 mt-10 mb-14 p-6 bg-base-200 rounded-box border border-primary/40 shadow-md">
         <h1 className="text-3xl font-bold mb-6 text-center">
           Confirmation de votre réservation
         </h1>
