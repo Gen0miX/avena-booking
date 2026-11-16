@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import TravelersSelector from "@/components/TravelersSelector";
+import TravelersNotice from "@/components/TravelersNotice";
+import { useCapacityGuard } from "@/hooks/useCapacityGuard";
 import { getPriceResult } from "@/utils/priceCalculator";
 import { useBooking } from "@/context/BookingContext";
 import { usePricingPeriods } from "@/hooks/usePricingPeriods";
@@ -19,6 +21,7 @@ export default function Disponibility({
   const { range, setRange, travelers, setTravelers, setApartmentSlug } =
     useBooking();
   const { periods } = usePricingPeriods(apartment.slug);
+  useCapacityGuard(apartment);
   const [price, setPrice] = useState<number | null>(null);
   const [dateError, setDateError] = useState<string | null>(null);
 
@@ -77,6 +80,7 @@ export default function Disponibility({
           setTravelers={setTravelers}
           maxCapacity={apartment.capacity}
         />
+        <TravelersNotice />
       </div>
       <div className="flex justify-between items-baseline text-[15px] py-1">
         <span className="text-base-content/75">Prix estimé</span>

@@ -11,6 +11,8 @@ import { useBooking } from "@/context/BookingContext";
 import ReCAPTCHA from "react-google-recaptcha";
 import { useEffect, useState, useRef, Suspense } from "react";
 import TravelersSelector from "@/components/TravelersSelector";
+import TravelersNotice from "@/components/TravelersNotice";
+import { useCapacityGuard } from "@/hooks/useCapacityGuard";
 import NavBar from "@/components/home/NavBar";
 import Footer from "@/components/home/Footer";
 import PopoverDatePicker from "@/components/PopoverDatePicker";
@@ -87,6 +89,7 @@ function BookingForm() {
   }, [searchParams]);
 
   const apartment = apartmentSlug ? getApartmentBySlug(apartmentSlug) : undefined;
+  useCapacityGuard(apartment);
 
   const handleApartmentChange = (slug: string) => {
     if (!isApartmentSlug(slug)) return;
@@ -555,6 +558,7 @@ function BookingForm() {
                   />
                 </div>
               </div>
+              <TravelersNotice />
             </fieldset>
 
             {/* 2. Coordonnées */}

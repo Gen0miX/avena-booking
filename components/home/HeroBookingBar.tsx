@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { IoArrowForwardOutline } from "react-icons/io5";
 import PopoverDatePicker from "@/components/PopoverDatePicker";
 import TravelersSelector from "@/components/TravelersSelector";
+import TravelersNotice from "@/components/TravelersNotice";
+import { useCapacityGuard } from "@/hooks/useCapacityGuard";
 import { useBooking } from "@/context/BookingContext";
 import {
   APARTMENT_LIST,
@@ -29,6 +31,7 @@ export default function HeroBookingBar() {
 
   const apartment =
     (apartmentSlug && getApartmentBySlug(apartmentSlug)) || APARTMENT_LIST[0];
+  useCapacityGuard(apartment);
 
   const handleApartmentChange = (slug: string) => {
     if (!isApartmentSlug(slug)) return;
@@ -95,6 +98,7 @@ export default function HeroBookingBar() {
             <IoArrowForwardOutline size={18} aria-hidden="true" />
           </button>
         </div>
+        <TravelersNotice className="mt-2" />
         {error && (
           <p role="alert" className="text-error text-sm font-medium px-2 pt-2">
             {error}
