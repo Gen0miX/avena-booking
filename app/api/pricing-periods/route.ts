@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { PricingPeriodInput } from "@/lib/pricingPeriods";
+import { parsePricingPeriodInput } from "@/lib/pricingPeriods";
 import { getApartmentBySlug } from "@/config/apartments";
 
 export const dynamic = "force-dynamic";
@@ -44,29 +44,11 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body: PricingPeriodInput = await request.json();
-
-  // Valider les champs requis
-  if (
-    !body.name ||
-    !body.start_date ||
-    !body.end_date ||
-    body.price_standard == null ||
-    body.price_five == null
-  ) {
-    return NextResponse.json(
-      { error: "Missing required fields" },
-      { status: 400 }
-    );
+  const parsed = parsePricingPeriodInput(await request.json().catch(() => null));
+  if (parsed.error !== null) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 });
   }
-
-  // Valider que end_date > start_date
-  if (body.end_date <= body.start_date) {
-    return NextResponse.json(
-      { error: "La date de fin doit être après la date de début" },
-      { status: 400 }
-    );
-  }
+  const body = parsed.data;
 
   if (!getApartmentBySlug(body.apartment_id)) {
     return NextResponse.json({ error: "Appartement inconnu" }, { status: 400 });

@@ -1,7 +1,11 @@
 "use client";
 
-import { PricingPeriod } from "@/lib/pricingPeriods";
-import { ApartmentSlug, getApartmentBySlug } from "@/config/apartments";
+import { PERIOD_PRICE_FIELDS, PricingPeriod } from "@/lib/pricingPeriods";
+import {
+  ApartmentSlug,
+  getApartmentBySlug,
+  getRateTableColumns,
+} from "@/config/apartments";
 import { differenceInCalendarDays, format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { IoCreateOutline, IoTrashOutline } from "react-icons/io5";
@@ -21,7 +25,9 @@ export default function PricingPeriodsList({
   onDelete,
   apartmentSlug,
 }: PricingPeriodsListProps) {
-  const capacity = getApartmentBySlug(apartmentSlug)?.capacity ?? 5;
+  const apartment = getApartmentBySlug(apartmentSlug);
+  const columns = apartment ? getRateTableColumns(apartment) : [];
+  const fallbackLabels = ["Jusqu'à 2 pers.", "Jusqu'à 4 pers.", "Jusqu'à 6 pers."];
   if (periods.length === 0) {
     return (
       <p className="rounded-xl border border-dashed border-base-300 px-4 py-8 text-center text-sm text-base-content/65">
@@ -70,14 +76,14 @@ export default function PricingPeriodsList({
                     <p className="text-[13px] text-base-content/65">{formatRange(period)}</p>
                   </div>
                   <div className="flex flex-wrap gap-x-5 gap-y-1 text-sm tabular-nums">
-                    <span>
-                      <span className="text-base-content/65">1–{capacity - 1} adultes</span>{" "}
-                      CHF {period.price_standard}
-                    </span>
-                    <span>
-                      <span className="text-base-content/65">{capacity} adultes</span>{" "}
-                      CHF {period.price_five}
-                    </span>
+                    {PERIOD_PRICE_FIELDS.map((field, i) => (
+                      <span key={field}>
+                        <span className="text-base-content/65">
+                          {columns[i]?.label ?? fallbackLabels[i]}
+                        </span>{" "}
+                        CHF {period[field]}
+                      </span>
+                    ))}
                   </div>
                   <div className="flex gap-1.5">
                     <button

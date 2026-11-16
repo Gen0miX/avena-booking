@@ -1,7 +1,8 @@
 import { SeasonKey } from "@/lib/pricingPeriods";
 
 export interface RateTier {
-  minAdults: number;
+  /** Nombre total de personnes (adultes + enfants) à partir duquel ce prix s'applique. */
+  minGuests: number;
   price: number;
 }
 
@@ -28,7 +29,7 @@ export interface ApartmentConfig {
   name: string;
   address: string;
   mapQuery: string;
-  capacity: number; // max total travelers (adults + children) AND max adults for pricing tiers
+  capacity: number; // max total travelers (adults + children), also the top pricing tier
   minNights: number;
   bedrooms: number | null;
   bathrooms: number | null;
@@ -42,8 +43,25 @@ export interface ApartmentConfig {
 }
 
 function tiers(entries: [number, number][]): RateTier[] {
-  return entries.map(([minAdults, price]) => ({ minAdults, price }));
+  return entries.map(([minGuests, price]) => ({ minGuests, price }));
 }
+
+// Grille commune aux deux appartements (client, novembre 2026). Le palier
+// dépend du nombre total de personnes, enfants compris.
+const SHARED_RATES: SeasonRates = {
+  // Décembre – avril
+  hiver: tiers([
+    [1, 200], // jusqu'à 2 personnes
+    [3, 280], // jusqu'à 4 personnes
+    [5, 320], // jusqu'à 6 personnes
+  ]),
+  // Mai – novembre
+  ete: tiers([
+    [1, 150],
+    [3, 280],
+    [5, 320],
+  ]),
+};
 
 export const AVENA_1: ApartmentConfig = {
   slug: "avena-1",
@@ -55,25 +73,7 @@ export const AVENA_1: ApartmentConfig = {
   bedrooms: 2,
   bathrooms: 1,
   petsAllowed: false,
-  defaultRates: {
-    basseSaison: tiers([
-      [1, 150],
-      [3, 200],
-      [5, 250],
-    ]),
-    novembre: tiers([
-      [1, 250],
-      [5, 250],
-    ]),
-    hiver: tiers([
-      [1, 280],
-      [5, 300],
-    ]),
-    fetes: tiers([
-      [1, 350],
-      [5, 400],
-    ]),
-  },
+  defaultRates: SHARED_RATES,
   gallery: [
     { src: "/images/appartements/salon.webp", alt: "Salon" },
     { src: "/images/appartements/cuisine.webp", alt: "Cuisine" },
@@ -137,32 +137,7 @@ export const AVENA_2: ApartmentConfig = {
   bedrooms: 3,
   bathrooms: 1, // + un WC séparé (précisé dans la description)
   petsAllowed: false, // TODO(client): confirmer
-  defaultRates: {
-    // Paliers 1/3/5 repris à l'identique d'Avena 1 (décision client). Le
-    // palier 6 personnes est un placeholder aligné sur le palier 5 en
-    // attendant un tarif définitif — TODO(client) avant mise en prod.
-    basseSaison: tiers([
-      [1, 150],
-      [3, 200],
-      [5, 250],
-      [6, 250],
-    ]),
-    novembre: tiers([
-      [1, 250],
-      [5, 250],
-      [6, 250],
-    ]),
-    hiver: tiers([
-      [1, 280],
-      [5, 300],
-      [6, 300],
-    ]),
-    fetes: tiers([
-      [1, 350],
-      [5, 400],
-      [6, 400],
-    ]),
-  },
+  defaultRates: SHARED_RATES,
   gallery: [], // TODO(client): photos à ajouter (la galerie affiche « Photos à venir »)
   // Mêmes équipements qu'Avena 1 pour l'instant (décision client), à compléter si besoin.
   amenities: [...AVENA_1.amenities],
@@ -207,13 +182,15 @@ export function isApartmentSlug(slug: string): slug is ApartmentSlug {
 
 export interface RateTableColumn {
   label: string;
-  minAdults: number;
+  minGuests: number;
+  maxGuests: number;
 }
 
 /**
- * Columns for the public rate table: one per distinct tier threshold across
- * all seasons, e.g. [1, 3, 5] with capacity 5 → "1–2 adultes", "3–4 adultes",
- * "5 adultes". Prices per cell come from getTierPrice(season, minAdults).
+ * Colonnes des tableaux de tarifs : une par palier, toutes saisons
+ * confondues, ex. [1, 3, 5] avec capacité 6 → « Jusqu'à 2 pers. »,
+ * « Jusqu'à 4 pers. », « Jusqu'à 6 pers. » (le dernier palier est borné par
+ * la capacité de l'appartement). Prix : getTierPrice(saison, minGuests).
  */
 export function getRateTableColumns(
   apartment: ApartmentConfig,
@@ -221,23 +198,22 @@ export function getRateTableColumns(
   const thresholds = Array.from(
     new Set(
       Object.values(apartment.defaultRates).flatMap((t) =>
-        t.map((r) => r.minAdults),
+        t.map((r) => r.minGuests),
       ),
     ),
   ).sort((a, b) => a - b);
   return thresholds.map((min, i) => {
     const max =
       i < thresholds.length - 1 ? thresholds[i + 1] - 1 : apartment.capacity;
-    const range = max > min ? `${min}–${max}` : `${min}`;
-    return { minAdults: min, label: `${range} adulte${max > 1 ? "s" : ""}` };
+    return { minGuests: min, maxGuests: max, label: `Jusqu'à ${max} pers.` };
   });
 }
 
-/** Tier lookup helper shared by priceCalculator: picks the highest tier whose minAdults <= adults. */
-export function getTierPrice(tiersList: RateTier[], adults: number): number {
+/** Palier applicable : le plus haut dont minGuests <= nombre total de personnes. */
+export function getTierPrice(tiersList: RateTier[], guests: number): number {
   let price = tiersList[0].price;
   for (const tier of tiersList) {
-    if (adults >= tier.minAdults) price = tier.price;
+    if (guests >= tier.minGuests) price = tier.price;
   }
   return price;
 }

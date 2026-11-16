@@ -23,20 +23,18 @@ Chaque appartement est décrit par un objet qui respecte l'interface `ApartmentC
 - `bedrooms` — nombre de chambres (`number`), ou `null` si l'information n'est pas encore connue (l'UI affiche alors un placeholder « à venir » plutôt que de planter).
 - `bathrooms` — nombre de salles de bain (`number`), ou `null` dans les mêmes conditions.
 - `petsAllowed` — `boolean`, animaux acceptés ou non.
-- `defaultRates` — grille tarifaire par défaut, de type `SeasonRates` = `Record<SeasonKey, RateTier[]>`. Les quatre clés de saison (définies dans `lib/pricingPeriods.ts`) sont `basseSaison`, `novembre`, `hiver`, `fetes`. Pour chaque saison, on fournit une liste de **paliers** `RateTier[]`, où chaque palier est `{ minAdults: number; price: number }` : le prix applicable est celui du palier dont le `minAdults` est le plus élevé tout en restant `<=` au nombre d'adultes de la réservation (voir `getTierPrice` dans le même fichier). Le helper `tiers([[minAdults, price], ...])` permet d'écrire ça de façon compacte, par exemple :
+- `defaultRates` — grille tarifaire par défaut, de type `SeasonRates` = `Record<SeasonKey, RateTier[]>`. Les deux clés de saison (définies dans `lib/pricingPeriods.ts`) sont `hiver` (décembre – avril) et `ete` (mai – novembre). Pour chaque saison, on fournit une liste de **paliers** `RateTier[]`, où chaque palier est `{ minGuests: number; price: number }` : le prix applicable est celui du palier dont le `minGuests` est le plus élevé tout en restant `<=` au **nombre total de personnes de la réservation, enfants compris** (voir `getTierPrice`). Le helper `tiers([[minGuests, price], ...])` permet d'écrire ça de façon compacte. Depuis novembre 2026, les deux appartements partagent la même grille `SHARED_RATES` :
   ```ts
-  defaultRates: {
-    basseSaison: tiers([[1, 150], [3, 200], [5, 250]]),
-    novembre: tiers([[1, 250], [5, 250]]),
-    hiver: tiers([[1, 280], [5, 300]]),
-    fetes: tiers([[1, 350], [5, 400]]),
-  },
+  const SHARED_RATES: SeasonRates = {
+    hiver: tiers([[1, 200], [3, 280], [5, 320]]), // jusqu'à 2 / 4 / 6 pers.
+    ete: tiers([[1, 150], [3, 280], [5, 320]]),
+  };
   ```
-  Le dernier palier doit couvrir `capacity` adultes (sinon le prix du dernier palier défini s'applique au-delà, ce qui est généralement correct mais doit être vérifié).
+  Le dernier palier est borné par `capacity` (pour Avena 1, capacité 5, il s'affiche « Jusqu'à 5 pers. »). Un nouvel appartement peut réutiliser `SHARED_RATES` ou définir sa propre grille.
 - `gallery` — tableau de `ApartmentGalleryImage` (`{ src: string; alt: string }`), les photos affichées sur la page de l'appartement.
 - `amenities` — tableau de chaînes, la liste des équipements affichés (ex. `"Wi-Fi"`, `"Lave-vaisselle"`...).
 - `description` — objet `ApartmentDescription` avec les champs `tagline`, `intro`, `capacityIntro`, `features` (`string[]`), `locationIntro`, `winterHighlights` (`string[]`), `summerHighlights` (`string[]`), `locationOutro`. Ce sont les textes affichés sur la page publique de l'appartement.
-- `isContentComplete` — `boolean`. Mettre `false` tant que le contenu réel (photos, description, équipements, adresse définitive, tarifs définitifs...) n'est pas finalisé par le client ; l'UI affiche alors des placeholders « contenu à venir » au lieu de planter sur des données vides. Repasser à `true` une fois tout le contenu validé. `AVENA_2` est passé à `true` en novembre 2026 une fois ses textes fournis (3 chambres, 1 salle de bain avec WC + 1 WC séparé, mêmes équipements et même localisation qu'Avena 1) ; restent marqués `TODO(client)` : les photos (`gallery`, la galerie affiche « Photos à venir »), `petsAllowed`, l'adresse exacte et le palier de prix à 6 personnes.
+- `isContentComplete` — `boolean`. Mettre `false` tant que le contenu réel (photos, description, équipements, adresse définitive, tarifs définitifs...) n'est pas finalisé par le client ; l'UI affiche alors des placeholders « contenu à venir » au lieu de planter sur des données vides. Repasser à `true` une fois tout le contenu validé. `AVENA_2` est passé à `true` en novembre 2026 une fois ses textes fournis (3 chambres, 1 salle de bain avec WC + 1 WC séparé, mêmes équipements et même localisation qu'Avena 1) ; restent marqués `TODO(client)` : les photos (`gallery`, la galerie affiche « Photos à venir »), `petsAllowed`, et l'adresse exacte.
 
 Il faut enfin ajouter la nouvelle constante à la map `APARTMENTS` (ex. `"avena-3": AVENA_3`) en bas du fichier — `APARTMENT_LIST`, `getApartmentBySlug` et `isApartmentSlug` en dépendent directement et n'ont besoin d'aucune autre modification.
 
@@ -94,7 +92,7 @@ Checklist reprise verbatim de la Tâche 16 du plan d'implémentation (`docs/supe
 **Parité `avena-1` (doit rester rigoureusement identique au comportement pré-migration) :**
 
 - `/appartements/avena-1` affiche exactement le même contenu, la même galerie, les mêmes équipements, la même carte que l'ancienne page `/`.
-- Le prix pour une période de dates connue + un nombre d'adultes donné correspond à une valeur enregistrée avant le début de cette migration.
+- Le prix pour une période de dates connue et un nombre de personnes donné (enfants compris) correspond à la grille de `config/apartments.ts`.
 - Le calendrier désactive correctement les dates occupées par les réservations d'`avena-1` uniquement.
 - Admin : les onglets réservations/paramètres/périodes tarifaires/statistiques d'`avena-1` affichent les données pré-migration.
 
@@ -139,6 +137,8 @@ La route `POST /api/bookings` effectue la vérification de chevauchement de date
 
 Cette évolution n'a pas été réalisée dans le cadre du présent chantier et reste à planifier séparément.
 
-### Périodes tarifaires personnalisées : modèle à 2 paliers fixe
+### Périodes tarifaires personnalisées : trois paliers
 
-Les périodes tarifaires *personnalisées* (créées par l'admin via `PricingPeriodsManager`, à ne pas confondre avec les tarifs saisonniers par défaut d'`avena-1`/`avena-2`) conservent un modèle à deux paliers — `price_standard` / `price_five` — quelle que soit la capacité réelle de l'appartement. Le palier supérieur s'applique dès que le nombre de voyageurs atteint la capacité maximale de l'appartement (ex. 6 pour `avena-2`), pas à un seuil fixe de « 5 voyageurs » ; les libellés du formulaire et de la liste reflètent désormais cette capacité (ex. « Prix standard (1-5 adultes) » / « Prix 6 adultes » pour `avena-2`, calculés depuis `apartment.capacity`). Il s'agit d'une simplification délibérée : le schéma de la table `pricing_periods` n'a pas été redessiné pour ce chantier. Si des paliers plus fins par période personnalisée s'avèrent nécessaires à l'avenir, cela reste à planifier séparément avec le client.
+Les périodes *personnalisées* (créées par l'admin via `PricingPeriodsManager`) utilisent depuis novembre 2026 les mêmes paliers que la grille saisonnière : `price_up_to_2`, `price_up_to_4` et `price_up_to_6` (prix par nuit selon le nombre total de personnes, enfants compris ; le dernier palier est borné par la capacité, « Jusqu'à 5 pers. » pour Avena 1). Voir `getPeriodPrice` dans `lib/pricingPeriods.ts`.
+
+La migration `20261116130000_pricing_periods_three_tiers.sql` a repris les périodes existantes de l'ancien modèle à deux prix (`price_standard` → jusqu'à 2 et 4 personnes, `price_five` → jusqu'à 6 personnes). Les colonnes `price_standard` / `price_five` sont conservées mais facultatives et ne sont plus lues : elles pourront être supprimées une fois la nouvelle version déployée partout.

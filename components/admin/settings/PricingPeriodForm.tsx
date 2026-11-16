@@ -1,8 +1,16 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PricingPeriod, PricingPeriodInput } from "@/lib/pricingPeriods";
-import { ApartmentSlug, getApartmentBySlug } from "@/config/apartments";
+import {
+  PERIOD_PRICE_FIELDS,
+  PricingPeriod,
+  PricingPeriodInput,
+} from "@/lib/pricingPeriods";
+import {
+  ApartmentSlug,
+  getApartmentBySlug,
+  getRateTableColumns,
+} from "@/config/apartments";
 
 interface PricingPeriodFormProps {
   apartmentSlug: ApartmentSlug;
@@ -28,11 +36,16 @@ export default function PricingPeriodForm({
     name: "",
     start_date: "",
     end_date: "",
-    price_standard: 200,
-    price_five: 250,
+    price_up_to_2: 200,
+    price_up_to_4: 280,
+    price_up_to_6: 320,
   });
   const [localError, setLocalError] = useState<string | null>(null);
-  const capacity = getApartmentBySlug(apartmentSlug)?.capacity ?? 5;
+  const apartment = getApartmentBySlug(apartmentSlug);
+  // Mêmes libellés que la grille saisonnière (« Jusqu'à 2 / 4 / 6 pers. »)
+  const columns = apartment ? getRateTableColumns(apartment) : [];
+  const fallbackLabels = ["Jusqu'à 2 pers.", "Jusqu'à 4 pers.", "Jusqu'à 6 pers."];
+  const priceLabel = (i: number) => columns[i]?.label ?? fallbackLabels[i];
 
   useEffect(() => {
     if (initialData) {
@@ -41,8 +54,9 @@ export default function PricingPeriodForm({
         name: initialData.name,
         start_date: initialData.start_date,
         end_date: initialData.end_date,
-        price_standard: initialData.price_standard,
-        price_five: initialData.price_five,
+        price_up_to_2: initialData.price_up_to_2,
+        price_up_to_4: initialData.price_up_to_4,
+        price_up_to_6: initialData.price_up_to_6,
       });
     }
   }, [initialData, apartmentSlug]);
@@ -81,7 +95,7 @@ export default function PricingPeriodForm({
       setLocalError("La date de fin doit être après la date de début");
       return;
     }
-    if (formData.price_standard <= 0 || formData.price_five <= 0) {
+    if (PERIOD_PRICE_FIELDS.some((f) => !(formData[f] > 0))) {
       setLocalError("Les prix doivent être positifs");
       return;
     }
@@ -160,39 +174,28 @@ export default function PricingPeriodForm({
         </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div className="form-control">
-          <label className="label pb-1.5">
-            <span className="text-sm font-medium">
-              {`Prix standard (1-${capacity - 1} adultes) CHF`}
-            </span>
-          </label>
-          <input
-            type="number"
-            name="price_standard"
-            className="input w-full h-11 rounded-xl bg-surface"
-            value={formData.price_standard}
-            onChange={handleChange}
-            min="0"
-            required
-          />
+      <fieldset className="flex flex-col gap-2">
+        <legend className="text-sm font-medium mb-1.5">
+          Prix par nuit (CHF), enfants compris
+        </legend>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {PERIOD_PRICE_FIELDS.map((field, i) => (
+            <label key={field} className="flex flex-col gap-1.5">
+              <span className="text-sm text-base-content/75">{priceLabel(i)}</span>
+              <input
+                type="number"
+                name={field}
+                className="input w-full h-11 rounded-xl bg-surface"
+                value={formData[field]}
+                onChange={handleChange}
+                min="1"
+                step="1"
+                required
+              />
+            </label>
+          ))}
         </div>
-
-        <div className="form-control">
-          <label className="label pb-1.5">
-            <span className="text-sm font-medium">{`Prix ${capacity} adultes CHF`}</span>
-          </label>
-          <input
-            type="number"
-            name="price_five"
-            className="input w-full h-11 rounded-xl bg-surface"
-            value={formData.price_five}
-            onChange={handleChange}
-            min="0"
-            required
-          />
-        </div>
-      </div>
+      </fieldset>
 
       <div className="flex justify-end gap-2 pt-4">
         <button

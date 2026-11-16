@@ -170,12 +170,11 @@ export default function BookingDetails({
       ? new Date(selectedRange.from)
       : undefined;
     const end = selectedRange?.to ? new Date(selectedRange.to) : undefined;
-    const adults = travelers.adults;
-
     const { price, error } = getPriceResult({
       start,
       end,
-      adults,
+      adults: travelers.adults,
+      children: travelers.children,
       customPeriods: periods,
       apartment,
     });
@@ -185,7 +184,7 @@ export default function BookingDetails({
     if (autoPrice && price !== null) {
       setFormValues((prev) => ({ ...prev, price }));
     }
-  }, [isEditing, selectedRange, travelers.adults, autoPrice, periods, apartment]);
+  }, [isEditing, selectedRange, travelers.adults, travelers.children, autoPrice, periods, apartment]);
 
   const handleSave = async () => {
     if (!booking) return;
@@ -593,7 +592,9 @@ export default function BookingDetails({
                 <div className="flex justify-between text-sm">
                   <span className="text-base-content/65">Tarif</span>
                   <span>
-                    {getCategory(booking.no_adults, apartment?.capacity ?? booking.no_adults)} ·{" "}
+                    {apartment
+                      ? `${getCategory(booking.no_adults + (booking.no_childs ?? 0), apartment)} · `
+                      : ""}
                     {stayNights} nuit{stayNights > 1 ? "s" : ""}
                   </span>
                 </div>

@@ -1,11 +1,13 @@
 import { PricingPeriod } from "@/lib/pricingPeriods";
-import { getSeasonKeyForDate } from "@/lib/pricingPeriods";
-import { ApartmentConfig, getTierPrice } from "@/config/apartments";
+import { getPeriodPrice, getSeasonKeyForDate } from "@/lib/pricingPeriods";
+import { ApartmentConfig, getRateTableColumns, getTierPrice } from "@/config/apartments";
 
 type PriceParams = {
   start?: Date;
   end?: Date;
   adults: number;
+  /** Les enfants comptent dans le nombre de personnes qui fixe le palier. */
+  children?: number;
   customPeriods?: PricingPeriod[];
   apartment: ApartmentConfig;
 };
@@ -42,26 +44,24 @@ function findCustomPeriodForDate(date: Date, customPeriods: PricingPeriod[]): Pr
 
 function getPriceForDate(
   date: Date,
-  adults: number,
+  guests: number,
   customPeriods: PricingPeriod[],
   apartment: ApartmentConfig,
 ): number {
   const customPeriod = findCustomPeriodForDate(date, customPeriods);
   if (customPeriod) {
-    // pricing_periods keeps its legacy 2-tier shape (price_standard / price_five);
-    // the top rate applies once adults reaches the apartment's full capacity.
-    return adults >= apartment.capacity ? customPeriod.price_five : customPeriod.price_standard;
+    return getPeriodPrice(customPeriod, guests);
   }
 
   const seasonKey = getSeasonKeyForDate(date);
   const seasonTiers = apartment.defaultRates[seasonKey];
-  return getTierPrice(seasonTiers, adults);
+  return getTierPrice(seasonTiers, guests);
 }
 
 function calculatePrice(
   start: Date,
   end: Date,
-  adults: number,
+  guests: number,
   customPeriods: PricingPeriod[],
   apartment: ApartmentConfig,
 ): number {
@@ -71,23 +71,27 @@ function calculatePrice(
 
   let total = 0;
   while (cur.getTime() < endDay.getTime()) {
-    total += getPriceForDate(cur, adults, customPeriods, apartment);
+    total += getPriceForDate(cur, guests, customPeriods, apartment);
     cur = new Date(cur.getTime() + msPerNight);
   }
 
   return total;
 }
 
-export function getCategory(adults: number, capacity: number): Category {
-  if (adults <= 2) return "1-2 adultes";
-  if (adults < capacity) return "Famille";
-  return `Plein (${capacity} adultes)`;
+/** Libellé du palier appliqué, ex. « Jusqu'à 4 pers. ». */
+export function getCategory(guests: number, apartment: ApartmentConfig): Category {
+  const columns = getRateTableColumns(apartment);
+  const column =
+    columns.find((c) => guests >= c.minGuests && guests <= c.maxGuests) ??
+    columns[columns.length - 1];
+  return column.label;
 }
 
 export function getPriceResult({
   start,
   end,
   adults,
+  children = 0,
   customPeriods = [],
   apartment,
 }: PriceParams): { price: number | null; error: string | null } {
@@ -107,14 +111,15 @@ export function getPriceResult({
     };
   }
 
-  if (adults > apartment.capacity) {
+  const guests = adults + Math.max(0, children);
+  if (guests > apartment.capacity) {
     return {
       price: null,
-      error: `Le nombre maximum d'adultes est ${apartment.capacity}.`,
+      error: `Cet appartement accueille ${apartment.capacity} personnes au maximum (enfants compris).`,
     };
   }
 
-  const price = calculatePrice(start, end, adults, customPeriods, apartment);
+  const price = calculatePrice(start, end, guests, customPeriods, apartment);
 
   return { price, error: null };
 }

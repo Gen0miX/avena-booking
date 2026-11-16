@@ -38,6 +38,7 @@ export default function Disponibility({
       start: range?.from,
       end: range?.to,
       adults: travelers.adults,
+      children: travelers.children,
       customPeriods: periods,
       apartment,
     });

@@ -7,10 +7,8 @@ import {
 
 // Mirrors the calendar in getSeasonKeyForDate (lib/pricingPeriods.ts).
 const SEASONS: { key: SeasonKey; name: string; dates: string }[] = [
-  { key: "basseSaison", name: "Basse saison", dates: "Mai – octobre" },
-  { key: "novembre", name: "Novembre", dates: "Novembre" },
-  { key: "hiver", name: "Hiver", dates: "1–17 déc. et 11 janv. – avril" },
-  { key: "fetes", name: "Fêtes", dates: "18 déc. – 10 janv." },
+  { key: "hiver", name: "Hiver", dates: "Décembre – avril" },
+  { key: "ete", name: "Été", dates: "Mai – novembre" },
 ];
 
 export default function RateTable({
@@ -23,13 +21,16 @@ export default function RateTable({
   return (
     <div className="overflow-x-auto bg-surface rounded-2xl">
       <table className="w-full min-w-[520px] text-[15px]">
+        <caption className="sr-only">
+          Prix par nuit selon la saison et le nombre de personnes, enfants compris
+        </caption>
         <thead>
           <tr className="text-left text-xs uppercase tracking-[0.06em] text-base-content/70">
             <th scope="col" className="px-5 py-4 font-semibold">
               Saison
             </th>
             {columns.map((col) => (
-              <th key={col.minAdults} scope="col" className="px-5 py-4 font-semibold">
+              <th key={col.minGuests} scope="col" className="px-5 py-4 font-semibold">
                 {col.label}
               </th>
             ))}
@@ -45,8 +46,8 @@ export default function RateTable({
                 </span>
               </th>
               {columns.map((col) => (
-                <td key={col.minAdults} className="px-5 py-4 tabular-nums">
-                  CHF {getTierPrice(apartment.defaultRates[season.key], col.minAdults)}
+                <td key={col.minGuests} className="px-5 py-4 tabular-nums">
+                  CHF {getTierPrice(apartment.defaultRates[season.key], col.minGuests)}
                 </td>
               ))}
             </tr>

@@ -234,6 +234,7 @@ function BookingForm() {
         start: range.from,
         end: range.to,
         adults: travelers.adults,
+        children: travelers.children,
         customPeriods: periods,
         apartment,
       });
@@ -686,7 +687,7 @@ function BookingForm() {
                     </dd>
                     <dt className="text-base-content/70">Tarif</dt>
                     <dd className="text-right">
-                      {getCategory(travelers.adults, apartment.capacity)} ·{" "}
+                      {getCategory(travelers.adults + travelers.children, apartment)} ·{" "}
                       {getNights(range.from, range.to)} nuits
                     </dd>
                   </dl>

@@ -224,6 +224,7 @@ export async function POST(request: NextRequest) {
       start: arrivalDateObj2,
       end: departureDateObj2,
       adults: bookingData.no_adults,
+      children: bookingData.no_childs ?? 0,
       customPeriods: (customPeriods ?? []) as PricingPeriod[],
       apartment,
     });

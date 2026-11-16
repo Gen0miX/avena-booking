@@ -106,8 +106,8 @@ export default function PricingPeriodsManager({
         <div className="px-5 sm:px-6 pt-5 sm:pt-6 pb-1">
           <h2 className="text-[17px] font-semibold mb-1.5">Tarifs saisonniers</h2>
           <p className="text-sm text-base-content/70">
-            Appliqués automatiquement selon la date. Prix par nuit, ménage et
-            taxes inclus.
+            Appliqués automatiquement selon la date et le nombre de personnes
+            (enfants compris). Prix par nuit, ménage et taxes inclus.
           </p>
         </div>
         {apartment && <RateTable apartment={apartment} />}

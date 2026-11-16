@@ -7,8 +7,8 @@
 --
 -- - Les dates sont calculées depuis current_date : les données restent
 --   pertinentes quel que soit le jour où le script est lancé.
--- - Les prix sont calculés nuit par nuit avec les tarifs saisonniers de
---   config/apartments.ts (mêmes saisons que getSeasonKeyForDate).
+-- - Les prix sont calculés nuit par nuit avec la grille de
+--   config/apartments.ts (hiver déc.–avr., été mai–nov., enfants compris).
 -- - Aucune réservation ne se chevauche sur un même appartement.
 -- - Rejouable : les données de test précédentes sont supprimées d'abord.
 --   Elles sont reconnaissables à :
@@ -108,22 +108,15 @@ select
   d.arrival_date,
   d.departure_date,
   (
-    -- Tarif par nuit selon la saison et le nombre d'adultes
-    -- (Avena 2 : le palier 6 personnes est aligné sur celui de 5)
+    -- Tarif par nuit selon la saison et le nombre total de personnes
+    -- (enfants compris), grille commune aux deux appartements
     select sum(
       case
-        when (extract(month from night) = 12 and extract(day from night) >= 18)
-          or (extract(month from night) = 1 and extract(day from night) <= 10)
-          then case when d.adults >= 5 then 400 else 350 end           -- Fêtes
-        when (extract(month from night) = 1)
-          or extract(month from night) between 2 and 4
-          or extract(month from night) = 12
-          then case when d.adults >= 5 then 300 else 280 end           -- Hiver
-        when extract(month from night) = 11
-          then 250                                                      -- Novembre
-        else case when d.adults >= 5 then 250
-                  when d.adults >= 3 then 200
-                  else 150 end                                          -- Basse saison
+        when d.adults + d.children >= 5 then 320                       -- jusqu'à 6 pers.
+        when d.adults + d.children >= 3 then 280                       -- jusqu'à 4 pers.
+        when extract(month from night) = 12
+          or extract(month from night) between 1 and 4 then 200        -- hiver, jusqu'à 2 pers.
+        else 150                                                        -- été, jusqu'à 2 pers.
       end
     )
     from generate_series(d.arrival_date, d.departure_date - 1, interval '1 day') as night
@@ -135,11 +128,12 @@ from dated d;
 -- ---------------------------------------------------------------------------
 -- Périodes tarifaires spéciales (placées après les réservations de test)
 -- ---------------------------------------------------------------------------
-insert into public.pricing_periods (apartment_id, name, start_date, end_date, price_standard, price_five)
+-- Prix jusqu'à 2 / 4 / 6 personnes (migration 20261116130000 requise)
+insert into public.pricing_periods (apartment_id, name, start_date, end_date, price_up_to_2, price_up_to_4, price_up_to_6)
 values
-  ('avena-1', 'Festival (test)',      current_date + 200, current_date + 207, 320, 380),
-  ('avena-1', 'Week-end long (test)', current_date + 230, current_date + 240, 300, 340),
-  ('avena-2', 'Festival (test)',      current_date + 200, current_date + 207, 330, 390);
+  ('avena-1', 'Festival (test)',      current_date + 200, current_date + 207, 250, 330, 380),
+  ('avena-1', 'Week-end long (test)', current_date + 230, current_date + 240, 220, 300, 340),
+  ('avena-2', 'Festival (test)',      current_date + 200, current_date + 207, 250, 330, 390);
 
 -- ---------------------------------------------------------------------------
 -- Codes promo : le préfixe doit être le mois du séjour (cf. lib/promo.ts)
