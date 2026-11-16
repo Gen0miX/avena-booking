@@ -119,8 +119,8 @@ export const AVENA_2: ApartmentConfig = {
   mapQuery: "Avena, Untere Dorfstrasse 39, 3906 Saas-Fee, Suisse",
   capacity: 6,
   minNights: 2,
-  bedrooms: null, // TODO(client)
-  bathrooms: null, // TODO(client)
+  bedrooms: 3,
+  bathrooms: 1, // + un WC séparé (précisé dans la description)
   petsAllowed: false, // TODO(client): confirmer
   defaultRates: {
     // Paliers 1/3/5 repris à l'identique d'Avena 1 (décision client). Le
@@ -131,19 +131,29 @@ export const AVENA_2: ApartmentConfig = {
     hiver: tiers([[1, 280], [5, 300], [6, 300]]),
     fetes: tiers([[1, 350], [5, 400], [6, 400]]),
   },
-  gallery: [], // TODO(client): photos à ajouter
-  amenities: [], // TODO(client): équipements à lister
+  gallery: [], // TODO(client): photos à ajouter (la galerie affiche « Photos à venir »)
+  // Mêmes équipements qu'Avena 1 pour l'instant (décision client), à compléter si besoin.
+  amenities: [...AVENA_1.amenities],
   description: {
-    tagline: "TODO(client): accroche",
-    intro: "TODO(client): description à rédiger",
-    capacityIntro: "TODO(client)",
-    features: [],
-    locationIntro: "TODO(client)",
-    winterHighlights: [],
-    summerHighlights: [],
-    locationOutro: "TODO(client)",
+    tagline: "Trois chambres, une salle de bain avec WC et un WC séparé",
+    intro:
+      "Vous cherchez une location d'appartement à Saas-Fee pour des vacances en famille ou entre amis ? Découvrez notre second hébergement tout confort situé à Untere Dorfstrasse 39, en plein cœur de la station piétonne de Saas-Fee, dans les Alpes valaisannes.",
+    capacityIntro: "Cet appartement spacieux peut accueillir jusqu'à 6 personnes et dispose de :",
+    features: [
+      "Trois chambres avec literie de qualité",
+      "Un salon chaleureux avec coin repas",
+      "Une cuisine équipée (four, plaques, lave-vaisselle, machine à café)",
+      "Une salle de bain avec WC, plus un WC séparé",
+      "Wi-Fi gratuit, écran, linge de lit et serviettes inclus",
+    ],
+    // Même immeuble : textes de localisation identiques à Avena 1.
+    locationIntro: AVENA_1.description.locationIntro,
+    winterHighlights: [...AVENA_1.description.winterHighlights],
+    summerHighlights: [...AVENA_1.description.summerHighlights],
+    locationOutro: AVENA_1.description.locationOutro,
   },
-  isContentComplete: false,
+  // Textes complets ; seules les photos manquent encore.
+  isContentComplete: true,
 };
 
 export const APARTMENTS = {
@@ -160,13 +170,6 @@ export function getApartmentBySlug(slug: string): ApartmentConfig | undefined {
 
 export function isApartmentSlug(slug: string): slug is ApartmentSlug {
   return slug in APARTMENTS;
-}
-
-/** Lowest nightly rate across every season and tier ("Dès CHF …"). */
-export function getStartingPrice(apartment: ApartmentConfig): number {
-  return Math.min(
-    ...Object.values(apartment.defaultRates).flatMap((t) => t.map((r) => r.price)),
-  );
 }
 
 export interface RateTableColumn {

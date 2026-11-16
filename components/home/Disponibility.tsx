@@ -5,7 +5,7 @@ import { getPriceResult } from "@/utils/priceCalculator";
 import { useBooking } from "@/context/BookingContext";
 import { usePricingPeriods } from "@/hooks/usePricingPeriods";
 import PopoverDatePicker from "@/components/PopoverDatePicker";
-import { ApartmentConfig, getStartingPrice } from "@/config/apartments";
+import { ApartmentConfig } from "@/config/apartments";
 
 const fieldLabel =
   "text-[11px] font-semibold tracking-[0.06em] uppercase text-base-content/70";
@@ -57,12 +57,9 @@ export default function Disponibility({
       aria-label="Réserver"
       className="bg-surface rounded-2xl shadow-[0_16px_40px_rgba(43,50,64,0.12)] p-5 sm:p-7 flex flex-col gap-4 scroll-mt-24"
     >
-      <p className="text-[15px] text-base-content/75">
-        <span className="font-heading text-[30px] font-semibold text-base-content">
-          CHF {getStartingPrice(apartment)}
-        </span>{" "}
-        dès / nuit
-      </p>
+      <h2 className="font-heading text-[26px] font-semibold leading-tight">
+        Réserver votre séjour
+      </h2>
       <div className="flex flex-col gap-1.5">
         <span className={fieldLabel}>Dates</span>
         <PopoverDatePicker

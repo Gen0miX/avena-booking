@@ -8,10 +8,9 @@ import Disponibility from "@/components/home/Disponibility";
 import Gallery from "@/components/home/Gallery";
 import ServiceBadges from "@/components/home/ServiceBadges";
 import Amenities from "@/components/home/Amenities";
-import RateTable from "@/components/home/RateTable";
 import CustomDayPicker from "@/components/CustomDayPicker";
 import { GoogleMapsEmbed } from "@next/third-parties/google";
-import { ApartmentConfig, getStartingPrice } from "@/config/apartments";
+import { ApartmentConfig } from "@/config/apartments";
 
 const h2 = "font-heading font-semibold text-[26px] sm:text-[28px] mb-2";
 const muted = "text-base leading-relaxed text-base-content/75";
@@ -92,16 +91,6 @@ export default function ApartmentPageClient({
             </section>
 
             <section>
-              <h2 className={h2}>Tarifs par nuit</h2>
-              <p className="text-[15px] text-base-content/75 mb-5">
-                Selon la saison et le nombre d&apos;adultes. Ménage et taxes
-                inclus, séjour de {apartment.minNights} nuits minimum. Des
-                tarifs spéciaux peuvent s&apos;appliquer à certaines périodes.
-              </p>
-              <RateTable apartment={apartment} />
-            </section>
-
-            <section>
               <h2 className={h2}>Disponibilités</h2>
               <p className="text-[15px] text-base-content/75 mb-5">
                 Les dates barrées sont déjà réservées.
@@ -166,9 +155,9 @@ export default function ApartmentPageClient({
       <div className="lg:hidden fixed bottom-0 inset-x-0 z-40 bg-surface border-t border-base-300 px-4 py-3 flex items-center justify-between gap-4 shadow-[0_-8px_24px_rgba(43,50,64,0.08)]">
         <p className="text-sm text-base-content/75">
           <span className="font-heading text-xl font-semibold text-base-content">
-            CHF {getStartingPrice(apartment)}
+            {apartment.name}
           </span>{" "}
-          dès / nuit
+          · min. {apartment.minNights} nuits
         </p>
         <a
           href="#reserver"
