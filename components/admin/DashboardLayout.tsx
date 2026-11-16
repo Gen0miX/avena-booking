@@ -15,6 +15,7 @@ import {
   IoSunnyOutline,
   IoLogOutOutline,
   IoPersonOutline,
+  IoPricetagOutline,
 } from "react-icons/io5";
 import BookingTable from "@/components/admin/BookingTable";
 import BookingDetails from "@/components/admin/BookingDetails";
@@ -22,15 +23,17 @@ import { BookingFilters, useBookings } from "@/hooks/usebookings";
 import { Booking } from "@/lib/bookings";
 import StatisticsDashboard from "@/components/admin/statistics/StatisticsDashboard";
 import SettingsPage from "@/components/admin/settings/SettingsPage";
+import PromoCodesManager from "@/components/admin/promo/PromoCodesManager";
 import { APARTMENT_LIST, ApartmentSlug } from "@/config/apartments";
 
 type SelectedApartment = ApartmentSlug | "all";
-type MenuKey = "bookings" | "terminated" | "statistics" | "settings";
+type MenuKey = "bookings" | "terminated" | "statistics" | "promo" | "settings";
 
 const menuItems: { key: MenuKey; label: string; icon: React.ReactNode }[] = [
   { key: "bookings", label: "Réservations", icon: <IoCalendarOutline size={19} /> },
   { key: "terminated", label: "Terminées", icon: <IoCalendarClearOutline size={19} /> },
   { key: "statistics", label: "Statistiques", icon: <IoBarChartOutline size={19} /> },
+  { key: "promo", label: "Codes promo", icon: <IoPricetagOutline size={19} /> },
   { key: "settings", label: "Paramètres", icon: <IoSettingsOutline size={19} /> },
 ];
 
@@ -76,6 +79,8 @@ export default function DashboardLayout({ logoSrc, onLogout }: DashboardLayoutPr
       ? today.charAt(0).toUpperCase() + today.slice(1)
       : active === "settings"
         ? "Réglages propres à chaque appartement"
+        : active === "promo"
+          ? `Codes de réduction · ${apartmentLabel}`
         : apartmentLabel;
 
   const handleMenuItemClick = (key: MenuKey) => {
@@ -120,6 +125,8 @@ export default function DashboardLayout({ logoSrc, onLogout }: DashboardLayoutPr
         );
       case "statistics":
         return <StatisticsDashboard apartment={selectedApartment} />;
+      case "promo":
+        return <PromoCodesManager apartment={selectedApartment} />;
       case "settings":
         return selectedApartment === "all" ? null : (
           <SettingsPage apartmentSlug={selectedApartment} />
@@ -279,7 +286,7 @@ export default function DashboardLayout({ logoSrc, onLogout }: DashboardLayoutPr
       {/* Navigation basse (mobile / tablette) */}
       <nav
         aria-label="Navigation admin"
-        className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-surface border-t border-base-300 grid grid-cols-4 px-1 pt-1.5 pb-[max(10px,env(safe-area-inset-bottom))]"
+        className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-surface border-t border-base-300 grid grid-cols-5 px-1 pt-1.5 pb-[max(10px,env(safe-area-inset-bottom))]"
       >
         {menuItems.map((item) => {
           const highlighted = active === item.key;
@@ -289,11 +296,11 @@ export default function DashboardLayout({ logoSrc, onLogout }: DashboardLayoutPr
               type="button"
               aria-current={highlighted && !selectedBookingId ? "page" : undefined}
               onClick={() => handleMenuItemClick(item.key)}
-              className={`relative flex flex-col items-center gap-1 py-1.5 text-[11px] ${
+              className={`relative flex flex-col items-center gap-1 py-1.5 text-[10px] sm:text-[11px] leading-tight text-center ${
                 highlighted ? "font-semibold text-base-content" : "text-base-content/70"
               }`}
             >
-              <span className={`px-4 py-1 rounded-full ${highlighted ? "bg-cta/15 text-cta" : ""}`}>
+              <span className={`px-3 py-1 rounded-full ${highlighted ? "bg-cta/15 text-cta" : ""}`}>
                 {item.icon}
               </span>
               {item.label}
