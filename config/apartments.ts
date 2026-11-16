@@ -56,10 +56,23 @@ export const AVENA_1: ApartmentConfig = {
   bathrooms: 1,
   petsAllowed: false,
   defaultRates: {
-    basseSaison: tiers([[1, 150], [3, 200], [5, 250]]),
-    novembre: tiers([[1, 250], [5, 250]]),
-    hiver: tiers([[1, 280], [5, 300]]),
-    fetes: tiers([[1, 350], [5, 400]]),
+    basseSaison: tiers([
+      [1, 150],
+      [3, 200],
+      [5, 250],
+    ]),
+    novembre: tiers([
+      [1, 250],
+      [5, 250],
+    ]),
+    hiver: tiers([
+      [1, 280],
+      [5, 300],
+    ]),
+    fetes: tiers([
+      [1, 350],
+      [5, 400],
+    ]),
   },
   gallery: [
     { src: "/images/appartements/salon.webp", alt: "Salon" },
@@ -86,7 +99,8 @@ export const AVENA_1: ApartmentConfig = {
     tagline: "Un séjour comme à la maison, à Saas-Fee",
     intro:
       "Vous cherchez une location d'appartement à Saas-Fee pour vos prochaines vacances en montagne ? Découvrez notre hébergement tout confort situé à Untere Dorfstrasse 39, en plein cœur de la station piétonne de Saas-Fee, dans les Alpes valaisannes.",
-    capacityIntro: "Cet appartement lumineux peut accueillir jusqu'à 5 personnes et dispose de :",
+    capacityIntro:
+      "Cet appartement lumineux peut accueillir jusqu'à 5 personnes et dispose de :",
     features: [
       "Deux chambres spacieuses avec literie de qualité (possibilité d'ajouter un matelas et un duvet pour une 5ᵉ personne)",
       "Un salon chaleureux avec coin repas",
@@ -94,7 +108,8 @@ export const AVENA_1: ApartmentConfig = {
       "Une salle de bain",
       "Wi-Fi gratuit, écran, linge de lit et serviettes inclus",
     ],
-    locationIntro: "Située à 1800 mètres d'altitude, Saas-Fee est une destination de choix pour un séjour en montagne en toute saison.",
+    locationIntro:
+      "Située à 1800 mètres d'altitude, Saas-Fee est une destination de choix pour un séjour en montagne en toute saison.",
     winterHighlights: [
       "Plus de 100 km de pistes de ski",
       "Snowpark, ski de fond, randonnées en raquettes",
@@ -126,19 +141,37 @@ export const AVENA_2: ApartmentConfig = {
     // Paliers 1/3/5 repris à l'identique d'Avena 1 (décision client). Le
     // palier 6 personnes est un placeholder aligné sur le palier 5 en
     // attendant un tarif définitif — TODO(client) avant mise en prod.
-    basseSaison: tiers([[1, 150], [3, 200], [5, 250], [6, 250]]),
-    novembre: tiers([[1, 250], [5, 250], [6, 250]]),
-    hiver: tiers([[1, 280], [5, 300], [6, 300]]),
-    fetes: tiers([[1, 350], [5, 400], [6, 400]]),
+    basseSaison: tiers([
+      [1, 150],
+      [3, 200],
+      [5, 250],
+      [6, 250],
+    ]),
+    novembre: tiers([
+      [1, 250],
+      [5, 250],
+      [6, 250],
+    ]),
+    hiver: tiers([
+      [1, 280],
+      [5, 300],
+      [6, 300],
+    ]),
+    fetes: tiers([
+      [1, 350],
+      [5, 400],
+      [6, 400],
+    ]),
   },
   gallery: [], // TODO(client): photos à ajouter (la galerie affiche « Photos à venir »)
   // Mêmes équipements qu'Avena 1 pour l'instant (décision client), à compléter si besoin.
   amenities: [...AVENA_1.amenities],
   description: {
-    tagline: "Trois chambres, une salle de bain avec WC et un WC séparé",
+    tagline: "Un séjour comme à la maison, à Saas-Fee",
     intro:
       "Vous cherchez une location d'appartement à Saas-Fee pour des vacances en famille ou entre amis ? Découvrez notre second hébergement tout confort situé à Untere Dorfstrasse 39, en plein cœur de la station piétonne de Saas-Fee, dans les Alpes valaisannes.",
-    capacityIntro: "Cet appartement spacieux peut accueillir jusqu'à 6 personnes et dispose de :",
+    capacityIntro:
+      "Cet appartement spacieux peut accueillir jusqu'à 6 personnes et dispose de :",
     features: [
       "Trois chambres avec literie de qualité",
       "Un salon chaleureux avec coin repas",
@@ -182,12 +215,19 @@ export interface RateTableColumn {
  * all seasons, e.g. [1, 3, 5] with capacity 5 → "1–2 adultes", "3–4 adultes",
  * "5 adultes". Prices per cell come from getTierPrice(season, minAdults).
  */
-export function getRateTableColumns(apartment: ApartmentConfig): RateTableColumn[] {
+export function getRateTableColumns(
+  apartment: ApartmentConfig,
+): RateTableColumn[] {
   const thresholds = Array.from(
-    new Set(Object.values(apartment.defaultRates).flatMap((t) => t.map((r) => r.minAdults))),
+    new Set(
+      Object.values(apartment.defaultRates).flatMap((t) =>
+        t.map((r) => r.minAdults),
+      ),
+    ),
   ).sort((a, b) => a - b);
   return thresholds.map((min, i) => {
-    const max = i < thresholds.length - 1 ? thresholds[i + 1] - 1 : apartment.capacity;
+    const max =
+      i < thresholds.length - 1 ? thresholds[i + 1] - 1 : apartment.capacity;
     const range = max > min ? `${min}–${max}` : `${min}`;
     return { minAdults: min, label: `${range} adulte${max > 1 ? "s" : ""}` };
   });
