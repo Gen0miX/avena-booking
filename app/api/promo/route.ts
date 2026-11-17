@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { APARTMENT_LIST, getApartmentBySlug } from "@/config/apartments";
-import { parseMonthFromCode } from "@/lib/promo";
+import { isIsoDate } from "@/lib/promo";
 
 export const dynamic = "force-dynamic";
 
@@ -28,7 +28,7 @@ export async function GET(request: NextRequest) {
 
   let query = supabase
     .from("promo_code")
-    .select("id, created_at, name, percentage, active, apartment_id")
+    .select("id, created_at, name, percentage, active, apartment_id, valid_from, valid_to")
     .order("created_at", { ascending: false });
   if (apartmentParam !== "all") query = query.eq("apartment_id", apartmentParam);
 
@@ -43,7 +43,7 @@ export async function GET(request: NextRequest) {
 }
 
 // POST: crée un code pour un ou plusieurs appartements
-// body: { name, percentage, active, apartments: string[] }
+// body: { name, percentage, active, apartments: string[], valid_from, valid_to }
 export async function POST(request: NextRequest) {
   const { supabase, user } = await requireUser();
   if (!user) {
@@ -55,6 +55,8 @@ export async function POST(request: NextRequest) {
   const percentage = Number(body?.percentage);
   const active = body?.active !== false;
   const apartments: string[] = Array.isArray(body?.apartments) ? body.apartments : [];
+  const validFrom = body?.valid_from;
+  const validTo = body?.valid_to;
 
   if (!/^[A-Z0-9]{4,20}$/.test(name)) {
     return NextResponse.json(
@@ -62,10 +64,17 @@ export async function POST(request: NextRequest) {
       { status: 400 },
     );
   }
-  // La validation côté réservation lit le mois dans les 3 premières lettres
-  if (parseMonthFromCode(name) === null) {
+  // Nouveaux codes : période de validité obligatoire (première et dernière
+  // nuit couvertes). Les anciens codes sans dates restent gérés par mois.
+  if (!isIsoDate(validFrom) || !isIsoDate(validTo)) {
     return NextResponse.json(
-      { error: "Le code doit commencer par le mois du séjour (ex. NOV, DEC, JAN…)." },
+      { error: "Indiquez la période de validité du code (du … au …)." },
+      { status: 400 },
+    );
+  }
+  if (validFrom > validTo) {
+    return NextResponse.json(
+      { error: "La fin de la période doit être après son début." },
       { status: 400 },
     );
   }
@@ -104,8 +113,17 @@ export async function POST(request: NextRequest) {
 
   const { data, error } = await supabase
     .from("promo_code")
-    .insert(apartments.map((apartment_id) => ({ name, percentage, active, apartment_id })))
-    .select("id, created_at, name, percentage, active, apartment_id");
+    .insert(
+      apartments.map((apartment_id) => ({
+        name,
+        percentage,
+        active,
+        apartment_id,
+        valid_from: validFrom,
+        valid_to: validTo,
+      })),
+    )
+    .select("id, created_at, name, percentage, active, apartment_id, valid_from, valid_to");
 
   if (error) {
     return NextResponse.json(

@@ -29,7 +29,7 @@ export async function PATCH(
     .from("promo_code")
     .update({ active: body.active })
     .eq("id", id)
-    .select("id, created_at, name, percentage, active, apartment_id")
+    .select("id, created_at, name, percentage, active, apartment_id, valid_from, valid_to")
     .single();
 
   if (error) {

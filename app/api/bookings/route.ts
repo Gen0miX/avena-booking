@@ -239,14 +239,14 @@ export async function POST(request: NextRequest) {
       const normalized = promoCodeInput.trim().toUpperCase();
       const { data: promo } = await supabase
         .from("promo_code")
-        .select("percentage, active")
+        .select("name, percentage, active, valid_from, valid_to")
         .eq("apartment_id", apartment.slug)
         .ilike("name", normalized)
         .maybeSingle();
 
       if (
         promo?.active &&
-        isPromoApplicable(normalized, arrivalDate, departureDate)
+        isPromoApplicable(promo, arrivalDate, departureDate)
       ) {
         expectedPrice = Math.max(0, Math.round(basePrice * (1 - Number(promo.percentage) / 100)));
       }
