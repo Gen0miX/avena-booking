@@ -61,8 +61,8 @@ const SHARED_RATES: SeasonRates = {
   // Mai – novembre
   ete: tiers([
     [1, 150],
-    [3, 280],
-    [5, 320],
+    [3, 230],
+    [5, 300],
   ]),
 };
 

@@ -28,7 +28,7 @@ Chaque appartement est décrit par un objet qui respecte l'interface `ApartmentC
   ```ts
   const SHARED_RATES: SeasonRates = {
     hiver: tiers([[1, 200], [3, 280], [5, 320]]), // jusqu'à 2 / 4 / 6 pers.
-    ete: tiers([[1, 150], [3, 280], [5, 320]]),
+    ete: tiers([[1, 150], [3, 230], [5, 300]]),
   };
   ```
   Le dernier palier est borné par `capacity` (pour Avena 1, capacité 5, il s'affiche « Jusqu'à 5 pers. »). Un nouvel appartement peut réutiliser `SHARED_RATES` ou définir sa propre grille.
