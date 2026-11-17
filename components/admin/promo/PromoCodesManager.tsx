@@ -17,24 +17,53 @@ interface PromoCode {
   percentage: number;
   active: boolean;
   apartment_id: string;
+  valid_from: string | null;
+  valid_to: string | null;
 }
 
-// Préfixes reconnus par lib/promo.ts (le code n'est valable que pour un
-// séjour entièrement compris dans ce mois)
-const MONTHS = [
-  { prefix: "JAN", label: "Janvier" },
-  { prefix: "FEV", label: "Février" },
-  { prefix: "MAR", label: "Mars" },
-  { prefix: "AVR", label: "Avril" },
-  { prefix: "MAI", label: "Mai" },
-  { prefix: "JUN", label: "Juin" },
-  { prefix: "JUI", label: "Juillet" },
-  { prefix: "AOU", label: "Août" },
-  { prefix: "SEP", label: "Septembre" },
-  { prefix: "OCT", label: "Octobre" },
-  { prefix: "NOV", label: "Novembre" },
-  { prefix: "DEC", label: "Décembre" },
+const MONTH_LABELS = [
+  "janvier", "février", "mars", "avril", "mai", "juin",
+  "juillet", "août", "septembre", "octobre", "novembre", "décembre",
 ];
+
+const pad = (n: number) => String(n).padStart(2, "0");
+const iso = (y: number, m: number, d: number) => `${y}-${pad(m)}-${pad(d)}`;
+
+const todayIso = () => {
+  const t = new Date();
+  return iso(t.getFullYear(), t.getMonth() + 1, t.getDate());
+};
+
+const formatDate = (value: string) => {
+  const [y, m, d] = value.split("-").map(Number);
+  return new Date(y, m - 1, d).toLocaleDateString("fr-CH", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+  });
+};
+
+// Saisons de la grille tarifaire : hiver du 1er décembre au 30 avril, été du
+// 1er mai au 30 novembre. On propose la saison en cours, sinon la prochaine.
+const seasonPresets = () => {
+  const t = new Date();
+  const y = t.getFullYear();
+  const m = t.getMonth(); // 0-11
+  const winterStart = m >= 4 ? y : y - 1;
+  const summerYear = m <= 10 ? y : y + 1;
+  return [
+    {
+      label: `Hiver ${winterStart}–${String(winterStart + 1).slice(2)}`,
+      from: iso(winterStart, 12, 1),
+      to: iso(winterStart + 1, 4, 30),
+    },
+    {
+      label: `Été ${summerYear}`,
+      from: iso(summerYear, 5, 1),
+      to: iso(summerYear, 11, 30),
+    },
+  ];
+};
 
 const fetcher = async (url: string) => {
   const res = await fetch(url);
@@ -45,10 +74,17 @@ const fetcher = async (url: string) => {
   return res.json();
 };
 
-const monthLabel = (code: string) => {
-  const idx = parseMonthFromCode(code);
-  return idx === null ? "—" : MONTHS[idx].label;
+/** Description de la validité, ancien format (mois dans le préfixe) compris. */
+const validityLabel = (promo: PromoCode) => {
+  if (promo.valid_from && promo.valid_to) {
+    return `nuits du ${formatDate(promo.valid_from)} au ${formatDate(promo.valid_to)}`;
+  }
+  const idx = parseMonthFromCode(promo.name);
+  return idx === null ? "validité inconnue" : `séjours en ${MONTH_LABELS[idx]} (ancien format)`;
 };
+
+const isExpired = (promo: PromoCode) =>
+  Boolean(promo.valid_to && promo.valid_to < todayIso());
 
 export default function PromoCodesManager({
   apartment,
@@ -60,10 +96,11 @@ export default function PromoCodesManager({
     fetcher,
   );
 
-  const nextMonth = MONTHS[(new Date().getMonth() + 1) % 12].prefix;
+  const presets = seasonPresets();
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [month, setMonth] = useState(nextMonth);
-  const [suffix, setSuffix] = useState("");
+  const [name, setName] = useState("");
+  const [validFrom, setValidFrom] = useState("");
+  const [validTo, setValidTo] = useState("");
   const [percentage, setPercentage] = useState(10);
   const [active, setActive] = useState(true);
   const [target, setTarget] = useState<ApartmentSlug | "all">(apartment);
@@ -74,12 +111,12 @@ export default function PromoCodesManager({
 
   useEffect(() => setTarget(apartment), [apartment]);
 
-  const code = `${month}${suffix}`;
-  const cleanSuffix = (v: string) => v.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 17);
+  const cleanName = (v: string) => v.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 20);
 
   const resetForm = () => {
-    setMonth(nextMonth);
-    setSuffix("");
+    setName("");
+    setValidFrom("");
+    setValidTo("");
     setPercentage(10);
     setActive(true);
     setTarget(apartment);
@@ -89,8 +126,16 @@ export default function PromoCodesManager({
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
-    if (suffix.length < 1) {
-      setFormError("Ajoutez au moins un caractère après le mois (ex. 10, HIVER…).");
+    if (name.length < 4) {
+      setFormError("Le code doit contenir au moins 4 lettres ou chiffres.");
+      return;
+    }
+    if (!validFrom || !validTo) {
+      setFormError("Indiquez la période de validité du code.");
+      return;
+    }
+    if (validFrom > validTo) {
+      setFormError("La fin de la période doit être après son début.");
       return;
     }
     setIsSubmitting(true);
@@ -99,9 +144,11 @@ export default function PromoCodesManager({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          name: code,
+          name,
           percentage,
           active,
+          valid_from: validFrom,
+          valid_to: validTo,
           apartments: target === "all" ? APARTMENT_LIST.map((a) => a.slug) : [target],
         }),
       });
@@ -169,8 +216,8 @@ export default function PromoCodesManager({
           <div className="max-w-[560px]">
             <h2 className="text-[17px] font-semibold mb-1.5">Codes promo</h2>
             <p className="text-sm leading-relaxed text-base-content/70">
-              Un code commence par le mois du séjour : il ne s&apos;applique qu&apos;aux
-              réservations dont l&apos;arrivée et le départ tombent dans ce mois.
+              Chaque code est valable sur une période : il s&apos;applique aux
+              réservations dont toutes les nuits tombent entre ces deux dates.
             </p>
           </div>
           {!isFormOpen && (
@@ -194,35 +241,40 @@ export default function PromoCodesManager({
             className="rounded-xl border border-base-300 bg-base-100 p-4 sm:p-5 flex flex-col gap-4"
           >
             <h3 className="font-semibold">Nouveau code</h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
               <label className="flex flex-col gap-1.5">
-                <span className="text-sm font-medium">Mois du séjour</span>
-                <select
-                  className="select w-full h-11 rounded-xl bg-surface"
-                  value={month}
-                  onChange={(e) => setMonth(e.target.value)}
-                >
-                  {MONTHS.map((m) => (
-                    <option key={m.prefix} value={m.prefix}>
-                      {m.label}
-                    </option>
-                  ))}
-                </select>
+                <span className="text-sm font-medium">Code</span>
+                <input
+                  type="text"
+                  className="input w-full h-11 rounded-xl bg-surface uppercase tracking-wide"
+                  value={name}
+                  onChange={(e) => setName(cleanName(e.target.value))}
+                  placeholder="HIVER10"
+                  aria-describedby="promo-code-preview"
+                  autoComplete="off"
+                  required
+                />
               </label>
               <label className="flex flex-col gap-1.5">
-                <span className="text-sm font-medium">Suite du code</span>
-                <div className="input w-full h-11 rounded-xl bg-surface">
-                  <span className="text-base-content/60 font-semibold">{month}</span>
-                  <input
-                    type="text"
-                    value={suffix}
-                    onChange={(e) => setSuffix(cleanSuffix(e.target.value))}
-                    placeholder="10"
-                    aria-describedby="promo-code-preview"
-                    autoComplete="off"
-                    className="uppercase"
-                  />
-                </div>
+                <span className="text-sm font-medium">Première nuit</span>
+                <input
+                  type="date"
+                  className="input w-full h-11 rounded-xl bg-surface"
+                  value={validFrom}
+                  onChange={(e) => setValidFrom(e.target.value)}
+                  required
+                />
+              </label>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-sm font-medium">Dernière nuit</span>
+                <input
+                  type="date"
+                  className="input w-full h-11 rounded-xl bg-surface"
+                  value={validTo}
+                  min={validFrom || undefined}
+                  onChange={(e) => setValidTo(e.target.value)}
+                  required
+                />
               </label>
               <label className="flex flex-col gap-1.5">
                 <span className="text-sm font-medium">Réduction</span>
@@ -254,6 +306,26 @@ export default function PromoCodesManager({
                 </select>
               </label>
             </div>
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="text-base-content/70">Période rapide :</span>
+              {presets.map((p) => (
+                <button
+                  key={p.label}
+                  type="button"
+                  className={`btn btn-sm h-9 rounded-lg ${
+                    validFrom === p.from && validTo === p.to
+                      ? "border-0 bg-cta text-cta-content hover:bg-cta/90"
+                      : "btn-outline border-base-300"
+                  }`}
+                  onClick={() => {
+                    setValidFrom(p.from);
+                    setValidTo(p.to);
+                  }}
+                >
+                  {p.label}
+                </button>
+              ))}
+            </div>
             <label className="flex items-center gap-3 text-sm cursor-pointer w-fit">
               <input
                 type="checkbox"
@@ -265,8 +337,10 @@ export default function PromoCodesManager({
             </label>
             <p id="promo-code-preview" className="text-sm text-base-content/75">
               Code à communiquer :{" "}
-              <span className="font-semibold tracking-wide">{code || "—"}</span> · −{percentage || 0} %
-              sur les séjours en {MONTHS.find((m) => m.prefix === month)?.label.toLowerCase()}
+              <span className="font-semibold tracking-wide">{name || "—"}</span> · −{percentage || 0} %
+              {validFrom && validTo
+                ? ` sur les nuits du ${formatDate(validFrom)} au ${formatDate(validTo)}`
+                : ""}
             </p>
             {formError && (
               <div role="alert" className="alert alert-error py-3 text-sm">
@@ -323,10 +397,17 @@ export default function PromoCodesManager({
                 className="flex flex-wrap items-center gap-x-5 gap-y-2 px-4 py-3.5"
               >
                 <div className="flex-1 basis-48 min-w-0">
-                  <p className="font-semibold tracking-wide">{promo.name}</p>
+                  <p className="font-semibold tracking-wide flex items-center gap-2">
+                    {promo.name}
+                    {isExpired(promo) && (
+                      <span className="badge badge-sm border-0 bg-base-200 text-base-content/70 font-medium tracking-normal">
+                        Expiré
+                      </span>
+                    )}
+                  </p>
                   <p className="text-[13px] text-base-content/65">
-                    {getApartmentBySlug(promo.apartment_id)?.name ?? promo.apartment_id} ·
-                    séjours en {monthLabel(promo.name).toLowerCase()}
+                    {getApartmentBySlug(promo.apartment_id)?.name ?? promo.apartment_id} ·{" "}
+                    {validityLabel(promo)}
                   </p>
                 </div>
                 <span className="font-heading text-xl font-semibold tabular-nums">

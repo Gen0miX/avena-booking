@@ -1,35 +1,43 @@
-// Shared promo-code month-window logic. A promo code's first 3 letters
-// encode a month, and both the arrival and departure date must fall
-// inside that month for the code to be applicable. Used both by
-// app/api/promo/validate/route.ts (user-facing validation) and
-// app/api/bookings/route.ts (server-side re-check at booking time).
+// Règles d'application des codes promo, partagées par
+// app/api/promo/validate/route.ts (vérification côté visiteur) et
+// app/api/bookings/route.ts (nouvelle vérification à la réservation).
+//
+// Deux formats coexistent :
+//  - code par période (valid_from / valid_to renseignés) : toutes les nuits
+//    du séjour doivent tomber entre valid_from et valid_to inclus ;
+//  - ancien format (dates NULL) : les 3 premières lettres du nom encodent un
+//    mois, et l'arrivée comme le départ doivent tomber dans ce mois.
+
+export type PromoRule = {
+  name: string;
+  valid_from?: string | null; // YYYY-MM-DD, première nuit couverte
+  valid_to?: string | null; // YYYY-MM-DD, dernière nuit couverte
+};
 
 export function parseMonthFromCode(code: string): number | null {
   // Retourne l'index du mois (0-11) ou null si invalide
   if (!code || code.length < 3) return null;
   const prefix = code.slice(0, 3).toUpperCase();
-  // Support EN et FR abréviations courantes
+  // Abréviations FR et EN
   const monthMap: Record<string, number> = {
     JAN: 0,
-    FEV: 1, // français
-    FEB: 1, // anglais
+    FEV: 1,
+    FEB: 1,
     MAR: 2,
-    AVR: 3, // français
-    APR: 3, // anglais
-    MAI: 4, // français
-    MAY: 4, // anglais
+    AVR: 3,
+    APR: 3,
+    MAI: 4,
+    MAY: 4,
     JUN: 5,
-    JUI: 6, // français (juil)
-    JUL: 6, // anglais
-    AOU: 7, // français (août)
-    AUG: 7, // anglais
+    JUI: 6,
+    JUL: 6,
+    AOU: 7,
+    AUG: 7,
     SEP: 8,
     OCT: 9,
     NOV: 10,
     DEC: 11,
-    DECEMBRE: 11, // tolérance si codes différents (non requis)
   };
-  // Gestion de cas FR "JUIL", "AOUT" en 3 lettres déjà mappées JUI/AOU
   return monthMap[prefix] ?? null;
 }
 
@@ -38,21 +46,46 @@ function toDateOnly(dateStr: string): Date {
   return new Date(y, m - 1, d);
 }
 
+/** Date YYYY-MM-DD valide (pas de 31.02 ni de format libre). */
+export function isIsoDate(value: unknown): value is string {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  return formatIso(toDateOnly(value)) === value;
+}
+
+function formatIso(d: Date): string {
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const dd = String(d.getDate()).padStart(2, "0");
+  return `${d.getFullYear()}-${mm}-${dd}`;
+}
+
+export function hasValidityPeriod(promo: PromoRule): boolean {
+  return Boolean(promo.valid_from && promo.valid_to);
+}
+
 /**
- * True when `code`'s encoded month matches both the arrival and departure
- * date (both YYYY-MM-DD strings). This is the full applicability rule —
- * callers must not apply the promo's discount unless this returns true.
+ * True si le code s'applique au séjour (dates YYYY-MM-DD). C'est la règle
+ * complète : ne jamais appliquer la réduction si elle renvoie false.
  */
 export function isPromoApplicable(
-  code: string,
+  promo: PromoRule,
   arrivalDate: string,
-  departureDate: string
+  departureDate: string,
 ): boolean {
-  const targetMonthIdx = parseMonthFromCode(code);
-  if (targetMonthIdx === null) return false;
   const start = toDateOnly(arrivalDate);
   const end = toDateOnly(departureDate);
-  return (
-    start.getMonth() === targetMonthIdx && end.getMonth() === targetMonthIdx
-  );
+  if (!(start < end)) return false;
+
+  if (hasValidityPeriod(promo)) {
+    // Dernière nuit = veille du départ
+    const lastNight = new Date(end);
+    lastNight.setDate(lastNight.getDate() - 1);
+    return (
+      start >= toDateOnly(promo.valid_from as string) &&
+      lastNight <= toDateOnly(promo.valid_to as string)
+    );
+  }
+
+  const targetMonthIdx = parseMonthFromCode(promo.name);
+  if (targetMonthIdx === null) return false;
+  return start.getMonth() === targetMonthIdx && end.getMonth() === targetMonthIdx;
 }

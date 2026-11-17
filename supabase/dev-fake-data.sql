@@ -136,13 +136,19 @@ values
   ('avena-2', 'Festival (test)',      current_date + 200, current_date + 207, 250, 330, 390);
 
 -- ---------------------------------------------------------------------------
--- Codes promo : le préfixe doit être le mois du séjour (cf. lib/promo.ts)
+-- Codes promo : par période (valid_from / valid_to) ou, ancien format, par
+-- mois encodé dans le préfixe (cf. lib/promo.ts)
 -- ---------------------------------------------------------------------------
 insert into public.promo_code (apartment_id, name, percentage, active)
 values
   ('avena-1', to_char(current_date + interval '1 month', 'MON') || 'TEST10', 10, true),
   ('avena-1', to_char(current_date + interval '2 month', 'MON') || 'TEST15', 15, false),
   ('avena-2', to_char(current_date + interval '1 month', 'MON') || 'TEST10', 10, true);
+
+insert into public.promo_code (apartment_id, name, percentage, active, valid_from, valid_to)
+values
+  ('avena-1', 'HIVERTEST', 12, true, current_date, current_date + 120),
+  ('avena-2', 'HIVERTEST', 12, true, current_date, current_date + 120);
 
 commit;
 
