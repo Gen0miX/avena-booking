@@ -5,12 +5,14 @@ import useBooking from "@/hooks/useBooking";
 import NavBar from "@/components/home/NavBar";
 import Footer from "@/components/home/Footer";
 import Link from "next/link";
+import { getApartmentBySlug, getApartmentUnitLabel } from "@/config/apartments";
 
 export default function ConfirmationPage() {
   const { id } = useParams(); // récupère l'id depuis l'URL
   const bookingId = Number(id);
 
   const { booking, loading, error } = useBooking(bookingId);
+  const apartment = booking ? getApartmentBySlug(booking.apartment_id) : undefined;
 
   if (loading) {
     return <p className="text-center mt-20">Chargement de la réservation...</p>;
@@ -32,7 +34,7 @@ export default function ConfirmationPage() {
   return (
     <>
       <NavBar />
-      <main className="max-w-5xl lg:mx-auto mx-1 mt-28 mb-14 p-6 bg-base-200 rounded-box border border-primary/40 shadow-md">
+      <main className="max-w-5xl lg:mx-auto mx-1 mt-10 mb-14 p-6 bg-base-200 rounded-box border border-primary/40 shadow-md">
         <h1 className="text-3xl font-bold mb-6 text-center">
           Confirmation de votre réservation
         </h1>
@@ -48,6 +50,10 @@ export default function ConfirmationPage() {
         <div className="flex flex-col md:flex-row items-center gap-6">
           <div>
             <ul className="list-disc list-inside space-y-1">
+              <li>
+                🏠 Appartement : <b>{apartment?.name ?? booking.apartment_id}</b>
+                {apartment && ` (${getApartmentUnitLabel(apartment)})`}
+              </li>
               <li>
                 📅 Arrivée :{" "}
                 {new Date(booking.arrival_date).toLocaleDateString("fr-CH")}

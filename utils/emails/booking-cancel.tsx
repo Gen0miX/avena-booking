@@ -17,6 +17,9 @@ type BookingCancellationEmailProps = {
   bookingId: number;
   arrival_date: string;
   departure_date: string;
+  apartmentName: string;
+  /** Ex. « Appartement n° 8 · 4ᵉ étage » */
+  apartmentUnit?: string;
 };
 
 export default function BookingCancel({
@@ -25,6 +28,8 @@ export default function BookingCancel({
   bookingId,
   arrival_date,
   departure_date,
+  apartmentName,
+  apartmentUnit,
 }: BookingCancellationEmailProps) {
   return (
     <Html>
@@ -57,6 +62,16 @@ export default function BookingCancel({
           <Section>
             <Text style={text}>
               Bonjour {fname} {lname},
+            </Text>
+
+            <Text style={{ ...text, textAlign: "center" as const }}>
+              Réservation — <b>{apartmentName}</b>
+              {apartmentUnit && (
+                <>
+                  <br />
+                  {apartmentUnit}
+                </>
+              )}
             </Text>
 
             <Text style={text}>

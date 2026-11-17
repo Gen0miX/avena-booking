@@ -32,13 +32,13 @@ interface OccupancyChartProps {
 }
 
 export default function OccupancyChart({ data }: OccupancyChartProps) {
-  const { textColor, gridColor } = useChartTheme();
+  const { textColor, gridColor, styleData } = useChartTheme();
 
   const options = {
     responsive: true,
     plugins: {
       legend: {
-        position: "top" as const,
+        display: false,
         labels: {
             color: textColor,
         }
@@ -67,11 +67,11 @@ export default function OccupancyChart({ data }: OccupancyChartProps) {
               color: textColor,
           },
           grid: {
-              color: gridColor,
+              display: false,
           }
       }
     },
   };
 
-  return <Line options={options} data={data} />;
+  return <Line options={options} data={styleData(data, "occupancy")} />;
 }

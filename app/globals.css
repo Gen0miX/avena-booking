@@ -3,6 +3,24 @@
 @theme inline {
   --font-heading: var(--font-playfair-display);
   --font-p: var(--font-work-sans);
+  --color-surface: var(--surface);
+  --color-cta: var(--cta);
+  --color-cta-content: var(--cta-content);
+}
+
+/* Tokens propres au site public : cartes plus claires que le fond (surface)
+   et couleur d'action assez contrastée pour du texte blanc (cta). */
+:root,
+[data-theme="avenal"] {
+  --surface: #ffffff;
+  --cta: #4e6b65;
+  --cta-content: #ffffff;
+}
+
+[data-theme="avenad"] {
+  --surface: oklch(0.3686 0.0165 255.64);
+  --cta: oklch(0.8542 0.0517 199.29);
+  --cta-content: oklch(0.238 0.0049 248.03);
 }
 
 @plugin "daisyui" {

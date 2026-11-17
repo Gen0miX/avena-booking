@@ -1,95 +1,79 @@
 // Période personnalisée stockée en base de données (Carnaval, etc.)
 export interface PricingPeriod {
   id: number;
+  apartment_id: string;
   name: string;
   start_date: string; // ISO date string "YYYY-MM-DD"
   end_date: string; // ISO date string "YYYY-MM-DD"
-  price_standard: number; // Prix pour <=4 adultes (CHF)
-  price_five: number; // Prix pour 5 adultes (CHF)
+  // Prix par nuit (CHF) selon le nombre total de personnes, enfants compris
+  price_up_to_2: number;
+  price_up_to_4: number;
+  price_up_to_6: number; // borné par la capacité de l'appartement
   created_at?: string;
   updated_at?: string;
 }
 
 export interface PricingPeriodInput {
+  apartment_id: string;
   name: string;
   start_date: string;
   end_date: string;
-  price_standard: number;
-  price_five: number;
+  price_up_to_2: number;
+  price_up_to_4: number;
+  price_up_to_6: number;
 }
 
-// Tarifs par défaut récurrents (s'appliquent chaque année)
-export interface DefaultRate {
-  name: string;
-  price_couple?: number; // Prix pour 1-2 adultes (optionnel)
-  price_standard: number;
-  price_five: number;
-}
+export const PERIOD_PRICE_FIELDS = [
+  "price_up_to_2",
+  "price_up_to_4",
+  "price_up_to_6",
+] as const;
 
-// Tarifs par défaut pour chaque saison
-export const DEFAULT_RATES: Record<string, DefaultRate> = {
-  basseSaison: {
-    name: "Basse saison",
-    price_couple: 150,
-    price_standard: 200,
-    price_five: 250,
-  },
-  novembre: {
-    name: "Novembre",
-    price_standard: 250,
-    price_five: 250,
-  },
-  hiver: {
-    name: "Hiver",
-    price_standard: 280,
-    price_five: 300,
-  },
-  fetes: {
-    name: "Fêtes",
-    price_standard: 350,
-    price_five: 400,
-  },
-};
+/** Prix d'une nuit dans une période spéciale, même paliers que la grille saisonnière. */
+export function getPeriodPrice(period: PricingPeriod, guests: number): number {
+  if (guests <= 2) return period.price_up_to_2;
+  if (guests <= 4) return period.price_up_to_4;
+  return period.price_up_to_6;
+}
 
 /**
- * Détermine le tarif par défaut applicable pour une date donnée
- * basé sur le mois et le jour (récurrent chaque année)
+ * Valide et normalise le corps d'une requête de création / modification de
+ * période (n'écrit que les colonnes connues en base).
  */
-export function getDefaultRateForDate(date: Date): DefaultRate {
+export function parsePricingPeriodInput(
+  body: unknown,
+): { data: PricingPeriodInput; error: null } | { data: null; error: string } {
+  const b = (body ?? {}) as Record<string, unknown>;
+  const name = typeof b.name === "string" ? b.name.trim() : "";
+  const start_date = typeof b.start_date === "string" ? b.start_date : "";
+  const end_date = typeof b.end_date === "string" ? b.end_date : "";
+  const apartment_id = typeof b.apartment_id === "string" ? b.apartment_id : "";
+  if (!name || !start_date || !end_date || !apartment_id) {
+    return { data: null, error: "Champs requis manquants" };
+  }
+  if (end_date <= start_date) {
+    return { data: null, error: "La date de fin doit être après la date de début" };
+  }
+  const prices = PERIOD_PRICE_FIELDS.map((f) => Number(b[f]));
+  if (prices.some((p) => !Number.isInteger(p) || p <= 0)) {
+    return { data: null, error: "Les trois prix doivent être des montants entiers positifs" };
+  }
+  const [price_up_to_2, price_up_to_4, price_up_to_6] = prices;
+  return {
+    data: { apartment_id, name, start_date, end_date, price_up_to_2, price_up_to_4, price_up_to_6 },
+    error: null,
+  };
+}
+
+export type SeasonKey = "hiver" | "ete";
+
+/**
+ * Détermine la saison applicable pour une date donnée (récurrent chaque
+ * année) : hiver de décembre à avril, été de mai à novembre. Les tarifs
+ * associés sont définis dans config/apartments.ts — cette fonction ne
+ * connaît que le calendrier.
+ */
+export function getSeasonKeyForDate(date: Date): SeasonKey {
   const month = date.getMonth(); // 0-11
-  const day = date.getDate();
-
-  // Fêtes : 18 décembre - 10 janvier
-  if (month === 11 && day >= 18) {
-    return DEFAULT_RATES.fetes;
-  }
-  if (month === 0 && day <= 10) {
-    return DEFAULT_RATES.fetes;
-  }
-
-  // Hiver : 11 janvier - 30 avril
-  if (month === 0 && day >= 11) {
-    return DEFAULT_RATES.hiver;
-  }
-  if (month >= 1 && month <= 3) {
-    return DEFAULT_RATES.hiver;
-  }
-
-  // Basse saison : mai - octobre
-  if (month >= 4 && month <= 9) {
-    return DEFAULT_RATES.basseSaison;
-  }
-
-  // Novembre
-  if (month === 10) {
-    return DEFAULT_RATES.novembre;
-  }
-
-  // Décembre 1-17 : tarif hiver
-  if (month === 11 && day < 18) {
-    return DEFAULT_RATES.hiver;
-  }
-
-  // Fallback (ne devrait jamais arriver)
-  return DEFAULT_RATES.basseSaison;
+  return month === 11 || month <= 3 ? "hiver" : "ete";
 }

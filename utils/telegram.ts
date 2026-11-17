@@ -43,10 +43,10 @@ export async function sendTelegramNotification(
 
   switch (type) {
     case "booking":
-      message = `📌 Nouvelle réservation !\n\nNom: ${data.name}\nDate arrivée: ${data.arrival}\nDate départ: ${data.departure}`;
+      message = `📌 Nouvelle réservation (${data.apartmentName}) !\n\nNom: ${data.name}\nDate arrivée: ${data.arrival}\nDate départ: ${data.departure}`;
       break;
     case "cancel":
-      message = `⚠️ Réservation annulée pour ${data.name}`;
+      message = `⚠️ Réservation annulée (${data.apartmentName}) pour ${data.name}`;
       break;
     default:
       message = "ℹ️ Notification générique";

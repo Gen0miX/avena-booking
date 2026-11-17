@@ -7,7 +7,7 @@ export default function MentionsLegales() {
   return (
     <div className="flex flex-col min-h-screen">
       <NavBar />
-      <main className="flex-1 mt-12 bg-base py-12 px-4 sm:px-6 lg:px-20">
+      <main className="flex-1 bg-base py-12 px-4 sm:px-6 lg:px-20">
         <div className="max-w-3xl mx-auto bg-base-200 border border-primary/40 shadow-md rounded-lg p-8">
           <h1 className="text-3xl font-bold mb-6 text-center">
             Mentions Légales

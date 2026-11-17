@@ -4,43 +4,55 @@ import {
   MdOutlineBathtub,
 } from "react-icons/md";
 import { IoPawOutline } from "react-icons/io5";
+import { ApartmentConfig } from "@/config/apartments";
 
 interface ServiceBadgeProps {
   type: "bedroom" | "people" | "bathroom" | "pets";
+  text: string;
 }
 
-function ServiceBadge({ type }: ServiceBadgeProps) {
+function ServiceBadge({ type, text }: ServiceBadgeProps) {
   const icons = {
-    bedroom: <MdOutlineMeetingRoom className="text-4xl" />,
-    people: <MdOutlinePeople className="text-4xl" />,
-    bathroom: <MdOutlineBathtub className="text-4xl" />,
-    pets: <IoPawOutline className="text-4xl" />,
-  };
-
-  const texts = {
-    bedroom: "2 chambres",
-    people: "5 personnes",
-    bathroom: "1 salle de bain",
-    pets: "pas d'animaux",
+    bedroom: <MdOutlineMeetingRoom size={26} />,
+    people: <MdOutlinePeople size={26} />,
+    bathroom: <MdOutlineBathtub size={26} />,
+    pets: <IoPawOutline size={26} />,
   };
 
   return (
-    <div className="flex flex-col items-center justify-between border-2 border-primary/40 rounded-box p-2 sm:p-4 h-full">
-      <div className="h-10 flex items-center justify-center">{icons[type]}</div>
-      <p className="text-center font-medium text-xs sm:text-sm h-12 flex items-center justify-center">
-        {texts[type]}
-      </p>
+    <div className="flex flex-col gap-2.5 bg-surface rounded-2xl p-4 sm:p-5">
+      <span className="text-cta" aria-hidden="true">
+        {icons[type]}
+      </span>
+      <p className="font-semibold text-sm sm:text-[15px]">{text}</p>
     </div>
   );
 }
 
-export default function ServiceBadges() {
+export default function ServiceBadges({
+  apartment,
+}: {
+  apartment: ApartmentConfig;
+}) {
+  const texts = {
+    bedroom:
+      apartment.bedrooms !== null
+        ? `${apartment.bedrooms} chambre${apartment.bedrooms > 1 ? "s" : ""}`
+        : "À venir",
+    people: `Jusqu'à ${apartment.capacity} voyageurs`,
+    bathroom:
+      apartment.bathrooms !== null
+        ? `${apartment.bathrooms} salle${apartment.bathrooms > 1 ? "s" : ""} de bain`
+        : "Salle de bain à venir",
+    pets: apartment.petsAllowed ? "Animaux acceptés" : "Animaux non admis",
+  };
+
   return (
-    <div className="grid grid-cols-4 grid-rows-1 gap-2 sm:gap-6 max-w-2xl h-28 items-stretch mb-10">
-      <ServiceBadge type="bedroom"></ServiceBadge>
-      <ServiceBadge type="people"></ServiceBadge>
-      <ServiceBadge type="bathroom"></ServiceBadge>
-      <ServiceBadge type="pets"></ServiceBadge>
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <ServiceBadge type="people" text={texts.people}></ServiceBadge>
+      <ServiceBadge type="bedroom" text={texts.bedroom}></ServiceBadge>
+      <ServiceBadge type="bathroom" text={texts.bathroom}></ServiceBadge>
+      <ServiceBadge type="pets" text={texts.pets}></ServiceBadge>
     </div>
   );
 }

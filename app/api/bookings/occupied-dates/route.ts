@@ -1,11 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
+import { getApartmentBySlug } from "@/config/apartments";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const apartmentParam = request.nextUrl.searchParams.get("apartment");
+  if (!apartmentParam || !getApartmentBySlug(apartmentParam)) {
+    return NextResponse.json({ message: "Appartement inconnu" }, { status: 400 });
+  }
+
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("bookings")
     .select("arrival_date, departure_date")
+    .eq("apartment_id", apartmentParam)
     .neq("status", 4);
 
   if (error) {

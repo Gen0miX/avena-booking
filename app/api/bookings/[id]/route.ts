@@ -15,6 +15,7 @@ export async function GET(
     .select(
       `
       id,
+      apartment_id,
       created_at,
       fname,
       lname,

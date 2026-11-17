@@ -29,10 +29,13 @@ const defaultFilters: BookingFilters = {
 };
 
 export function useBookings(
+  apartmentId: string | "all" = "all",
   initialFilters?: Partial<BookingFilters>,
   key: string = "default"
 ) {
-  const { data, error, isLoading, mutate } = useSWR(`/api/bookings`, fetcher);
+  const url =
+    apartmentId === "all" ? "/api/bookings" : `/api/bookings?apartment=${apartmentId}`;
+  const { data, error, isLoading, mutate } = useSWR(url, fetcher);
 
   // ✅ état local propre à chaque clé
   const [filtersByKey, setFiltersByKey] = useState<

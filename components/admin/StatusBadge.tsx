@@ -6,35 +6,28 @@ type StatusBadgeProps = {
   loading?: boolean;
 };
 
-export default function StatusBadge({ status, loading }: StatusBadgeProps) {
-  let badgeClass = "badge"; // classe de base
-  let label = status;
+const TONE: Record<string, string> = {
+  "En attente": "badge-warning",
+  Confirmée: "badge-success",
+  Terminée: "badge-info",
+  Annulée: "badge-error",
+};
 
-  switch (status) {
-    case "En attente":
-      badgeClass += " badge-warning";
-      break;
-    case "Confirmée":
-      badgeClass += " badge-success";
-      break;
-    case "Terminée":
-      badgeClass += " badge-info";
-      break;
-    case "Annulée":
-      badgeClass += " badge-error";
-      break;
-    default:
-      badgeClass += " badge-ghost";
-      label = "Inconnu";
-      break;
-  }
+export default function StatusBadge({ status, loading }: StatusBadgeProps) {
+  const tone = TONE[status];
+  const label = tone ? status : "Inconnu";
 
   return (
-    <span className={`${badgeClass} min-w-24 flex justify-center items-center`}>
+    <span
+      className={`badge badge-soft ${tone ?? "badge-ghost"} gap-1.5 rounded-full font-semibold text-[13px] min-w-24`}
+    >
       {loading ? (
         <span className="loading loading-ring loading-sm"></span>
       ) : (
-        label
+        <>
+          <span aria-hidden="true" className="size-1.5 rounded-full bg-current" />
+          {label}
+        </>
       )}
     </span>
   );

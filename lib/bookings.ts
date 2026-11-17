@@ -10,6 +10,7 @@ export type Status = {
 
 export interface Booking {
   id: number;
+  apartment_id: string;
   created_at: Date;
   fname: string;
   lname: string;
@@ -30,6 +31,7 @@ export interface Booking {
 }
 
 export interface BookingInput {
+  apartment_id: string;
   fname: string;
   lname: string;
   mail: string;
@@ -45,4 +47,6 @@ export interface BookingInput {
   departure_date: string;
   price: number;
   is_cleaning: boolean;
+  /** Optional promo code applied client-side; re-validated server-side (Task 4). */
+  promo_code?: string;
 }

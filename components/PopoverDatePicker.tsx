@@ -16,6 +16,7 @@ import {
 } from "@floating-ui/react";
 
 interface PopoverDatePickerProps {
+  apartmentId: string;
   selectedRange?: DateRange;
   onSelect: (range: DateRange | undefined) => void;
   className?: string;
@@ -24,6 +25,7 @@ interface PopoverDatePickerProps {
 }
 
 export default function PopoverDatePicker({
+  apartmentId,
   selectedRange,
   onSelect,
   className = "",
@@ -107,6 +109,7 @@ export default function PopoverDatePicker({
           >
             <CustomDayPicker
               mode="selectable"
+              apartmentId={apartmentId}
               selectedRange={selectedRange}
               onSelect={handleDateSelect}
               excludeRange={excludeRange}

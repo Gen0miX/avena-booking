@@ -18,9 +18,11 @@ import {
 export default function TravelersSelector({
   travelers,
   setTravelers,
+  maxCapacity,
 }: {
   travelers: Travelers;
   setTravelers: (val: Travelers) => void;
+  maxCapacity: number;
 }) {
   const [isOpen, setIsOpen] = useState(false);
 
@@ -50,7 +52,7 @@ export default function TravelersSelector({
   ]);
 
   const total = travelers.adults + travelers.children;
-  const maxReached = total >= 5;
+  const maxReached = total >= maxCapacity;
 
   return (
     <>
@@ -127,7 +129,7 @@ export default function TravelersSelector({
             ))}
 
             <p className="text-xs text-base-content/60">
-              Maximum : 5 voyageurs (adultes + enfants)
+              Maximum : {maxCapacity} voyageurs (adultes + enfants)
             </p>
           </div>
         )}

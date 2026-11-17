@@ -1,16 +1,23 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
-import { PricingPeriodInput } from "@/lib/pricingPeriods";
+import { parsePricingPeriodInput } from "@/lib/pricingPeriods";
+import { getApartmentBySlug } from "@/config/apartments";
 
 export const dynamic = "force-dynamic";
 
-// GET: Récupérer toutes les périodes tarifaires (public)
-export async function GET() {
+// GET: Récupérer toutes les périodes tarifaires d'un appartement (public)
+export async function GET(request: NextRequest) {
+  const apartmentParam = request.nextUrl.searchParams.get("apartment");
+  if (!apartmentParam || !getApartmentBySlug(apartmentParam)) {
+    return NextResponse.json({ error: "Appartement inconnu" }, { status: 400 });
+  }
+
   const supabase = await createClient();
 
   const { data, error } = await supabase
     .from("pricing_periods")
     .select("*")
+    .eq("apartment_id", apartmentParam)
     .order("start_date", { ascending: true });
 
   if (error) {
@@ -37,34 +44,21 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const body: PricingPeriodInput = await request.json();
-
-  // Valider les champs requis
-  if (
-    !body.name ||
-    !body.start_date ||
-    !body.end_date ||
-    body.price_standard == null ||
-    body.price_five == null
-  ) {
-    return NextResponse.json(
-      { error: "Missing required fields" },
-      { status: 400 }
-    );
+  const parsed = parsePricingPeriodInput(await request.json().catch(() => null));
+  if (parsed.error !== null) {
+    return NextResponse.json({ error: parsed.error }, { status: 400 });
   }
+  const body = parsed.data;
 
-  // Valider que end_date > start_date
-  if (body.end_date <= body.start_date) {
-    return NextResponse.json(
-      { error: "La date de fin doit être après la date de début" },
-      { status: 400 }
-    );
+  if (!getApartmentBySlug(body.apartment_id)) {
+    return NextResponse.json({ error: "Appartement inconnu" }, { status: 400 });
   }
 
   // Vérifier les chevauchements
   const { data: overlaps, error: overlapError } = await supabase
     .from("pricing_periods")
     .select("id, name")
+    .eq("apartment_id", body.apartment_id)
     .lt("start_date", body.end_date)
     .gt("end_date", body.start_date);
 

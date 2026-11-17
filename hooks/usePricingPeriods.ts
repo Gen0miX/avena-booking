@@ -10,9 +10,9 @@ const fetcher = async (url: string) => {
   return res.json();
 };
 
-export function usePricingPeriods() {
+export function usePricingPeriods(apartmentId: string | null) {
   const { data, error, isLoading, mutate } = useSWR<PricingPeriod[]>(
-    "/api/pricing-periods",
+    apartmentId ? `/api/pricing-periods?apartment=${apartmentId}` : null,
     fetcher,
     {
       revalidateOnFocus: false,
@@ -23,10 +23,11 @@ export function usePricingPeriods() {
   const createPeriod = async (
     period: PricingPeriodInput
   ): Promise<PricingPeriod> => {
+    const body = { ...period, apartment_id: apartmentId };
     const response = await fetch("/api/pricing-periods", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(period),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {
@@ -43,10 +44,11 @@ export function usePricingPeriods() {
     id: number,
     period: PricingPeriodInput
   ): Promise<void> => {
+    const body = { ...period, apartment_id: apartmentId };
     const response = await fetch(`/api/pricing-periods/${id}`, {
       method: "PUT",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(period),
+      body: JSON.stringify(body),
     });
 
     if (!response.ok) {

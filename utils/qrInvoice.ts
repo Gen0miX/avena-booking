@@ -83,6 +83,7 @@ export async function createBookingQRBill(bookingData: {
   lname: string;
   price: number;
   bookingId: number;
+  apartmentName: string;
 }): Promise<Buffer> {
   // Convertir le prix en nombre si c'est une chaîne
   const amount =
@@ -93,7 +94,7 @@ export async function createBookingQRBill(bookingData: {
   const qrBillData: QRBillData = {
     currency: "CHF",
     amount: amount,
-    unstructuredMessage: `Réservation #${bookingData.bookingId} - ${bookingData.fname} ${bookingData.lname}`,
+    unstructuredMessage: `Réservation #${bookingData.bookingId} - ${bookingData.apartmentName} - ${bookingData.fname} ${bookingData.lname}`,
     creditor: {
       name: "Réganély Noémie",
       address: "Ch. de Beaulieu",
