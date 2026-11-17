@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { sendBookingEmail } from "@/lib/email";
-import { getApartmentBySlug } from "@/config/apartments";
+import { getApartmentBySlug, getApartmentUnitLabel } from "@/config/apartments";
 
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
@@ -59,6 +59,10 @@ export async function POST(
     const apartmentName =
       getApartmentBySlug(bookingData.apartment_id)?.name ??
       bookingData.apartment_id;
+    const bookingApartment = getApartmentBySlug(bookingData.apartment_id);
+    const apartmentUnit = bookingApartment
+      ? getApartmentUnitLabel(bookingApartment)
+      : undefined;
 
     await sendBookingEmail({
       to: bookingData.mail,
@@ -69,6 +73,7 @@ export async function POST(
       price: bookingData.price,
       bookingId: bookingData.id,
       apartmentName,
+      apartmentUnit,
     });
 
     return NextResponse.json(

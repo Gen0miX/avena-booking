@@ -28,6 +28,9 @@ export interface ApartmentConfig {
   slug: "avena-1" | "avena-2";
   name: string;
   address: string;
+  /** Numéro de l'appartement dans l'immeuble et étage (0 = rez-de-chaussée). */
+  unitNumber: number;
+  floor: number;
   mapQuery: string;
   capacity: number; // max total travelers (adults + children), also the top pricing tier
   minNights: number;
@@ -67,6 +70,8 @@ export const AVENA_1: ApartmentConfig = {
   slug: "avena-1",
   name: "Avena 1",
   address: "Untere Dorfstrasse 39, 3906 Saas-Fee",
+  unitNumber: 8,
+  floor: 4,
   mapQuery: "Avena, Untere Dorfstrasse 39, 3906 Saas-Fee, Suisse",
   capacity: 5,
   minNights: 2,
@@ -129,8 +134,9 @@ export const AVENA_1: ApartmentConfig = {
 export const AVENA_2: ApartmentConfig = {
   slug: "avena-2",
   name: "Avena 2",
-  // TODO(client): confirmer l'adresse exacte de ce 2e appartement dans l'immeuble.
   address: "Untere Dorfstrasse 39, 3906 Saas-Fee",
+  unitNumber: 5,
+  floor: 3,
   mapQuery: "Avena, Untere Dorfstrasse 39, 3906 Saas-Fee, Suisse",
   capacity: 6,
   minNights: 2,
@@ -174,6 +180,20 @@ export const APARTMENT_LIST: ApartmentConfig[] = Object.values(APARTMENTS);
 
 export function getApartmentBySlug(slug: string): ApartmentConfig | undefined {
   return (APARTMENTS as Record<string, ApartmentConfig>)[slug];
+}
+
+/** « 4ᵉ étage », « 1er étage », « rez-de-chaussée ». */
+export function formatFloor(floor: number): string {
+  if (floor === 0) return "rez-de-chaussée";
+  return `${floor === 1 ? "1er" : `${floor}ᵉ`} étage`;
+}
+
+/** « Appartement n° 8 · 4ᵉ étage » (ou version courte « N° 8 · 4ᵉ étage »). */
+export function getApartmentUnitLabel(
+  apartment: Pick<ApartmentConfig, "unitNumber" | "floor">,
+  { short = false }: { short?: boolean } = {},
+): string {
+  return `${short ? "N°" : "Appartement n°"} ${apartment.unitNumber} · ${formatFloor(apartment.floor)}`;
 }
 
 export function isApartmentSlug(slug: string): slug is ApartmentSlug {

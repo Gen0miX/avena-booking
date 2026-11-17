@@ -5,7 +5,7 @@ import useBooking from "@/hooks/useBooking";
 import NavBar from "@/components/home/NavBar";
 import Footer from "@/components/home/Footer";
 import Link from "next/link";
-import { getApartmentBySlug } from "@/config/apartments";
+import { getApartmentBySlug, getApartmentUnitLabel } from "@/config/apartments";
 
 export default function ConfirmationPage() {
   const { id } = useParams(); // récupère l'id depuis l'URL
@@ -52,6 +52,7 @@ export default function ConfirmationPage() {
             <ul className="list-disc list-inside space-y-1">
               <li>
                 🏠 Appartement : <b>{apartment?.name ?? booking.apartment_id}</b>
+                {apartment && ` (${getApartmentUnitLabel(apartment)})`}
               </li>
               <li>
                 📅 Arrivée :{" "}

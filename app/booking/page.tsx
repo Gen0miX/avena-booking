@@ -24,7 +24,12 @@ import {
 import { usePricingPeriods } from "@/hooks/usePricingPeriods";
 import { mutate } from "swr";
 import { type BookingInput } from "@/lib/bookings";
-import { APARTMENT_LIST, getApartmentBySlug, isApartmentSlug } from "@/config/apartments";
+import {
+  APARTMENT_LIST,
+  getApartmentBySlug,
+  getApartmentUnitLabel,
+  isApartmentSlug,
+} from "@/config/apartments";
 import Link from "next/link";
 
 interface FormData {
@@ -525,7 +530,8 @@ function BookingForm() {
                       <span className="flex flex-col flex-1">
                         <span className="font-semibold">{a.name}</span>
                         <span className="text-sm text-base-content/75">
-                          Jusqu&apos;à {a.capacity} personnes
+                          {getApartmentUnitLabel(a, { short: true })} · jusqu&apos;à{" "}
+                          {a.capacity} pers.
                         </span>
                       </span>
                       {selected && (
@@ -666,7 +672,7 @@ function BookingForm() {
                   {apartment.name}
                 </h2>
                 <p className="text-sm text-base-content/70">
-                  Saas-Fee · Jusqu&apos;à {apartment.capacity} personnes
+                  {getApartmentUnitLabel(apartment)} · Saas-Fee
                 </p>
               </div>
 

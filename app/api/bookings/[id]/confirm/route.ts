@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse, after } from "next/server";
 import { createClient } from "@/utils/supabase/server";
 import { sendBookingConfirmationEmail } from "@/lib/email";
-import { getApartmentBySlug } from "@/config/apartments";
+import { getApartmentBySlug, getApartmentUnitLabel } from "@/config/apartments";
 
 export const maxDuration = 30;
 export const dynamic = "force-dynamic";
@@ -72,6 +72,10 @@ export async function PATCH(
     const apartmentName =
       getApartmentBySlug(bookingData.apartment_id)?.name ??
       bookingData.apartment_id;
+    const bookingApartment = getApartmentBySlug(bookingData.apartment_id);
+    const apartmentUnit = bookingApartment
+      ? getApartmentUnitLabel(bookingApartment)
+      : undefined;
 
     after(() => {
       sendBookingConfirmationEmail({
@@ -83,6 +87,7 @@ export async function PATCH(
         price: bookingData.price,
         bookingId: bookingData.id,
         apartmentName,
+        apartmentUnit,
       }).catch((emailError) => {
         console.error("Erreur d'envoi de l'email de confirmation:", emailError);
       });

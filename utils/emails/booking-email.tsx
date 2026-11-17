@@ -19,6 +19,8 @@ type BookingEmailProps = {
   price: number;
   bookingId: number;
   apartmentName: string;
+  /** Ex. « Appartement n° 8 · 4ᵉ étage » */
+  apartmentUnit?: string;
 };
 
 export default function BookingEmail({
@@ -29,6 +31,7 @@ export default function BookingEmail({
   price,
   bookingId,
   apartmentName,
+  apartmentUnit,
 }: BookingEmailProps) {
   return (
     <Html>
@@ -64,6 +67,12 @@ export default function BookingEmail({
           <Section>
             <Text style={{ ...text, textAlign: "center" as const }}>
               Réservation — <b>{apartmentName}</b>
+              {apartmentUnit && (
+                <>
+                  <br />
+                  {apartmentUnit}
+                </>
+              )}
             </Text>
             <Text style={text}>
               Merci pour votre réservation du{" "}

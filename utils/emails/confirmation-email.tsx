@@ -21,6 +21,8 @@ type BookingConfirmationEmailProps = {
   checkin_time?: string;
   checkout_time?: string;
   apartmentName: string;
+  /** Ex. « Appartement n° 8 · 4ᵉ étage » */
+  apartmentUnit?: string;
 };
 
 export default function BookingConfirmationEmail({
@@ -33,6 +35,7 @@ export default function BookingConfirmationEmail({
   checkin_time = "16:00",
   checkout_time = "11:00",
   apartmentName,
+  apartmentUnit,
 }: BookingConfirmationEmailProps) {
   return (
     <Html>
@@ -68,6 +71,12 @@ export default function BookingConfirmationEmail({
             </Text>
             <Text style={{ ...text, textAlign: "center" as const }}>
               Réservation — <b>{apartmentName}</b>
+              {apartmentUnit && (
+                <>
+                  <br />
+                  {apartmentUnit}
+                </>
+              )}
             </Text>
             <Text style={text}>
               Nous avons le plaisir de confirmer votre réservation{" "}

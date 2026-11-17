@@ -4,7 +4,7 @@ import { BookingInput, Booking } from "@/lib/bookings";
 import { sendBookingEmail } from "@/lib/email";
 import { sendTelegramNotification } from "@/utils/telegram";
 import { DEFAULT_BOOKING_BLOCKED_AFTER } from "@/lib/settings";
-import { getApartmentBySlug } from "@/config/apartments";
+import { getApartmentBySlug, getApartmentUnitLabel } from "@/config/apartments";
 import { getPriceResult, getNights } from "@/utils/priceCalculator";
 import { PricingPeriod } from "@/lib/pricingPeriods";
 import { isPromoApplicable } from "@/lib/promo";
@@ -313,6 +313,7 @@ export async function POST(request: NextRequest) {
         price: booking.price,
         bookingId: booking.id,
         apartmentName: apartment.name,
+        apartmentUnit: getApartmentUnitLabel(apartment),
       });
       console.log("✅ Email envoyé");
     } catch (emailError) {

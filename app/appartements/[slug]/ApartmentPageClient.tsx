@@ -10,7 +10,7 @@ import ServiceBadges from "@/components/home/ServiceBadges";
 import Amenities from "@/components/home/Amenities";
 import CustomDayPicker from "@/components/CustomDayPicker";
 import { GoogleMapsEmbed } from "@next/third-parties/google";
-import { ApartmentConfig } from "@/config/apartments";
+import { ApartmentConfig, getApartmentUnitLabel } from "@/config/apartments";
 
 const h2 = "font-heading font-semibold text-[26px] sm:text-[28px] mb-2";
 const muted = "text-base leading-relaxed text-base-content/75";
@@ -49,9 +49,11 @@ export default function ApartmentPageClient({
           <h1 className="font-heading font-semibold text-[40px] sm:text-5xl lg:text-[64px] leading-[1.05] mb-2">
             {apartment.name}
           </h1>
-          <p className="flex items-center gap-2 text-base sm:text-[17px] text-base-content/75">
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-base sm:text-[17px] text-base-content/75">
             <IoLocationOutline className="text-cta shrink-0" size={18} aria-hidden="true" />
-            {apartment.address}
+            <span>{apartment.address}</span>
+            <span aria-hidden="true">·</span>
+            <span>{getApartmentUnitLabel(apartment)}</span>
           </p>
         </div>
 

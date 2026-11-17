@@ -16,6 +16,7 @@ export async function sendBookingEmail({
   price,
   bookingId,
   apartmentName,
+  apartmentUnit,
 }: {
   to: string;
   fname: string;
@@ -25,6 +26,7 @@ export async function sendBookingEmail({
   price: number;
   bookingId: number;
   apartmentName: string;
+  apartmentUnit?: string;
 }) {
   try {
     const emailHtml = await render(
@@ -36,6 +38,7 @@ export async function sendBookingEmail({
         price,
         bookingId,
         apartmentName,
+        apartmentUnit,
       })
     );
 
@@ -106,6 +109,7 @@ export async function sendBookingConfirmationEmail({
   price,
   bookingId,
   apartmentName,
+  apartmentUnit,
 }: {
   to: string;
   fname: string;
@@ -115,6 +119,7 @@ export async function sendBookingConfirmationEmail({
   price: number;
   bookingId: number;
   apartmentName: string;
+  apartmentUnit?: string;
 }) {
   try {
     const emailHtml = await render(
@@ -126,6 +131,7 @@ export async function sendBookingConfirmationEmail({
         price,
         bookingId,
         apartmentName,
+        apartmentUnit,
       })
     );
     const result = await resend.emails.send({
@@ -153,6 +159,7 @@ export async function sendBookingCancellationEmail({
   departure_date,
   bookingId,
   apartmentName,
+  apartmentUnit,
 }: {
   to: string;
   fname: string;
@@ -161,6 +168,7 @@ export async function sendBookingCancellationEmail({
   departure_date: string;
   bookingId: number;
   apartmentName: string;
+  apartmentUnit?: string;
 }) {
   try {
     const emailHtml = await render(
@@ -171,6 +179,7 @@ export async function sendBookingCancellationEmail({
         arrival_date,
         departure_date,
         apartmentName,
+        apartmentUnit,
       })
     );
     const result = await resend.emails.send({

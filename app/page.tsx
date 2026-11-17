@@ -22,6 +22,7 @@ import { useBooking } from "@/context/BookingContext";
 import {
   APARTMENT_LIST,
   ApartmentConfig,
+  getApartmentUnitLabel,
 } from "@/config/apartments";
 
 const eyebrow =
@@ -75,9 +76,12 @@ function ApartmentCard({ apartment }: { apartment: ApartmentConfig }) {
       </Link>
       <div className="p-5 sm:p-7 flex flex-col gap-5 flex-1">
         <div>
-          <h3 className="font-heading text-[28px] sm:text-[32px] font-semibold mb-1.5">
+          <h3 className="font-heading text-[28px] sm:text-[32px] font-semibold">
             {apartment.name}
           </h3>
+          <p className="text-sm font-medium text-cta mb-2">
+            {getApartmentUnitLabel(apartment)}
+          </p>
           <p className="text-base leading-relaxed text-base-content/75">
             {apartment.isContentComplete
               ? apartment.description.tagline

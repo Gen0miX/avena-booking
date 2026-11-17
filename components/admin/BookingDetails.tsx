@@ -13,7 +13,7 @@ import TravelersSelector from "@/components/TravelersSelector";
 import { Travelers } from "@/lib/bookings";
 import { getPriceResult, getNights, getCategory } from "@/utils/priceCalculator";
 import { usePricingPeriods } from "@/hooks/usePricingPeriods";
-import { getApartmentBySlug } from "@/config/apartments";
+import { getApartmentBySlug, getApartmentUnitLabel } from "@/config/apartments";
 import {
   IoArrowBackOutline,
   IoCreateOutline,
@@ -327,8 +327,10 @@ export default function BookingDetails({
                 </span>
               )}
               <span>
-                {apartment?.name ?? booking.apartment_id} · Réservation n°{" "}
-                {booking.id}
+                {apartment
+                  ? `${apartment.name} (${getApartmentUnitLabel(apartment, { short: true })})`
+                  : booking.apartment_id}{" "}
+                · Réservation n° {booking.id}
               </span>
             </div>
           </div>

@@ -17,6 +17,7 @@ Chaque appartement est décrit par un objet qui respecte l'interface `ApartmentC
 - `slug` — identifiant stable et définitif. Dans le code actuel c'est un type littéral `"avena-1" | "avena-2"` : pour ajouter un appartement, il faut d'abord **élargir cette union de types** (ex. `"avena-1" | "avena-2" | "avena-3"`) avant de pouvoir écrire le nouvel objet, sinon TypeScript refusera la compilation.
 - `name` — nom affiché (ex. `"Avena 3"`).
 - `address` — adresse complète affichée sur la page de l'appartement.
+- `unitNumber` / `floor` — numéro de l'appartement dans l'immeuble et étage (0 = rez-de-chaussée), affichés sous la forme « Appartement n° 8 · 4ᵉ étage » (`getApartmentUnitLabel`) sur le site, la réservation, la confirmation, l'admin et les e-mails.
 - `mapQuery` — chaîne de recherche utilisée pour la carte Google Maps intégrée (ex. `"Avena, Untere Dorfstrasse 39, 3906 Saas-Fee, Suisse"`).
 - `capacity` — nombre maximum de voyageurs (adultes + enfants) pour cet appartement ; sert aussi de borne supérieure pour les paliers tarifaires.
 - `minNights` — nombre minimum de nuits pour une réservation.
@@ -34,7 +35,7 @@ Chaque appartement est décrit par un objet qui respecte l'interface `ApartmentC
 - `gallery` — tableau de `ApartmentGalleryImage` (`{ src: string; alt: string }`), les photos affichées sur la page de l'appartement.
 - `amenities` — tableau de chaînes, la liste des équipements affichés (ex. `"Wi-Fi"`, `"Lave-vaisselle"`...).
 - `description` — objet `ApartmentDescription` avec les champs `tagline`, `intro`, `capacityIntro`, `features` (`string[]`), `locationIntro`, `winterHighlights` (`string[]`), `summerHighlights` (`string[]`), `locationOutro`. Ce sont les textes affichés sur la page publique de l'appartement.
-- `isContentComplete` — `boolean`. Mettre `false` tant que le contenu réel (photos, description, équipements, adresse définitive, tarifs définitifs...) n'est pas finalisé par le client ; l'UI affiche alors des placeholders « contenu à venir » au lieu de planter sur des données vides. Repasser à `true` une fois tout le contenu validé. `AVENA_2` est passé à `true` en novembre 2026 une fois ses textes fournis (3 chambres, 1 salle de bain avec WC + 1 WC séparé, mêmes équipements et même localisation qu'Avena 1) ; restent marqués `TODO(client)` : les photos (`gallery`, la galerie affiche « Photos à venir »), `petsAllowed`, et l'adresse exacte.
+- `isContentComplete` — `boolean`. Mettre `false` tant que le contenu réel (photos, description, équipements, adresse définitive, tarifs définitifs...) n'est pas finalisé par le client ; l'UI affiche alors des placeholders « contenu à venir » au lieu de planter sur des données vides. Repasser à `true` une fois tout le contenu validé. `AVENA_2` est passé à `true` en novembre 2026 une fois ses textes fournis (3 chambres, 1 salle de bain avec WC + 1 WC séparé, mêmes équipements et même localisation qu'Avena 1) ; restent marqués `TODO(client)` : les photos (`gallery`, la galerie affiche « Photos à venir »), et `petsAllowed`.
 
 Il faut enfin ajouter la nouvelle constante à la map `APARTMENTS` (ex. `"avena-3": AVENA_3`) en bas du fichier — `APARTMENT_LIST`, `getApartmentBySlug` et `isApartmentSlug` en dépendent directement et n'ont besoin d'aucune autre modification.
 
