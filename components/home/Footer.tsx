@@ -35,16 +35,7 @@ export default function Footer({ className = "" }: FooterProps) {
             quality={100}
           />
         </Link>
-        <p className="text-sm">
-          © 2025{" "}
-          <Link
-            href="https://www.jonas-pilloud.ch/"
-            className="link link-hover"
-          >
-            Jonas Pilloud
-          </Link>
-          . Tous droits réservés.
-        </p>
+        <p className="text-sm">© 2026 Avena. Tous droits réservés.</p>
       </aside>
 
       {/* Partie droite : Liens légaux */}
